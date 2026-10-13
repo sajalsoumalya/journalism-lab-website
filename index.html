@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find Your Journalism Path — Prof. Dr. Minal Pareek</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════ NAVBAR ═══════════════════════════════ -->
+  <nav class="nav" id="navbar">
+    <div class="nav__inner">
+      <div class="nav__logo">
+        <span class="nav__logo-mark">●</span>
+        <span class="nav__logo-text">Journalism<em>Lab</em></span>
+      </div>
+      <ul class="nav__links">
+        <li><a href="#about">About</a></li>
+        <li><a href="#quiz">Find Your Path</a></li>
+        <li><a href="#course">Course</a></li>
+        <li><a href="#timeline">Timeline</a></li>
+        <li><a href="#register" class="nav__cta">Apply Now ↗</a></li>
+      </ul>
+      <button class="nav__hamburger" id="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="nav__mobile" id="mobileMenu">
+      <a href="#about">About</a>
+      <a href="#quiz">Find Your Path</a>
+      <a href="#course">Course</a>
+      <a href="#timeline">Timeline</a>
+      <a href="#register">Apply Now ↗</a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════ HERO ════════════════════════════════ -->
+  <section class="hero" id="hero">
+    <div class="hero__noise"></div>
+
+    <!-- Decorative editorial lines -->
+    <div class="hero__rules">
+      <div class="hero__rule"></div>
+      <div class="hero__rule"></div>
+    </div>
+
+    <div class="hero__content">
+      <div class="hero__eyebrow">
+        <span class="hero__eyebrow-dot"></span>
+        <span>Batch 01 · October 2026 · Online</span>
+      </div>
+
+      <h1 class="hero__headline">
+        <span class="hero__headline-top">You look like</span>
+        <span class="hero__headline-mid">the next</span>
+        <span class="hero__headline-bot">journalist.</span>
+      </h1>
+
+      <p class="hero__sub">
+        A 15-day industry-ready workshop crafted for the ones who have a story to tell —  
+        and the drive to tell it well.
+      </p>
+
+      <div class="hero__meta">
+        <div class="hero__meta-item">
+          <span class="hero__meta-label">Instructor</span>
+          <span class="hero__meta-value">Prof. Dr. Minal Pareek</span>
+        </div>
+        <div class="hero__meta-divider"></div>
+        <div class="hero__meta-item">
+          <span class="hero__meta-label">Starts</span>
+          <span class="hero__meta-value">26 Oct 2026</span>
+        </div>
+        <div class="hero__meta-divider"></div>
+        <div class="hero__meta-item">
+          <span class="hero__meta-label">Seats</span>
+          <span class="hero__meta-value">15 only</span>
+        </div>
+        <div class="hero__meta-divider"></div>
+        <div class="hero__meta-item">
+          <span class="hero__meta-label">Fee</span>
+          <span class="hero__meta-value hero__meta-strike">₹15,000</span>
+          <span class="hero__meta-value hero__meta-highlight">₹3,000</span>
+        </div>
+      </div>
+
+      <div class="hero__actions">
+        <a href="#quiz" class="btn btn--primary">Discover Your Path →</a>
+        <a href="#course" class="btn btn--ghost">View Course Details</a>
+      </div>
+    </div>
+
+    <div class="hero__scroll-hint">
+      <span>Scroll</span>
+      <div class="hero__scroll-line"></div>
+    </div>
+
+    <!-- Large typographic background text -->
+    <div class="hero__bg-text" aria-hidden="true">PRESS</div>
+  </section>
+
+  <!-- ═══════════════════════════════ MARQUEE ══════════════════════════════ -->
+  <div class="marquee-band">
+    <div class="marquee-track">
+      <span>Anchoring</span><span class="marquee-dot">◆</span>
+      <span>Copywriting</span><span class="marquee-dot">◆</span>
+      <span>Video Editing</span><span class="marquee-dot">◆</span>
+      <span>Social Media</span><span class="marquee-dot">◆</span>
+      <span>Photography</span><span class="marquee-dot">◆</span>
+      <span>Reels & Content</span><span class="marquee-dot">◆</span>
+      <span>Advertising</span><span class="marquee-dot">◆</span>
+      <span>Influencer Media</span><span class="marquee-dot">◆</span>
+      <span>Web Journalism</span><span class="marquee-dot">◆</span>
+      <!-- Duplicate for loop -->
+      <span>Anchoring</span><span class="marquee-dot">◆</span>
+      <span>Copywriting</span><span class="marquee-dot">◆</span>
+      <span>Video Editing</span><span class="marquee-dot">◆</span>
+      <span>Social Media</span><span class="marquee-dot">◆</span>
+      <span>Photography</span><span class="marquee-dot">◆</span>
+      <span>Reels & Content</span><span class="marquee-dot">◆</span>
+      <span>Advertising</span><span class="marquee-dot">◆</span>
+      <span>Influencer Media</span><span class="marquee-dot">◆</span>
+      <span>Web Journalism</span><span class="marquee-dot">◆</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ ABOUT ════════════════════════════════ -->
+  <section class="about" id="about">
+    <div class="container">
+      <div class="about__grid">
+        <div class="about__left">
+          <div class="section-label">About the Workshop</div>
+          <h2 class="about__headline">
+            Journalism is not one thing.<br />
+            <em>Which one are you?</em>
+          </h2>
+        </div>
+        <div class="about__right">
+          <p class="about__body">
+            Mass Communication students often face the same paralysis — too many paths, zero clarity. Anchoring? Photography? Ad copy? Reels? Social? The confusion is real.
+          </p>
+          <p class="about__body">
+            This workshop does two things: it tells you <strong>exactly which field fits you</strong> — and then it gives you a <strong>15-day runway</strong> to get industry-ready with one of India's sharpest journalism educators.
+          </p>
+          <div class="about__stats">
+            <div class="stat-card">
+              <span class="stat-card__num">15</span>
+              <span class="stat-card__label">Days</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-card__num">15</span>
+              <span class="stat-card__label">Seats</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-card__num">9</span>
+              <span class="stat-card__label">Fields</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-card__num">1</span>
+              <span class="stat-card__label">Internship Batch</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ QUIZ ═════════════════════════════════ -->
+  <section class="quiz-section" id="quiz">
+    <div class="container">
+      <div class="section-label">Path Finder Tool</div>
+      <h2 class="quiz-section__headline">
+        Answer 5 questions.<br /><em>We'll tell you your field.</em>
+      </h2>
+      <p class="quiz-section__sub">
+        A smart lead-capture quiz — built to surface your natural journalism strength and map a clear path forward. Takes 90 seconds.
+      </p>
+
+      <div class="quiz-card" id="quizCard">
+        <!-- Progress bar -->
+        <div class="quiz-progress">
+          <div class="quiz-progress__track">
+            <div class="quiz-progress__fill" id="progressFill" style="width:20%"></div>
+          </div>
+          <span class="quiz-progress__label" id="progressLabel">1 / 5</span>
+        </div>
+
+        <!-- Question container -->
+        <div class="quiz-question-wrap" id="questionWrap">
+          <p class="quiz-q" id="quizQuestion">When you witness something newsworthy, what's your first instinct?</p>
+          <div class="quiz-options" id="quizOptions">
+            <button class="quiz-opt" data-score="anchor">Grab a mic and describe it out loud</button>
+            <button class="quiz-opt" data-score="photo">Reach for your camera immediately</button>
+            <button class="quiz-opt" data-score="copy">Start mentally drafting the headline</button>
+            <button class="quiz-opt" data-score="social">Think about how to frame it for Instagram</button>
+          </div>
+        </div>
+
+        <!-- Result (hidden initially) -->
+        <div class="quiz-result" id="quizResult" style="display:none">
+          <div class="quiz-result__icon" id="resultIcon">🎙️</div>
+          <h3 class="quiz-result__title" id="resultTitle">You're a Natural Anchor</h3>
+          <p class="quiz-result__desc" id="resultDesc">Your instinct to perform, speak, and present makes you built for on-screen journalism. Anchoring, live reporting, and broadcast media are where you'll shine.</p>
+          <div class="quiz-result__cta">
+            <p class="quiz-result__nudge">Your first step → Start with an industry-ready course:</p>
+            <div class="quiz-result__course-card">
+              <div class="quiz-result__course-badge">Recommended</div>
+              <p class="quiz-result__course-name">15-Day Industry-Ready Journalism Workshop</p>
+              <p class="quiz-result__course-meta">Prof. Dr. Minal Pareek · Starts Oct 26 · ₹3,000</p>
+              <a href="#register" class="btn btn--primary" style="margin-top:1rem">Reserve Your Seat →</a>
+            </div>
+          </div>
+          <button class="btn btn--ghost" id="retakeBtn" style="margin-top:1.5rem">← Retake Quiz</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ COURSE ═══════════════════════════════ -->
+  <section class="course-section" id="course">
+    <div class="container">
+      <div class="course-section__top">
+        <div>
+          <div class="section-label">The Course</div>
+          <h2 class="course-section__headline">15 days.<br />Industry-ready.</h2>
+        </div>
+        <div class="course-section__price-block">
+          <span class="price-old">₹15,000</span>
+          <span class="price-new">₹3,000</span>
+          <span class="price-tag">Batch 1 Price</span>
+        </div>
+      </div>
+
+      <div class="course-grid">
+        <div class="course-card">
+          <div class="course-card__icon">📅</div>
+          <h3>Duration</h3>
+          <p>15 days · Mon–Fri<br />9 PM – 10 PM IST</p>
+        </div>
+        <div class="course-card">
+          <div class="course-card__icon">💻</div>
+          <h3>Mode</h3>
+          <p>Online via Google Meet.<br />Live sessions + recordings.</p>
+        </div>
+        <div class="course-card">
+          <div class="course-card__icon">👩‍🏫</div>
+          <h3>Instructor</h3>
+          <p>Prof. Dr. Minal Pareek<br />Industry veteran educator.</p>
+        </div>
+        <div class="course-card">
+          <div class="course-card__icon">🎓</div>
+          <h3>Eligibility</h3>
+          <p>Anyone who wants to build a future in journalism. No prior experience needed.</p>
+        </div>
+        <div class="course-card">
+          <div class="course-card__icon">🪑</div>
+          <h3>Seats</h3>
+          <p>Only 15 seats available.<br />First come, first served.</p>
+        </div>
+        <div class="course-card course-card--highlight">
+          <div class="course-card__icon">🚀</div>
+          <h3>Internship</h3>
+          <p>Selected students will receive a real internship opportunity after the course.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ FIELDS ═══════════════════════════════ -->
+  <section class="fields-section" id="fields">
+    <div class="container">
+      <div class="section-label">9 Fields of Journalism</div>
+      <h2 class="fields-section__headline">Every story<br />needs a different <em>storyteller.</em></h2>
+      <div class="fields-grid">
+        <div class="field-pill" data-field="anchor"><span>01</span> Anchoring</div>
+        <div class="field-pill" data-field="video"><span>02</span> Video Editing</div>
+        <div class="field-pill" data-field="photo"><span>03</span> Photography</div>
+        <div class="field-pill" data-field="copy"><span>04</span> Copywriting</div>
+        <div class="field-pill" data-field="ad"><span>05</span> Advertising</div>
+        <div class="field-pill" data-field="social"><span>06</span> Social Media</div>
+        <div class="field-pill" data-field="reels"><span>07</span> Reels & Content</div>
+        <div class="field-pill" data-field="influencer"><span>08</span> Influencer Media</div>
+        <div class="field-pill" data-field="web"><span>09</span> Web Journalism</div>
+      </div>
+      <div class="fields-cta">
+        <a href="#quiz" class="btn btn--primary">Find Which One Fits You →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ TIMELINE ═════════════════════════════ -->
+  <section class="timeline-section" id="timeline">
+    <div class="container">
+      <div class="section-label">Launch Timeline</div>
+      <h2 class="timeline-section__headline">Every great story<br /><em>has a deadline.</em></h2>
+      <div class="timeline">
+        <div class="timeline-item timeline-item--done">
+          <div class="timeline-item__dot"></div>
+          <div class="timeline-item__content">
+            <span class="timeline-item__date">13 Oct 2026</span>
+            <h3>Plan Finalised</h3>
+            <p>Workshop structure, curriculum, and pricing locked in.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-item__dot"></div>
+          <div class="timeline-item__content">
+            <span class="timeline-item__date">15 Oct 2026</span>
+            <h3>Poster Goes Live</h3>
+            <p>Promotional poster finalised and campaign begins.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-item__dot"></div>
+          <div class="timeline-item__content">
+            <span class="timeline-item__date">16 Oct 2026</span>
+            <h3>Tool Circulated</h3>
+            <p>Path Finder Quiz goes live and is shared with Mass Com students.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-item__dot"></div>
+          <div class="timeline-item__content">
+            <span class="timeline-item__date">21 Oct 2026</span>
+            <h3>Leads Contacted</h3>
+            <p>Personal outreach to all leads. Payment collection begins.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-item__dot"></div>
+          <div class="timeline-item__content">
+            <span class="timeline-item__date">23 Oct 2026</span>
+            <h3>Syllabus Shared</h3>
+            <p>Confirmed students receive the full course syllabus.</p>
+          </div>
+        </div>
+        <div class="timeline-item timeline-item--launch">
+          <div class="timeline-item__dot"></div>
+          <div class="timeline-item__content">
+            <span class="timeline-item__date">26 Oct 2026</span>
+            <h3>Course Begins 🚀</h3>
+            <p>Batch 1 kickoff. 15 students. One journey.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ REGISTER ═════════════════════════════ -->
+  <section class="register-section" id="register">
+    <div class="container">
+      <div class="register-section__inner">
+        <div class="register-section__left">
+          <div class="section-label">Apply Now</div>
+          <h2 class="register-section__headline">
+            15 seats.<br />
+            1 you.<br />
+            <em>Don't miss it.</em>
+          </h2>
+          <p class="register-section__body">
+            Fill out the form. We'll reach out personally within 24 hours with next steps. This is Batch 1 — the founding cohort.
+          </p>
+          <div class="register-section__fee">
+            <span class="fee-tag">Batch 1 Founding Price</span>
+            <div class="fee-amount">
+              <span class="fee-old">₹15,000</span>
+              <span class="fee-new">₹3,000</span>
+            </div>
+          </div>
+        </div>
+
+        <form class="register-form" id="registerForm">
+          <div class="form-group">
+            <label for="name">Full Name *</label>
+            <input type="text" id="name" name="name" placeholder="Your name" required />
+          </div>
+          <div class="form-group">
+            <label for="phone">WhatsApp Number *</label>
+            <input type="tel" id="phone" name="phone" placeholder="+91 00000 00000" required />
+          </div>
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input type="email" id="email" name="email" placeholder="you@email.com" required />
+          </div>
+          <div class="form-group">
+            <label for="college">College / University</label>
+            <input type="text" id="college" name="college" placeholder="Where are you studying?" />
+          </div>
+          <div class="form-group">
+            <label for="field">Which journalism field interests you most?</label>
+            <select id="field" name="field">
+              <option value="">— Select a field —</option>
+              <option>Anchoring</option>
+              <option>Video Editing</option>
+              <option>Photography</option>
+              <option>Copywriting</option>
+              <option>Advertising</option>
+              <option>Social Media Management</option>
+              <option>Reels & Content Creation</option>
+              <option>Influencer Media</option>
+              <option>Web Journalism</option>
+              <option>Not sure yet — that's why I'm here</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="msg">Anything you'd like us to know?</label>
+            <textarea id="msg" name="msg" rows="3" placeholder="Your message (optional)"></textarea>
+          </div>
+          <button type="submit" class="btn btn--primary btn--full">Reserve My Seat →</button>
+          <p class="form-note">We'll contact you within 24 hours. No spam, ever.</p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <div class="footer__brand">
+          <span class="nav__logo-mark">●</span>
+          <span class="nav__logo-text">Journalism<em>Lab</em></span>
+        </div>
+        <div class="footer__info">
+          <p>Instructor: Prof. Dr. Minal Pareek</p>
+          <p>Mode: Online · Google Meet</p>
+          <p>Starts: 26 October 2026</p>
+        </div>
+        <div class="footer__copy">
+          <p>© 2026 JournalismLab. Batch 01.</p>
+          <p>Seats are limited. Apply early.</p>
+        </div>
+      </div>
+      <div class="footer__line"></div>
+      <p class="footer__tagline">"You look like the next journalist."</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
