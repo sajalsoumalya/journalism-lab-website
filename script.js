@@ -269,8 +269,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     currentCaptcha = generateCaptchaCode(5);
 
-    // Dark sleek background
-    ctx.fillStyle = '#080808';
+    // Light mode clean background
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
 
     // Subtle random interference lines
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.beginPath();
       ctx.moveTo(Math.random() * width, Math.random() * height);
       ctx.lineTo(Math.random() * width, Math.random() * height);
-      ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 + Math.random() * 0.15})`;
+      ctx.strokeStyle = `rgba(0, 0, 0, ${0.1 + Math.random() * 0.12})`;
       ctx.lineWidth = 1 + Math.random() * 1.5;
       ctx.stroke();
     }
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let i = 0; i < 35; i++) {
       ctx.beginPath();
       ctx.arc(Math.random() * width, Math.random() * height, 1 + Math.random(), 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 255, 255, ${0.15 + Math.random() * 0.25})`;
+      ctx.fillStyle = `rgba(0, 0, 0, ${0.12 + Math.random() * 0.15})`;
       ctx.fill();
     }
 
@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.textBaseline = 'middle';
     ctx.font = 'bold 28px "DM Mono", ui-monospace, monospace';
 
-    const colors = ['#ffffff', '#e0e0e0', '#f5f5f5', '#ffd166', '#80ed99', '#4cc9f0'];
+    const colors = ['#09090b', '#1e3a8a', '#b91c1c', '#047857', '#6d28d9', '#18181b'];
 
     for (let i = 0; i < currentCaptcha.length; i++) {
       const char = currentCaptcha[i];
