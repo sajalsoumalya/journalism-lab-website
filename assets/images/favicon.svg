@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="48" fill="#0d0d0d" stroke="#333" stroke-width="3"/>
+  <text x="32" y="66" font-family="Georgia, serif" font-size="46" font-weight="bold" fill="#ffffff">J</text>
+  <text x="54" y="72" font-family="Georgia, serif" font-size="46" font-style="italic" fill="#e63946">L</text>
+</svg>
