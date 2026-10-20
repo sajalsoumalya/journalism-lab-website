@@ -149,12 +149,80 @@ document.addEventListener('DOMContentLoaded', () => {
   if (quizCard) {
     let currentQ = 0;
     let scores = {};
+    let pendingScore = null;
+    let pendingBtn = null;
+    let disclaimerAgreed = false;
 
-    const questionWrap  = document.getElementById('questionWrap');
-    const quizResult    = document.getElementById('quizResult');
-    const progressFill  = document.getElementById('progressFill');
-    const progressLabel = document.getElementById('progressLabel');
-    const retakeBtn     = document.getElementById('retakeBtn');
+    const questionWrap         = document.getElementById('questionWrap');
+    const quizResult           = document.getElementById('quizResult');
+    const progressFill         = document.getElementById('progressFill');
+    const progressLabel        = document.getElementById('progressLabel');
+    const retakeBtn            = document.getElementById('retakeBtn');
+    const quizDisclaimerModal  = document.getElementById('quizDisclaimerModal');
+    const quizDisclaimerOkBtn  = document.getElementById('quizDisclaimerOkBtn');
+    const quizDisclaimerCloseBtn = document.getElementById('quizDisclaimerCloseBtn');
+
+    function openQuizDisclaimer(score, btn) {
+      pendingScore = score;
+      pendingBtn = btn;
+      if (quizDisclaimerModal) {
+        quizDisclaimerModal.classList.add('active');
+        quizDisclaimerModal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeQuizDisclaimer(proceed = false) {
+      if (quizDisclaimerModal) {
+        quizDisclaimerModal.classList.remove('active');
+        quizDisclaimerModal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+
+      if (proceed && pendingScore !== null) {
+        disclaimerAgreed = true;
+        scores[pendingScore] = (scores[pendingScore] || 0) + 1;
+        currentQ++;
+        if (currentQ < QUESTIONS.length) {
+          renderQuestion(currentQ);
+        } else {
+          showResult();
+        }
+      } else {
+        // Dismissed without clicking OK: reset selection so user can reselect
+        if (pendingBtn) {
+          pendingBtn.classList.remove('selected');
+        }
+      }
+      pendingScore = null;
+      pendingBtn = null;
+    }
+
+    if (quizDisclaimerOkBtn) {
+      quizDisclaimerOkBtn.addEventListener('click', () => {
+        closeQuizDisclaimer(true);
+      });
+    }
+
+    if (quizDisclaimerCloseBtn) {
+      quizDisclaimerCloseBtn.addEventListener('click', () => {
+        closeQuizDisclaimer(false);
+      });
+    }
+
+    if (quizDisclaimerModal) {
+      quizDisclaimerModal.addEventListener('click', (e) => {
+        if (e.target === quizDisclaimerModal) {
+          closeQuizDisclaimer(false);
+        }
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && quizDisclaimerModal && quizDisclaimerModal.classList.contains('active')) {
+        closeQuizDisclaimer(false);
+      }
+    });
 
     function renderQuestion(index) {
       const data = QUESTIONS[index];
@@ -180,6 +248,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function selectAnswer(score, btn) {
+      // First question check: clicking any answer triggers Disclaimer Popup
+      if (currentQ === 0 && !disclaimerAgreed) {
+        const optContainer = document.getElementById('quizOptions');
+        if (optContainer) {
+          optContainer.querySelectorAll('.quiz-opt').forEach(b => b.classList.remove('selected'));
+        }
+        btn.classList.add('selected');
+
+        setTimeout(() => {
+          openQuizDisclaimer(score, btn);
+        }, 120);
+        return;
+      }
+
       btn.classList.add('selected');
       scores[score] = (scores[score] || 0) + 1;
 
@@ -212,10 +294,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resTitle) resTitle.textContent = res.title;
       if (resDesc) resDesc.textContent = res.desc;
 
-      // Ensure disclaimer is smoothly visible in view
-      const disclaimer = document.querySelector('.quiz-disclaimer');
-      if (disclaimer) {
-        disclaimer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // Scroll to quiz card so user sees result cleanly
+      if (quizCard) {
+        quizCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
 
@@ -223,6 +304,9 @@ document.addEventListener('DOMContentLoaded', () => {
       retakeBtn.addEventListener('click', () => {
         currentQ = 0;
         scores = {};
+        disclaimerAgreed = false;
+        pendingScore = null;
+        pendingBtn = null;
         if (quizResult) quizResult.style.display = 'none';
         if (questionWrap) questionWrap.style.display = 'block';
         renderQuestion(0);
