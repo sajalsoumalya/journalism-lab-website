@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p class="form-success__body">
               Your inquiry for Founding Batch 1 has been securely recorded.<br />
               Prof. Dr. Minal Pareek's team will reach out directly on WhatsApp within 24 hours.<br /><br />
-              <strong>Kickoff: 26 October 2026 · 9:00 PM IST</strong>
+              <strong>Kickoff: 26 October 2026<br />Schedule: Monday to Friday · 9:00 PM to 10:00 PM IST</strong>
             </p>
           </div>
         `;
