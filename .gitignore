@@ -1,3 +1,17 @@
+# Never commit real env values
+.env
+.env.local
+.env.production
+
+# Generated at runtime by Docker — not a source file
+env.js
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs & deps
 *.log
 node_modules/
+.vscode/
+.idea/

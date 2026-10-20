@@ -293,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resIcon) resIcon.innerHTML = res.icon;
       if (resTitle) resTitle.textContent = res.title;
       if (resDesc) resDesc.textContent = res.desc;
+      window.lastQuizResultTitle = res.title;
 
       // Scroll to quiz card so user sees result cleanly
       if (quizCard) {
@@ -475,6 +476,29 @@ document.addEventListener('DOMContentLoaded', () => {
       const applicantName = pendingFormData ? pendingFormData.get('name') : 'there';
       openSuccessModal(applicantName);
 
+      // Record lead in Firebase Realtime Database and LocalStorage
+      const leadData = {
+        id: 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+        name: (pendingFormData ? pendingFormData.get('name') : '') || applicantName || 'Applicant',
+        phone: (pendingFormData ? pendingFormData.get('phone') : '') || '',
+        email: (pendingFormData ? pendingFormData.get('email') : '') || '',
+        institution: (pendingFormData ? pendingFormData.get('institution') : '') || '—',
+        role: (pendingFormData ? pendingFormData.get('role') : '') || 'Student',
+        message: (pendingFormData ? pendingFormData.get('msg') : '') || '',
+        quizResult: window.lastQuizResultTitle || 'Not taken',
+        status: 'new',
+        submittedAt: new Date().toISOString(),
+        submittedDisplay: new Date().toLocaleDateString('en-IN', {
+          day: '2-digit', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        }),
+        source: window.location.pathname.includes('register') ? 'Register Page' : 'Landing Page'
+      };
+
+      if (typeof recordLead === 'function') {
+        recordLead(leadData);
+      }
+
       // If active form exists, display inline confirmation or reset
       if (activeFormElement) {
         const firstName = applicantName ? applicantName.split(' ')[0] : 'there';
@@ -631,5 +655,645 @@ document.addEventListener('DOMContentLoaded', () => {
       observer.observe(el);
     });
   }
+
+  // ─── Firebase Realtime Database & Lead Management ─────────────
+  const env = window.__ENV__ || {};
+  const ADMIN_EMAIL    = env.ADMIN_EMAIL    || "admin@journalismlab.in";
+  const ADMIN_PASSWORD = env.ADMIN_PASSWORD || "JLab@2026!";
+
+  let rtdb = null;
+  let leadsRef = null;
+  const LEADS_KEY = 'journalism_leads';
+  const LOCAL_STORAGE_KEY = 'journalism_lab_leads';
+
+  // Initialize Firebase RTDB if config is available
+  if (typeof firebase !== 'undefined') {
+    const hasConfig = env.FIREBASE_API_KEY && !env.FIREBASE_API_KEY.startsWith('${');
+    if (hasConfig) {
+      try {
+        const fbConfig = {
+          apiKey:            env.FIREBASE_API_KEY,
+          authDomain:        env.FIREBASE_AUTH_DOMAIN,
+          databaseURL:       env.FIREBASE_DATABASE_URL || `https://${env.FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com`,
+          projectId:         env.FIREBASE_PROJECT_ID,
+          storageBucket:     env.FIREBASE_STORAGE_BUCKET,
+          messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID,
+          appId:             env.FIREBASE_APP_ID
+        };
+        firebase.initializeApp(fbConfig);
+        rtdb = firebase.database();
+        leadsRef = rtdb.ref(LEADS_KEY);
+      } catch (err) {
+        console.warn('Firebase Realtime Database init notice:', err.message);
+      }
+    }
+  }
+
+  function getStoredLeads() {
+    try {
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function setStoredLeads(leads) {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(leads));
+    } catch (e) {
+      console.error('LocalStorage write failed:', e);
+    }
+  }
+
+  // Pre-seed demo leads if storage is empty
+  if (getStoredLeads().length === 0) {
+    setStoredLeads([
+      {
+        id: 'lead_seed_1',
+        name: 'Aarav Sharma',
+        phone: '+91 98765 43210',
+        email: 'aarav.sharma@example.com',
+        institution: 'Delhi University',
+        role: 'Student',
+        message: 'Passionate about live broadcast anchoring and ground investigative reporting.',
+        quizResult: "You're a Natural Anchor",
+        status: 'new',
+        submittedAt: new Date(Date.now() - 7200000).toISOString(),
+        submittedDisplay: 'Today · 2 hrs ago',
+        source: 'Landing Page'
+      },
+      {
+        id: 'lead_seed_2',
+        name: 'Priyanka Sen',
+        phone: '+91 98300 12345',
+        email: 'priyanka.sen@media.in',
+        institution: 'Freelance Media Strategist',
+        role: 'Professional',
+        message: 'Looking to transition from print copy to investigative video journalism.',
+        quizResult: "You're a Video Storyteller",
+        status: 'contacted',
+        submittedAt: new Date(Date.now() - 86400000).toISOString(),
+        submittedDisplay: 'Yesterday · 4:15 PM',
+        source: 'Register Page'
+      }
+    ]);
+  }
+
+  window.recordLead = async function(leadData) {
+    const current = getStoredLeads();
+    current.unshift(leadData);
+    setStoredLeads(current);
+
+    if (leadsRef) {
+      try {
+        await leadsRef.child(leadData.id).set(leadData);
+      } catch (err) {
+        console.warn('Firebase RTDB write notice:', err);
+      }
+    }
+
+    if (document.getElementById('adminPanel') && typeof renderAdminTable === 'function') {
+      allAdminLeads = getStoredLeads();
+      updateAdminStats();
+      renderAdminTable();
+    }
+  };
+
+  // ─── Admin Login & Panel Engine ───────────────────────────────
+  let allAdminLeads = [];
+  let currentAdminFilter = 'all';
+  let adminSearchQuery = '';
+
+  function openAdminLogin() {
+    if (document.getElementById('adminLoginOverlay')) return;
+
+    const modalHTML = `
+      <div class="modal-overlay active" id="adminLoginOverlay" style="z-index:10006;">
+        <div class="modal-box modal-box--admin-login">
+          <button type="button" class="modal-close" id="adminLoginCloseBtn" aria-label="Close login dialog">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+          <div class="modal-header">
+            <div class="modal-icon-badge" style="background:#09090b; color:#ffffff; border-color:#09090b;">
+              <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h3 class="modal-title">Admin Access</h3>
+            <p class="modal-sub">Sign in to manage student registrations & cohort applicants.</p>
+          </div>
+          <form id="adminLoginForm">
+            <div class="form-group">
+              <label for="adminEmailInput" style="color:var(--text-secondary)">Admin Email</label>
+              <input type="email" id="adminEmailInput" value="${ADMIN_EMAIL}" required />
+            </div>
+            <div class="form-group" style="margin-top:0.75rem;">
+              <label for="adminPassInput" style="color:var(--text-secondary)">Password</label>
+              <input type="password" id="adminPassInput" placeholder="••••••••" required />
+            </div>
+            <div id="adminLoginErr" class="admin-login-error" style="display:none;">
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span>Invalid credentials. Please verify your email and password.</span>
+            </div>
+            <button type="submit" class="btn btn--primary btn--full" style="margin-top:1.25rem;">
+              Access Admin Panel <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    const overlay = document.getElementById('adminLoginOverlay');
+    const passInput = document.getElementById('adminPassInput');
+    const form = document.getElementById('adminLoginForm');
+    const closeBtn = document.getElementById('adminLoginCloseBtn');
+    const errBox = document.getElementById('adminLoginErr');
+
+    setTimeout(() => passInput && passInput.focus(), 120);
+
+    closeBtn.addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.remove();
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const enteredEmail = document.getElementById('adminEmailInput').value.trim();
+      const enteredPass  = passInput.value;
+
+      if (enteredEmail === ADMIN_EMAIL && enteredPass === ADMIN_PASSWORD) {
+        overlay.remove();
+        openAdminPanel();
+      } else {
+        errBox.style.display = 'flex';
+        passInput.value = '';
+        passInput.focus();
+      }
+    });
+  }
+
+  function buildAdminPanelHTML() {
+    return `
+      <div class="admin-panel" id="adminPanel">
+        <header class="admin-header">
+          <div class="admin-header__brand">
+            ● Journalism<em>Lab</em>
+            <span class="admin-header__badge">
+              <i class="fa-solid fa-database"></i> Firebase RTDB Admin
+            </span>
+          </div>
+
+          <div class="admin-header__actions">
+            <div class="admin-search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="adminSearchInput" placeholder="Search name, phone, email, institution…" autocomplete="off" />
+            </div>
+            <button type="button" class="btn btn--sm btn--ghost" id="adminExportCsvBtn" title="Export CSV spreadsheet">
+              <i class="fa-solid fa-file-csv"></i> Export CSV
+            </button>
+            <button type="button" class="btn btn--sm btn--ghost" id="adminRefreshBtn" title="Sync latest data">
+              <i class="fa-solid fa-arrows-rotate"></i> Refresh
+            </button>
+            <button type="button" class="btn btn--sm btn--primary" id="adminCloseBtn">
+              <i class="fa-solid fa-xmark"></i> Exit Admin
+            </button>
+          </div>
+        </header>
+
+        <main class="admin-body">
+          <div class="admin-stats-row">
+            <div class="admin-stat">
+              <span class="admin-stat__num" id="statTotalLeads">0</span>
+              <span class="admin-stat__label"><i class="fa-solid fa-users"></i> Total Registrations</span>
+            </div>
+            <div class="admin-stat">
+              <span class="admin-stat__num stat--new" id="statNewLeads">0</span>
+              <span class="admin-stat__label"><i class="fa-solid fa-bell"></i> New Inquiries</span>
+            </div>
+            <div class="admin-stat">
+              <span class="admin-stat__num stat--contacted" id="statContactedLeads">0</span>
+              <span class="admin-stat__label"><i class="fa-solid fa-comments"></i> In Contact</span>
+            </div>
+            <div class="admin-stat">
+              <span class="admin-stat__num stat--confirmed" id="statConfirmedLeads">0</span>
+              <span class="admin-stat__label"><i class="fa-solid fa-circle-check"></i> Confirmed (Batch 1)</span>
+            </div>
+          </div>
+
+          <div class="admin-table-wrap">
+            <div class="admin-table-header">
+              <h3>Applicant Directory</h3>
+              <span id="adminTableCount" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">
+                Showing 0 applicants
+              </span>
+            </div>
+
+            <div class="admin-filters" id="adminFilters">
+              <button type="button" class="admin-filter-btn active" data-filter="all">All Registrations</button>
+              <button type="button" class="admin-filter-btn" data-filter="new">New</button>
+              <button type="button" class="admin-filter-btn" data-filter="contacted">Contacted</button>
+              <button type="button" class="admin-filter-btn" data-filter="confirmed">Confirmed</button>
+              <button type="button" class="admin-filter-btn" data-filter="student">Students</button>
+              <button type="button" class="admin-filter-btn" data-filter="professional">Professionals</button>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="admin-table" id="adminTable">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Applicant Name</th>
+                    <th>Role</th>
+                    <th>WhatsApp & Phone</th>
+                    <th>Email</th>
+                    <th>Current Institution</th>
+                    <th>Quiz Career Result</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminTableBody">
+                  <tr><td colspan="10" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Loading registrations…</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="admin-actions-bar">
+              <span id="adminCountMeta" style="font-size:0.8rem; color:var(--text-muted);"></span>
+              <div style="display:flex; gap:0.5rem;">
+                <button type="button" class="btn btn--sm btn--ghost" id="adminAddMockBtn">
+                  <i class="fa-solid fa-plus"></i> Add Test Lead
+                </button>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    `;
+  }
+
+  function openAdminPanel() {
+    if (document.getElementById('adminPanel')) {
+      document.getElementById('adminPanel').classList.add('open');
+      loadAdminLeads();
+      return;
+    }
+
+    document.body.insertAdjacentHTML('beforeend', buildAdminPanelHTML());
+    const panel = document.getElementById('adminPanel');
+    panel.classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Controls
+    document.getElementById('adminCloseBtn').addEventListener('click', () => {
+      panel.classList.remove('open');
+      document.body.style.overflow = '';
+      if (window.location.hash === '#admin') {
+        history.replaceState(null, null, window.location.pathname);
+      }
+    });
+
+    const searchInput = document.getElementById('adminSearchInput');
+    searchInput.addEventListener('input', (e) => {
+      adminSearchQuery = e.target.value.toLowerCase().trim();
+      renderAdminTable();
+    });
+
+    const filterContainer = document.getElementById('adminFilters');
+    filterContainer.addEventListener('click', (e) => {
+      const btn = e.target.closest('.admin-filter-btn');
+      if (!btn) return;
+      filterContainer.querySelectorAll('.admin-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentAdminFilter = btn.dataset.filter;
+      renderAdminTable();
+    });
+
+    document.getElementById('adminRefreshBtn').addEventListener('click', loadAdminLeads);
+    document.getElementById('adminExportCsvBtn').addEventListener('click', exportLeadsCSV);
+
+    document.getElementById('adminAddMockBtn').addEventListener('click', () => {
+      const testNames = ['Tanvi Mukherjee', 'Rohan Bose', 'Meera Kapoor', 'Aditya Verma'];
+      const colleges = ['Jadavpur University', 'St. Xavier\'s College', 'Amity Media School', 'Symbiosis Media'];
+      const roles = ['Student', 'Professional'];
+      const results = ['You\'re a Natural Anchor', 'You\'re a Video Storyteller', 'You\'re a Visual Journalist', 'You\'re a Copywriting Journalist'];
+
+      const randomName = testNames[Math.floor(Math.random() * testNames.length)];
+      const randomCollege = colleges[Math.floor(Math.random() * colleges.length)];
+      const randomRole = roles[Math.floor(Math.random() * roles.length)];
+      const randomResult = results[Math.floor(Math.random() * results.length)];
+      const randomPhone = '+91 ' + Math.floor(9000000000 + Math.random() * 999999999);
+
+      const mockLead = {
+        id: 'lead_' + Date.now(),
+        name: randomName,
+        phone: randomPhone,
+        email: randomName.toLowerCase().replace(' ', '.') + '@gmail.com',
+        institution: randomCollege,
+        role: randomRole,
+        message: 'Interested in learning from Prof. Dr. Minal Pareek in Batch 01.',
+        quizResult: randomResult,
+        status: 'new',
+        submittedAt: new Date().toISOString(),
+        submittedDisplay: 'Just now',
+        source: 'Admin Direct Test'
+      };
+
+      window.recordLead(mockLead);
+    });
+
+    loadAdminLeads();
+  }
+
+  function loadAdminLeads() {
+    if (leadsRef) {
+      leadsRef.on('value', (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          allAdminLeads = Object.keys(val).map(key => ({
+            id: key,
+            ...val[key]
+          })).reverse();
+          setStoredLeads(allAdminLeads);
+        } else {
+          allAdminLeads = getStoredLeads();
+        }
+        updateAdminStats();
+        renderAdminTable();
+      }, (err) => {
+        console.warn('Realtime Database listener notice:', err);
+        allAdminLeads = getStoredLeads();
+        updateAdminStats();
+        renderAdminTable();
+      });
+    } else {
+      allAdminLeads = getStoredLeads();
+      updateAdminStats();
+      renderAdminTable();
+    }
+  }
+
+  function updateAdminStats() {
+    const total = allAdminLeads.length;
+    const countNew = allAdminLeads.filter(l => l.status === 'new').length;
+    const countContacted = allAdminLeads.filter(l => l.status === 'contacted').length;
+    const countConfirmed = allAdminLeads.filter(l => l.status === 'confirmed').length;
+
+    const elTotal = document.getElementById('statTotalLeads');
+    const elNew = document.getElementById('statNewLeads');
+    const elContacted = document.getElementById('statContactedLeads');
+    const elConfirmed = document.getElementById('statConfirmedLeads');
+
+    if (elTotal) elTotal.textContent = total;
+    if (elNew) elNew.textContent = countNew;
+    if (elContacted) elContacted.textContent = countContacted;
+    if (elConfirmed) elConfirmed.textContent = countConfirmed;
+  }
+
+  function filterAdminLeads() {
+    return allAdminLeads.filter(lead => {
+      if (currentAdminFilter === 'new' && lead.status !== 'new') return false;
+      if (currentAdminFilter === 'contacted' && lead.status !== 'contacted') return false;
+      if (currentAdminFilter === 'confirmed' && lead.status !== 'confirmed') return false;
+      if (currentAdminFilter === 'student' && (lead.role || '').toLowerCase() !== 'student') return false;
+      if (currentAdminFilter === 'professional' && (lead.role || '').toLowerCase() !== 'professional') return false;
+
+      if (adminSearchQuery) {
+        const pool = [
+          lead.name,
+          lead.phone,
+          lead.email,
+          lead.institution,
+          lead.role,
+          lead.quizResult,
+          lead.message
+        ].join(' ').toLowerCase();
+
+        if (!pool.includes(adminSearchQuery)) return false;
+      }
+
+      return true;
+    });
+  }
+
+  function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderAdminTable() {
+    const tbody = document.getElementById('adminTableBody');
+    const countMeta = document.getElementById('adminCountMeta');
+    const tableCount = document.getElementById('adminTableCount');
+    if (!tbody) return;
+
+    const filtered = filterAdminLeads();
+
+    if (countMeta) countMeta.textContent = `Showing ${filtered.length} of ${allAdminLeads.length} total registrations`;
+    if (tableCount) tableCount.textContent = `${filtered.length} results`;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="10" style="text-align:center; padding:3rem; color:var(--text-muted); font-style:italic;">
+            No registrations found matching the current search or filter.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map((lead, idx) => {
+      const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
+      const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+      const waText = encodeURIComponent(`Hi ${lead.name || 'there'}, this is Prof. Dr. Minal Pareek's team regarding your JournalismLab application!`);
+      const isStudent = (lead.role || 'Student').toLowerCase() === 'student';
+      const roleClass = isStudent ? 'role-badge--student' : 'role-badge--professional';
+      const roleIcon = isStudent ? '<i class="fa-solid fa-user-graduate"></i>' : '<i class="fa-solid fa-briefcase"></i>';
+      const statusClass = `status-${lead.status || 'new'}`;
+
+      return `
+        <tr>
+          <td style="color:var(--text-light); font-family:var(--font-mono); font-size:0.75rem;">${idx + 1}</td>
+          <td>
+            <strong>${escapeHTML(lead.name)}</strong>
+            ${lead.message ? `<div style="font-size:0.75rem; color:var(--text-muted); max-width:240px; margin-top:2px;"><em>"${escapeHTML(lead.message)}"</em></div>` : ''}
+          </td>
+          <td>
+            <span class="role-badge ${roleClass}">
+              ${roleIcon} <span>${escapeHTML(lead.role || 'Student')}</span>
+            </span>
+          </td>
+          <td>
+            <a href="tel:${escapeHTML(lead.phone)}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-size:0.8rem;">
+              ${escapeHTML(lead.phone)}
+            </a>
+          </td>
+          <td>
+            <a href="mailto:${escapeHTML(lead.email)}" style="color:var(--text-muted); text-decoration:none; font-size:0.8rem;">
+              ${escapeHTML(lead.email)}
+            </a>
+          </td>
+          <td style="font-size:0.82rem; color:var(--text-secondary); max-width:180px;">
+            ${escapeHTML(lead.institution || '—')}
+          </td>
+          <td style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">
+            ${escapeHTML(lead.quizResult || 'Not taken')}
+          </td>
+          <td>
+            <select class="admin-status-select ${statusClass}" data-id="${escapeHTML(lead.id)}">
+              <option value="new" ${lead.status === 'new' ? 'selected' : ''}>New</option>
+              <option value="contacted" ${lead.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+              <option value="confirmed" ${lead.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+            </select>
+          </td>
+          <td style="font-size:0.75rem; color:var(--text-muted); white-space:nowrap;">
+            ${escapeHTML(lead.submittedDisplay || '—')}
+          </td>
+          <td>
+            <div style="display:flex; align-items:center; gap:0.35rem;">
+              <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="admin-action-btn admin-wa-action" title="Open WhatsApp chat">
+                <i class="fa-brands fa-whatsapp"></i>
+              </a>
+              <button type="button" class="admin-action-btn admin-del-action admin-delete-lead-btn" data-id="${escapeHTML(lead.id)}" title="Delete lead">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Status change listener
+    tbody.querySelectorAll('.admin-status-select').forEach(select => {
+      select.addEventListener('change', async (e) => {
+        const id = select.dataset.id;
+        const newStatus = select.value;
+        select.className = `admin-status-select status-${newStatus}`;
+
+        const found = allAdminLeads.find(l => l.id === id);
+        if (found) found.status = newStatus;
+        setStoredLeads(allAdminLeads);
+        updateAdminStats();
+
+        if (leadsRef) {
+          try {
+            await leadsRef.child(id).update({ status: newStatus });
+          } catch (err) {
+            console.warn('Realtime Database status update notice:', err);
+          }
+        }
+      });
+    });
+
+    // Delete button listener
+    tbody.querySelectorAll('.admin-delete-lead-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        if (!confirm('Are you sure you want to permanently delete this registration lead?')) return;
+
+        allAdminLeads = allAdminLeads.filter(l => l.id !== id);
+        setStoredLeads(allAdminLeads);
+        updateAdminStats();
+        renderAdminTable();
+
+        if (leadsRef) {
+          try {
+            await leadsRef.child(id).remove();
+          } catch (err) {
+            console.warn('Realtime Database lead delete notice:', err);
+          }
+        }
+      });
+    });
+  }
+
+  function exportLeadsCSV() {
+    const leads = filterAdminLeads();
+    if (!leads.length) {
+      alert('No leads available to export with current filters.');
+      return;
+    }
+
+    const headers = [
+      '#',
+      'Full Name',
+      'Role',
+      'WhatsApp Number',
+      'Email Address',
+      'Current Institution',
+      'Quiz Career Match',
+      'Status',
+      'Submission Timestamp',
+      'Source Page',
+      'Notes / Message'
+    ];
+
+    const rows = leads.map((l, idx) => [
+      idx + 1,
+      l.name || '',
+      l.role || 'Student',
+      l.phone || '',
+      l.email || '',
+      l.institution || '',
+      l.quizResult || 'Not taken',
+      l.status || 'new',
+      l.submittedAt || '',
+      l.source || 'Website',
+      (l.message || '').replace(/"/g, '""').replace(/\n/g, ' ')
+    ]);
+
+    const csvContent = [
+      headers.map(h => `"${h}"`).join(','),
+      ...rows.map(r => r.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+    ].join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `journalism_leads_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  // ─── Triggers to open Admin ───────────────────────────────────
+  let footerTapCount = 0;
+  const taglines = document.querySelectorAll('.footer__tagline');
+  taglines.forEach(tagline => {
+    tagline.style.cursor = 'pointer';
+    tagline.addEventListener('click', () => {
+      footerTapCount++;
+      if (footerTapCount >= 3) {
+        footerTapCount = 0;
+        openAdminLogin();
+      }
+    });
+  });
+
+  document.querySelectorAll('a[href="#admin"]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      openAdminLogin();
+    });
+  });
+
+  if (window.location.hash === '#admin') {
+    setTimeout(openAdminLogin, 350);
+  }
+
+  window.addEventListener('hashchange', () => {
+    if (window.location.hash === '#admin') {
+      openAdminLogin();
+    }
+  });
 
 });

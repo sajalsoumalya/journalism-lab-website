@@ -530,10 +530,11 @@
         </div>
 
         <div class="footer__copy">
-          <span class="footer__nav-title">Admissions</span>
+          <span class="footer__nav-title">Admissions & Portal</span>
           <p>© 2026 JournalismLab. All rights reserved.</p>
           <p>CMMD Career Guidance Platform.</p>
           <p style="color:var(--text-muted); font-weight:600;">15 founding seats only.</p>
+          <p style="margin-top:0.6rem;"><a href="#admin" class="footer-admin-link" style="color:var(--text-light); font-size:0.75rem; text-decoration:none;"><i class="fa-solid fa-lock" style="font-size:0.7rem; margin-right:4px;"></i> Admin Portal</a></p>
         </div>
       </div>
       <div class="footer__line"></div>
@@ -668,6 +669,13 @@
       <i class="fa-brands fa-whatsapp"></i>
     </div>
   </a>
+
+  <!-- Runtime Environment (Docker/Dokploy envsubst) -->
+  <script src="env.js" onerror="/* env.js is optional in local/static hosting */"></script>
+
+  <!-- Firebase SDK (v9 compat) with Realtime Database -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
   <!-- Script -->
   <script src="script.js"></script>
