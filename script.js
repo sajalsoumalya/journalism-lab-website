@@ -956,7 +956,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div id="adminLoginErr" class="admin-login-error" style="display:none;">
               <i class="fa-solid fa-circle-exclamation"></i>
-              <span>Invalid credentials. Please verify your email and password.</span>
+              <span id="adminLoginErrMsg">Invalid credentials. Please verify your email and password.</span>
             </div>
             <button type="submit" class="btn btn--primary btn--full" style="margin-top:1.25rem;">
               Access Admin Panel <i class="fa-solid fa-arrow-right"></i>
@@ -972,6 +972,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('adminLoginForm');
     const closeBtn = document.getElementById('adminLoginCloseBtn');
     const errBox = document.getElementById('adminLoginErr');
+    const errMsg = document.getElementById('adminLoginErrMsg');
 
     setTimeout(() => {
       const emailInput = document.getElementById('adminEmailInput');
@@ -999,6 +1000,13 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.remove();
         openAdminPanel();
       } else {
+        if (errMsg) {
+          if (!isEmailAuthorized) {
+            errMsg.textContent = 'Access Denied: This email is not authorized for administrator access.';
+          } else {
+            errMsg.textContent = 'Incorrect password. Please verify your administrator credentials.';
+          }
+        }
         errBox.style.display = 'flex';
         passInput.value = '';
         passInput.focus();
