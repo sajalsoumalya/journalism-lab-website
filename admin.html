@@ -715,32 +715,36 @@
       // ─── Resolve Firebase Configuration ──────────────────────────
       function resolveFirebaseConfig() {
         const cfg = window.firebaseConfig || window.FIREBASE_CONFIG || window.__ENV__ || {};
-        const isValid = val => typeof val === 'string' && val.trim() !== '' && !val.startsWith('${');
+        const clean = val => typeof val === 'string' ? val.trim().replace(/^["']|["']$/g, '') : '';
+        const isValid = val => {
+          const s = clean(val);
+          return s !== '' && !s.startsWith('${');
+        };
 
-        const apiKey = isValid(cfg.apiKey) ? cfg.apiKey :
-                       isValid(cfg.FIREBASE_API_KEY) ? cfg.FIREBASE_API_KEY : null;
+        const apiKey = isValid(cfg.apiKey) ? clean(cfg.apiKey) :
+                       isValid(cfg.FIREBASE_API_KEY) ? clean(cfg.FIREBASE_API_KEY) : null;
         if (!apiKey) return null;
 
-        const projectId = isValid(cfg.projectId) ? cfg.projectId :
-                          isValid(cfg.FIREBASE_PROJECT_ID) ? cfg.FIREBASE_PROJECT_ID : undefined;
+        const projectId = isValid(cfg.projectId) ? clean(cfg.projectId) :
+                          isValid(cfg.FIREBASE_PROJECT_ID) ? clean(cfg.FIREBASE_PROJECT_ID) : undefined;
 
-        const authDomain = isValid(cfg.authDomain) ? cfg.authDomain :
-                           isValid(cfg.FIREBASE_AUTH_DOMAIN) ? cfg.FIREBASE_AUTH_DOMAIN :
+        const authDomain = isValid(cfg.authDomain) ? clean(cfg.authDomain) :
+                           isValid(cfg.FIREBASE_AUTH_DOMAIN) ? clean(cfg.FIREBASE_AUTH_DOMAIN) :
                            (projectId ? `${projectId}.firebaseapp.com` : undefined);
 
-        const databaseURL = isValid(cfg.databaseURL) ? cfg.databaseURL :
-                            isValid(cfg.FIREBASE_DATABASE_URL) ? cfg.FIREBASE_DATABASE_URL :
+        const databaseURL = isValid(cfg.databaseURL) ? clean(cfg.databaseURL) :
+                            isValid(cfg.FIREBASE_DATABASE_URL) ? clean(cfg.FIREBASE_DATABASE_URL) :
                             (projectId ? `https://${projectId}-default-rtdb.firebaseio.com` : undefined);
 
-        const storageBucket = isValid(cfg.storageBucket) ? cfg.storageBucket :
-                              isValid(cfg.FIREBASE_STORAGE_BUCKET) ? cfg.FIREBASE_STORAGE_BUCKET :
+        const storageBucket = isValid(cfg.storageBucket) ? clean(cfg.storageBucket) :
+                              isValid(cfg.FIREBASE_STORAGE_BUCKET) ? clean(cfg.FIREBASE_STORAGE_BUCKET) :
                               (projectId ? `${projectId}.appspot.com` : undefined);
 
-        const messagingSenderId = isValid(cfg.messagingSenderId) ? cfg.messagingSenderId :
-                                  isValid(cfg.FIREBASE_MESSAGING_SENDER_ID) ? cfg.FIREBASE_MESSAGING_SENDER_ID : undefined;
+        const messagingSenderId = isValid(cfg.messagingSenderId) ? clean(cfg.messagingSenderId) :
+                                  isValid(cfg.FIREBASE_MESSAGING_SENDER_ID) ? clean(cfg.FIREBASE_MESSAGING_SENDER_ID) : undefined;
 
-        const appId = isValid(cfg.appId) ? cfg.appId :
-                      isValid(cfg.FIREBASE_APP_ID) ? cfg.FIREBASE_APP_ID : undefined;
+        const appId = isValid(cfg.appId) ? clean(cfg.appId) :
+                      isValid(cfg.FIREBASE_APP_ID) ? clean(cfg.FIREBASE_APP_ID) : undefined;
 
         return {
           apiKey,
