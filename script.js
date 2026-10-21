@@ -11,6 +11,8 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  const env = window.__ENV__ || window.firebaseConfig || {};
+
   // ─── Navbar scroll effect ─────────────────────────────────────
   const navbar = document.getElementById('navbar');
   if (navbar) {
@@ -703,7 +705,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  const env = window.__ENV__ || {};
   let rtdb = null;
   let leadsRef = null;
   const LEADS_KEY = 'journalism_leads';

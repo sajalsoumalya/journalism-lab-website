@@ -24,6 +24,12 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Install gettext for envsubst
 RUN apk add --no-cache gettext
 
-# Entrypoint: substitute env vars into env.template.js → env.js, then start nginx
-CMD ["/bin/sh", "-c", \
-  "envsubst < /usr/share/nginx/html/env.template.js > /usr/share/nginx/html/env.js && nginx -g 'daemon off;'"]
+# Copy entrypoint hook into /docker-entrypoint.d/ so official nginx startup runs it automatically
+COPY 40-envsubst-on-envjs.sh /docker-entrypoint.d/40-envsubst-on-envjs.sh
+RUN chmod +x /docker-entrypoint.d/40-envsubst-on-envjs.sh
+
+# Pre-generate env.js during build so the file is guaranteed to exist on disk from the very start
+RUN envsubst < /usr/share/nginx/html/env.template.js > /usr/share/nginx/html/env.js
+
+# Default command
+CMD ["nginx", "-g", "daemon off;"]
