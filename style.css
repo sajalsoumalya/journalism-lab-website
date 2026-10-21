@@ -517,13 +517,117 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════
-   INSTRUCTOR SPOTLIGHT SECTION (Light Mode)
+   INSTRUCTOR & CURRICULUM UNIFIED SECTION (Side-by-Side on Desktop)
    ════════════════════════════════════════════════════════════════ */
+.instructor-course-section,
 .instructor-section {
-  padding: 7rem 0;
+  padding: 6.5rem 0;
   background: var(--bg-subtle);
   border-bottom: 1px solid var(--border-light);
 }
+.container--wide {
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+.instructor-course-split {
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  gap: 4.5rem;
+  align-items: start;
+}
+
+/* Instructor Column (Sticky on Desktop) */
+.instructor-col {
+  position: sticky;
+  top: calc(var(--nav-h) + 1.5rem);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  padding: 2.25rem 2rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+.instructor-col .section-label {
+  margin-bottom: 1.25rem;
+}
+.instructor-col .instructor-photo-card {
+  max-width: 100%;
+  margin: 0 0 1.25rem 0;
+}
+.instructor-col .instructor-photo-frame {
+  max-width: 260px;
+  aspect-ratio: 1 / 1;
+}
+.instructor-col .instructor-name {
+  font-size: clamp(1.8rem, 2.4vw, 2.3rem);
+  margin-bottom: 0.35rem;
+}
+.instructor-col .instructor-role {
+  font-size: 0.74rem;
+  margin-bottom: 1.1rem;
+  gap: 0.4rem 0.65rem;
+}
+.instructor-col .instructor-bio {
+  font-size: 0.94rem;
+  line-height: 1.65;
+  margin-bottom: 0.9rem;
+}
+.instructor-col .instructor-quote {
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+.instructor-col .instructor-highlights {
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+  margin-bottom: 1.5rem;
+}
+.instructor-col .highlight-item {
+  font-size: 0.86rem;
+}
+.instructor-col .instructor-actions {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+}
+.instructor-col .instructor-actions .btn {
+  width: 100%;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.88rem;
+}
+
+/* Curriculum Column */
+.curriculum-col {
+  scroll-margin-top: calc(var(--nav-h) + 1.5rem);
+}
+.curriculum-col .course-section__top {
+  margin-bottom: 1.75rem;
+}
+.curriculum-col .course-section__headline {
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
+}
+.curriculum-col .course-meta-bar {
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+.curriculum-col .course-grid {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5px;
+}
+.curriculum-col .course-card {
+  padding: 1.85rem 1.5rem;
+}
+.curriculum-col .course-card h3 {
+  font-size: 1.05rem;
+}
+.curriculum-col .course-card p {
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
 .instructor-grid {
   display: grid;
   grid-template-columns: 420px 1fr;
@@ -700,14 +804,24 @@ body {
   background: var(--bg-page);
   border-bottom: 1px solid var(--border-light);
 }
+.quiz-section__inner {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 4.5rem;
+  align-items: start;
+}
+.quiz-section__header {
+  position: sticky;
+  top: calc(var(--nav-h) + 2rem);
+}
 .quiz-section__headline {
   font-family: var(--font-serif);
-  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-size: clamp(2rem, 3.5vw, 3rem);
   font-weight: 700;
   line-height: 1.15;
   letter-spacing: -0.02em;
   color: var(--text-primary);
-  margin-bottom: 2.25rem;
+  margin-bottom: 0;
 }
 .quiz-section__headline em { font-style: italic; color: var(--text-muted); }
 .quiz-section__sub {
@@ -715,7 +829,7 @@ body {
   color: var(--text-secondary);
   max-width: 600px;
   line-height: 1.7;
-  margin-bottom: 3.5rem;
+  margin-bottom: 2rem;
 }
 
 .quiz-card {
@@ -726,6 +840,12 @@ body {
   max-width: 720px;
   margin: 0 auto;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.05);
+}
+.quiz-section__inner .quiz-card {
+  max-width: 100%;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .quiz-progress {
@@ -1106,7 +1226,7 @@ body {
 }
 .pathfinder-page .container {
   width: 100%;
-  max-width: 720px;
+  max-width: 1160px;
 }
 .pathfinder-page .quiz-card {
   margin: 0 auto;
@@ -2167,6 +2287,31 @@ body {
 /* ════════════════════════════════════════════════════════════════
    RESPONSIVE
    ════════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .instructor-course-split {
+    grid-template-columns: 1fr;
+    gap: 3.5rem;
+  }
+  .instructor-col {
+    position: static;
+    max-width: 100%;
+  }
+  .instructor-col .instructor-photo-card {
+    max-width: 280px;
+    margin: 0 auto 1.5rem;
+  }
+  .curriculum-col .course-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .quiz-section__inner {
+    grid-template-columns: 1fr;
+    gap: 2.25rem;
+  }
+  .quiz-section__header {
+    position: static;
+  }
+}
+
 @media (max-width: 960px) {
   .about__grid { grid-template-columns: 1fr; gap: 3rem; }
   .about__stats { grid-template-columns: repeat(2, 1fr); }
@@ -2285,6 +2430,7 @@ body {
 
   /* Section Padding reduction on mobile */
   .about,
+  .instructor-course-section,
   .instructor-section,
   .course-section,
   .quiz-section,
@@ -2524,6 +2670,7 @@ body {
     padding: 0.6rem 0.35rem;
   }
   .about,
+  .instructor-course-section,
   .instructor-section,
   .course-section,
   .quiz-section,
