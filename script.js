@@ -59,6 +59,43 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─── International Telephone Input Helper (Free Library) ──────
   const itiMap = new WeakMap();
 
+  function cleanDuplicateDialCode(input, iti) {
+    if (!input) return;
+    let val = input.value;
+    if (!val || typeof val !== 'string') return;
+    val = val.trim();
+    if (!val) return;
+
+    const instance = iti || itiMap.get(input);
+    const countryData = instance ? instance.getSelectedCountryData() : null;
+    const dialCode = countryData?.dialCode || '91';
+
+    // If string begins with "+", let intl-tel-input detect country if needed
+    if (val.startsWith('+') && instance && !input._isFormatting) {
+      input._isFormatting = true;
+      try {
+        instance.setNumber(val);
+      } catch (e) {}
+      input._isFormatting = false;
+      val = input.value.trim();
+    }
+
+    // Strip duplicate "+<dialCode>" from input text when displayed separately
+    const regexPlus = new RegExp(`^\\+${dialCode}\\s*`);
+    if (regexPlus.test(val)) {
+      input.value = val.replace(regexPlus, '');
+      return;
+    }
+
+    // If user/autofill pasted national format starting with country code e.g. "919062656165"
+    if (dialCode === '91') {
+      const digitsOnly = val.replace(/\D/g, '');
+      if (digitsOnly.length === 12 && digitsOnly.startsWith('91')) {
+        input.value = digitsOnly.slice(2);
+      }
+    }
+  }
+
   function initIntlPhone(input) {
     if (!input) return null;
     if (itiMap.has(input)) return itiMap.get(input);
@@ -77,6 +114,20 @@ document.addEventListener('DOMContentLoaded', () => {
         utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/js/utils.js'
       });
       itiMap.set(input, iti);
+
+      // Clean duplicate country codes on input, autofill, paste, and country change
+      const cleanHandler = () => cleanDuplicateDialCode(input, iti);
+      input.addEventListener('input', cleanHandler);
+      input.addEventListener('change', cleanHandler);
+      input.addEventListener('paste', () => setTimeout(cleanHandler, 10));
+      input.addEventListener('blur', cleanHandler);
+      input.addEventListener('countrychange', cleanHandler);
+
+      // Check on initial render & autofill delays
+      if (input.value) cleanHandler();
+      setTimeout(cleanHandler, 300);
+      setTimeout(cleanHandler, 1000);
+
       return iti;
     } catch (err) {
       console.warn('intl-tel-input initialization notice:', err);
@@ -214,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.userQuizPhone && !phoneInput.value) {
           if (iti) {
             iti.setNumber(window.userQuizPhone);
+            cleanDuplicateDialCode(phoneInput, iti);
           } else {
             phoneInput.value = window.userQuizPhone;
           }
@@ -329,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const regIti = itiMap.get(input) || initIntlPhone(input);
           if (regIti) {
             regIti.setNumber(fullNumber);
+            cleanDuplicateDialCode(input, regIti);
           } else {
             input.value = fullNumber;
           }

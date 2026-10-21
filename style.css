@@ -1853,7 +1853,9 @@ body {
   width: 100% !important;
   font-family: var(--font-mono) !important;
   font-size: 0.95rem !important;
-  padding: 0.85rem 1rem !important;
+  padding-top: 0.85rem !important;
+  padding-bottom: 0.85rem !important;
+  padding-right: 1rem !important;
   border: 1px solid var(--border-medium) !important;
   border-radius: var(--radius) !important;
   background: var(--bg-surface) !important;
