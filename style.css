@@ -2179,6 +2179,11 @@ body {
   border-color: #ddd6fe;
   color: #5b21b6;
 }
+.role-badge--na {
+  background: #f4f4f5;
+  border-color: #e4e4e7;
+  color: #71717a;
+}
 
 /* Action Buttons */
 .admin-action-btn {
@@ -2195,6 +2200,15 @@ body {
   border: 1px solid var(--border-medium);
   transition: all var(--transition);
 }
+.admin-view-action {
+  background: #ffffff;
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+}
+.admin-view-action:hover {
+  background: var(--bg-subtle);
+  border-color: var(--text-primary);
+}
 .admin-wa-action {
   background: #25d366;
   color: #ffffff;
@@ -2210,6 +2224,118 @@ body {
 }
 .admin-del-action:hover {
   background: #fef2f2;
+}
+
+.admin-applicant-link {
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  display: inline-block;
+}
+.admin-applicant-link:hover strong {
+  text-decoration: underline;
+}
+
+/* Profile Card Modal in Admin */
+.modal-box--profile {
+  max-width: 620px;
+  width: 92%;
+  padding: 2rem 2.25rem;
+  text-align: left;
+}
+.profile-card-header {
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 1.25rem;
+}
+.profile-card-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.profile-card-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-medium);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+.profile-card-name {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 0.4rem 0;
+  line-height: 1.2;
+}
+.profile-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.profile-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+.profile-field-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+.profile-field-value {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  word-break: break-word;
+  font-weight: 500;
+}
+.profile-message-box {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-left: 3px solid var(--text-primary);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.25rem;
+}
+.profile-message-box p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+.profile-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-light);
+}
+@media (max-width: 600px) {
+  .modal-box--profile {
+    padding: 1.5rem 1.25rem;
+  }
+  .profile-card-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
 }
 
 .admin-actions-bar {
