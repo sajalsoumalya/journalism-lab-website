@@ -638,10 +638,26 @@
       const dashConfirmed   = document.getElementById('dashConfirmed');
 
       // ─── LocalStorage Fallback Helpers ───────────────────────────
+      function normalizeLeads(leads) {
+        if (!Array.isArray(leads)) return [];
+        return leads.map(l => {
+          const isQuiz = (l.name && l.name.startsWith('Quiz Lead')) || (l.id && l.id.startsWith('lead_quiz_')) || (l.source && l.source.includes('Quiz'));
+          if (isQuiz) {
+            if (!l.name || l.name.startsWith('Quiz Lead')) {
+              l.name = 'Not Available';
+            }
+            if (!l.role || l.role === 'Student' || l.role === 'Quiz Lead') {
+              l.role = 'Not Available';
+            }
+          }
+          return l;
+        });
+      }
+
       function getLocalLeads() {
         try {
           const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-          return raw ? JSON.parse(raw) : [];
+          return normalizeLeads(raw ? JSON.parse(raw) : []);
         } catch (e) {
           return [];
         }
@@ -877,13 +893,13 @@
         leadsRef.on('value', (snapshot) => {
           const val = snapshot.val();
           if (val) {
-            allLeads = Object.keys(val).map(key => ({
+            allLeads = normalizeLeads(Object.keys(val).map(key => ({
               id: key,
               ...val[key]
-            })).reverse();
+            })).reverse());
             setLocalLeads(allLeads);
           } else {
-            allLeads = getLocalLeads();
+            allLeads = normalizeLeads(getLocalLeads());
           }
           updateStats();
           renderTable();
@@ -894,7 +910,7 @@
       }
 
       function loadOfflineLeads() {
-        allLeads = getLocalLeads();
+        allLeads = normalizeLeads(getLocalLeads());
         updateStats();
         renderTable();
       }
@@ -915,22 +931,25 @@
       // ─── Filter & Search ──────────────────────────────────────────
       function getFilteredLeads() {
         return allLeads.filter(lead => {
+          const isQuizLead = !lead.name || lead.name.trim() === '' || lead.name === 'Not Available' || lead.name.startsWith('Quiz Lead');
+          const roleLower = (lead.role || '').toLowerCase();
+          const isRoleNA = !lead.role || lead.role === 'Not Available' || (isQuizLead && roleLower === 'student');
+
           const status = lead.status || 'new';
-          const role = (lead.role || 'Student').toLowerCase();
 
           if (currentFilter === 'new' && status !== 'new') return false;
           if (currentFilter === 'contacted' && status !== 'contacted') return false;
           if (currentFilter === 'confirmed' && status !== 'confirmed') return false;
-          if (currentFilter === 'student' && role !== 'student') return false;
-          if (currentFilter === 'professional' && role !== 'professional') return false;
+          if (currentFilter === 'student' && (isRoleNA || roleLower !== 'student')) return false;
+          if (currentFilter === 'professional' && (isRoleNA || roleLower !== 'professional')) return false;
 
           if (searchQuery) {
             const haystack = [
-              lead.name,
+              isQuizLead ? 'not available' : (lead.name || ''),
               lead.phone,
               lead.email,
               lead.institution,
-              lead.role,
+              isRoleNA ? 'not available' : lead.role,
               lead.quizResult,
               lead.message,
               lead.source
@@ -941,6 +960,188 @@
 
           return true;
         });
+      }
+
+      // ─── Student Profile Card Modal ───────────────────────────────
+      function openLeadProfileModal(id) {
+        const lead = allLeads.find(l => l.id === id);
+        if (!lead) return;
+
+        const existing = document.getElementById('adminProfileOverlay');
+        if (existing) existing.remove();
+
+        const isQuizLead = !lead.name || lead.name.trim() === '' || lead.name === 'Not Available' || lead.name.startsWith('Quiz Lead');
+        const displayName = isQuizLead ? '<span style="color:var(--text-secondary); font-style:italic;">Not Available</span>' : escapeHTML(lead.name);
+        
+        const roleLower = (lead.role || '').toLowerCase();
+        const isRoleNA = !lead.role || lead.role === 'Not Available' || lead.role === 'Quiz Lead' || (isQuizLead && roleLower === 'student');
+
+        let roleBadge = '';
+        if (isRoleNA) {
+          roleBadge = `<span class="role-badge role-badge--na"><i class="fa-solid fa-circle-question"></i> <span>Not Available</span></span>`;
+        } else if (roleLower === 'professional') {
+          roleBadge = `<span class="role-badge role-badge--professional"><i class="fa-solid fa-briefcase"></i> <span>Professional</span></span>`;
+        } else {
+          roleBadge = `<span class="role-badge role-badge--student"><i class="fa-solid fa-user-graduate"></i> <span>Student</span></span>`;
+        }
+
+        const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
+        const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+        const waName = !isQuizLead ? lead.name : 'there';
+        const waText = encodeURIComponent(`Hi ${waName}, this is Prof. Dr. Minal Pareek's team regarding your JournalismLab enrollment!`);
+
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay active';
+        overlay.id = 'adminProfileOverlay';
+        overlay.style.zIndex = '10010';
+
+        overlay.innerHTML = `
+          <div class="modal-box modal-box--profile" role="dialog" aria-labelledby="profileCardTitle">
+            <button type="button" class="modal-close" id="adminProfileCloseBtn" aria-label="Close profile card">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="profile-card-header">
+              <div class="profile-card-identity">
+                <div class="profile-card-avatar">
+                  <i class="fa-solid ${isQuizLead ? 'fa-id-card-clip' : 'fa-user'}"></i>
+                </div>
+                <div>
+                  <h3 class="profile-card-name" id="profileCardTitle">${displayName}</h3>
+                  <div class="profile-card-badges">
+                    ${roleBadge}
+                    <span class="role-badge status-${lead.status || 'new'}">
+                      <i class="fa-solid fa-circle-dot"></i> <span style="text-transform:capitalize;">${escapeHTML(lead.status || 'new')}</span>
+                    </span>
+                    <span class="role-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">
+                      <i class="fa-solid fa-route"></i> <span>${escapeHTML(lead.source || 'Website')}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-card-grid">
+              <div class="profile-field-item">
+                <div class="profile-field-label">Mobile / WhatsApp Number</div>
+                <div class="profile-field-value" style="display:flex; align-items:center; gap:0.5rem;">
+                  <a href="tel:${escapeHTML(lead.phone)}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-weight:700;">
+                    ${escapeHTML(lead.phone || 'Not Available')}
+                  </a>
+                  ${cleanPhone ? `
+                    <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" style="color:#25d366; font-size:1.05rem;" title="Chat on WhatsApp">
+                      <i class="fa-brands fa-whatsapp"></i>
+                    </a>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div class="profile-field-item">
+                <div class="profile-field-label">Email Address</div>
+                <div class="profile-field-value">
+                  ${lead.email && lead.email !== '—' ? `
+                    <a href="mailto:${escapeHTML(lead.email)}" style="color:var(--text-primary); text-decoration:underline;">
+                      ${escapeHTML(lead.email)}
+                    </a>
+                  ` : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
+                </div>
+              </div>
+
+              <div class="profile-field-item">
+                <div class="profile-field-label">Current Institution</div>
+                <div class="profile-field-value">
+                  ${lead.institution && lead.institution !== '—' ? escapeHTML(lead.institution) : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
+                </div>
+              </div>
+
+              <div class="profile-field-item">
+                <div class="profile-field-label">Diagnosed Career Archetype</div>
+                <div class="profile-field-value" style="font-weight:700; color:var(--text-primary);">
+                  <i class="fa-solid fa-compass" style="color:var(--crimson); margin-right:0.3rem;"></i>
+                  ${escapeHTML(lead.quizResult || 'Not taken')}
+                </div>
+              </div>
+
+              <div class="profile-field-item">
+                <div class="profile-field-label">Submission Date &amp; Time</div>
+                <div class="profile-field-value" style="font-family:var(--font-mono); font-size:0.82rem; color:var(--text-secondary);">
+                  ${escapeHTML(lead.submittedDisplay || formatDate(lead.submittedAt))}
+                </div>
+              </div>
+
+              <div class="profile-field-item">
+                <div class="profile-field-label">Lead Registration ID</div>
+                <div class="profile-field-value" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">
+                  ${escapeHTML(lead.id)}
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-message-box">
+              <div class="profile-field-label" style="margin-bottom:0.35rem;">
+                <i class="fa-solid fa-comment-dots"></i> Application Notes / Diagnostic Details
+              </div>
+              <p>${lead.message ? escapeHTML(lead.message) : '<em style="color:var(--text-muted);">No message or notes provided.</em>'}</p>
+            </div>
+
+            <div class="profile-card-footer">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <label for="profileCardStatusSelect" style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
+                  Status:
+                </label>
+                <select id="profileCardStatusSelect" class="admin-status-select status-${lead.status || 'new'}">
+                  <option value="new" ${lead.status === 'new' ? 'selected' : ''}>New</option>
+                  <option value="contacted" ${lead.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+                  <option value="confirmed" ${lead.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                  <option value="rejected" ${lead.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                </select>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                ${cleanPhone ? `
+                  <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="btn btn--sm" style="background:#25d366; color:#ffffff; border-color:#25d366;">
+                    <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                  </a>
+                ` : ''}
+                <button type="button" class="btn btn--sm btn--primary" id="adminProfileDoneBtn">
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        const closeProfile = () => {
+          overlay.remove();
+        };
+
+        overlay.querySelector('#adminProfileCloseBtn').addEventListener('click', closeProfile);
+        overlay.querySelector('#adminProfileDoneBtn').addEventListener('click', closeProfile);
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) closeProfile();
+        });
+
+        const statusSelect = overlay.querySelector('#profileCardStatusSelect');
+        if (statusSelect) {
+          statusSelect.addEventListener('change', async () => {
+            const newStatus = statusSelect.value;
+            statusSelect.className = `admin-status-select status-${newStatus}`;
+            lead.status = newStatus;
+            setLocalLeads(allLeads);
+            updateStats();
+            renderTable();
+
+            if (leadsRef) {
+              try {
+                await leadsRef.child(lead.id).update({ status: newStatus });
+              } catch (err) {
+                console.warn('Realtime Database status update notice:', err);
+              }
+            }
+          });
+        }
       }
 
       // ─── Render Table ─────────────────────────────────────────────
@@ -964,24 +1165,36 @@
         dashTableBody.innerHTML = filtered.map((lead, idx) => {
           const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
           const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
-          const waText = encodeURIComponent(`Hi ${lead.name || 'there'}, this is Prof. Dr. Minal Pareek's team regarding your JournalismLab enrollment!`);
+          const isQuizLead = !lead.name || lead.name.trim() === '' || lead.name === 'Not Available' || lead.name.startsWith('Quiz Lead');
+          const displayName = isQuizLead ? '<span style="color:var(--text-secondary); font-weight:600; font-style:italic;">Not Available</span>' : `<strong style="color:var(--text-primary); font-size:0.9rem;">${escapeHTML(lead.name || 'Unnamed')}</strong>`;
+          const waName = !isQuizLead ? lead.name : 'there';
+          const waText = encodeURIComponent(`Hi ${waName}, this is Prof. Dr. Minal Pareek's team regarding your JournalismLab enrollment!`);
 
-          const isStudent = (lead.role || 'Student').toLowerCase() === 'student';
-          const roleClass = isStudent ? 'role-badge--student' : 'role-badge--professional';
-          const roleIcon  = isStudent ? '<i class="fa-solid fa-user-graduate"></i>' : '<i class="fa-solid fa-briefcase"></i>';
+          const roleLower = (lead.role || '').toLowerCase();
+          const isRoleNA = !lead.role || lead.role === 'Not Available' || lead.role === 'Quiz Lead' || (isQuizLead && roleLower === 'student');
+
+          let roleBadge = '';
+          if (isRoleNA) {
+            roleBadge = `<span class="role-badge role-badge--na"><i class="fa-solid fa-circle-question"></i> <span>Not Available</span></span>`;
+          } else if (roleLower === 'professional') {
+            roleBadge = `<span class="role-badge role-badge--professional"><i class="fa-solid fa-briefcase"></i> <span>Professional</span></span>`;
+          } else {
+            roleBadge = `<span class="role-badge role-badge--student"><i class="fa-solid fa-user-graduate"></i> <span>Student</span></span>`;
+          }
+
           const currentStatus = lead.status || 'new';
 
           return `
             <tr>
               <td style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-light);">${idx + 1}</td>
               <td class="wrap-cell">
-                <strong style="color:var(--text-primary); font-size:0.9rem;">${escapeHTML(lead.name || 'Unnamed')}</strong>
+                <button type="button" class="admin-applicant-link admin-view-lead-btn" data-id="${escapeHTML(lead.id)}" title="Click to view student profile card">
+                  ${displayName}
+                </button>
                 ${lead.message ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;"><em>"${escapeHTML(lead.message)}"</em></div>` : ''}
               </td>
               <td>
-                <span class="role-badge ${roleClass}">
-                  ${roleIcon} <span>${escapeHTML(lead.role || 'Student')}</span>
-                </span>
+                ${roleBadge}
               </td>
               <td>
                 <a href="tel:${escapeHTML(lead.phone || '')}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-size:0.82rem;">
@@ -989,9 +1202,11 @@
                 </a>
               </td>
               <td>
-                <a href="mailto:${escapeHTML(lead.email || '')}" style="color:var(--text-muted); text-decoration:none; font-size:0.82rem;">
-                  ${escapeHTML(lead.email || '—')}
-                </a>
+                ${lead.email && lead.email !== '—' ? `
+                  <a href="mailto:${escapeHTML(lead.email || '')}" style="color:var(--text-muted); text-decoration:none; font-size:0.82rem;">
+                    ${escapeHTML(lead.email)}
+                  </a>
+                ` : '<span style="color:var(--text-muted); font-size:0.82rem;">—</span>'}
               </td>
               <td class="wrap-cell" style="font-size:0.82rem; color:var(--text-secondary);">
                 ${escapeHTML(lead.institution || '—')}
@@ -1015,9 +1230,14 @@
               </td>
               <td>
                 <div style="display:flex; align-items:center; gap:0.4rem;">
-                  <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="admin-action-btn admin-wa-action" title="Open WhatsApp chat">
-                    <i class="fa-brands fa-whatsapp"></i>
-                  </a>
+                  <button type="button" class="admin-action-btn admin-view-action admin-view-lead-btn" data-id="${escapeHTML(lead.id)}" title="View Student Profile Card">
+                    <i class="fa-solid fa-eye"></i>
+                  </button>
+                  ${cleanPhone ? `
+                    <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="admin-action-btn admin-wa-action" title="Open WhatsApp chat">
+                      <i class="fa-brands fa-whatsapp"></i>
+                    </a>
+                  ` : ''}
                   <button type="button" class="admin-action-btn admin-del-action delete-lead-btn" data-id="${escapeHTML(lead.id)}" title="Delete lead">
                     <i class="fa-solid fa-trash-can"></i>
                   </button>
@@ -1026,6 +1246,14 @@
             </tr>
           `;
         }).join('');
+
+        // Attach View Profile Card listeners
+        dashTableBody.querySelectorAll('.admin-view-lead-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.dataset.id;
+            openLeadProfileModal(id);
+          });
+        });
 
         // Attach Status change listeners
         dashTableBody.querySelectorAll('.admin-status-select').forEach(sel => {
@@ -1094,20 +1322,29 @@
           'Notes / Message'
         ];
 
-        const rows = data.map((l, i) => [
-          i + 1,
-          l.name || '',
-          l.role || 'Student',
-          l.phone || '',
-          l.email || '',
-          l.institution || '',
-          l.quizResult || 'Not taken',
-          l.status || 'new',
-          l.source || 'Website',
-          l.captchaVerified !== false ? 'Verified' : 'Unverified',
-          l.submittedAt || '',
-          (l.message || '').replace(/"/g, '""').replace(/\n/g, ' ')
-        ]);
+        const rows = data.map((l, i) => {
+          const isQuizLead = !l.name || l.name === 'Not Available' || l.name.startsWith('Quiz Lead');
+          const roleLower = (l.role || '').toLowerCase();
+          const isRoleNA = !l.role || l.role === 'Not Available' || (isQuizLead && roleLower === 'student');
+
+          const expName = isQuizLead ? 'Not Available' : (l.name || 'Not Available');
+          const expRole = isRoleNA ? 'Not Available' : (l.role || 'Not Available');
+
+          return [
+            i + 1,
+            expName,
+            expRole,
+            l.phone || '',
+            l.email || '',
+            l.institution || '',
+            l.quizResult || 'Not taken',
+            l.status || 'new',
+            l.source || 'Website',
+            l.captchaVerified !== false ? 'Verified' : 'Unverified',
+            l.submittedAt || '',
+            (l.message || '').replace(/"/g, '""').replace(/\n/g, ' ')
+          ];
+        });
 
         const csvContent = [
           headers.map(h => `"${h}"`).join(','),
