@@ -1062,7 +1062,7 @@
         });
       }
 
-      // ─── Student Profile Card Modal ───────────────────────────────
+      // ─── Student Profile Card Modal (View & Edit Modes) ───────────
       function openLeadProfileModal(id) {
         const lead = allLeads.find(l => l.id === id);
         if (!lead) return;
@@ -1070,181 +1070,361 @@
         const existing = document.getElementById('adminProfileOverlay');
         if (existing) existing.remove();
 
-        const isQuizLead = !lead.name || lead.name.trim() === '' || lead.name === 'Not Available' || lead.name.startsWith('Quiz Lead');
-        const displayName = isQuizLead ? '<span style="color:var(--text-secondary); font-style:italic;">Not Available</span>' : escapeHTML(lead.name);
-        
-        const roleLower = (lead.role || '').toLowerCase();
-        const isRoleNA = !lead.role || lead.role === 'Not Available' || lead.role === 'Quiz Lead' || (isQuizLead && roleLower === 'student');
-
-        let roleBadge = '';
-        if (isRoleNA) {
-          roleBadge = `<span class="role-badge role-badge--na"><i class="fa-solid fa-circle-question"></i> <span>Not Available</span></span>`;
-        } else if (roleLower === 'professional') {
-          roleBadge = `<span class="role-badge role-badge--professional"><i class="fa-solid fa-briefcase"></i> <span>Professional</span></span>`;
-        } else {
-          roleBadge = `<span class="role-badge role-badge--student"><i class="fa-solid fa-user-graduate"></i> <span>Student</span></span>`;
-        }
-
-        const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
-        const phoneObj = formatInternationalPhone(lead.phone);
-        const waNumber = lead.phoneWa || phoneObj.wa || (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone);
-        const dialNumber = lead.phoneDial || phoneObj.dial || (cleanPhone ? '+' + (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone) : '');
-        const displayPhone = lead.phone || phoneObj.formatted || 'Not Available';
-        const waName = !isQuizLead ? lead.name : 'there';
-        const waText = encodeURIComponent(`Hi ${waName}, this is Prof. Dr. Minal Pareek's team regarding your JournalismLab enrollment!`);
-
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay active';
         overlay.id = 'adminProfileOverlay';
         overlay.style.zIndex = '10010';
 
-        overlay.innerHTML = `
-          <div class="modal-box modal-box--profile" role="dialog" aria-labelledby="profileCardTitle">
-            <button type="button" class="modal-close" id="adminProfileCloseBtn" aria-label="Close profile card">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
+        function renderModal(isEditing = false, showSuccess = false) {
+          const isQuizLead = !lead.name || lead.name.trim() === '' || lead.name === 'Not Available' || lead.name.startsWith('Quiz Lead');
+          const displayName = isQuizLead ? '<span style="color:var(--text-secondary); font-style:italic;">Not Available</span>' : escapeHTML(lead.name);
+          
+          const roleLower = (lead.role || '').toLowerCase();
+          const isRoleNA = !lead.role || lead.role === 'Not Available' || lead.role === 'Quiz Lead' || (isQuizLead && roleLower === 'student');
 
-            <div class="profile-card-header">
-              <div class="profile-card-identity">
-                <div class="profile-card-avatar">
-                  <i class="fa-solid ${isQuizLead ? 'fa-id-card-clip' : 'fa-user'}"></i>
+          let roleBadge = '';
+          if (isRoleNA) {
+            roleBadge = `<span class="role-badge role-badge--na"><i class="fa-solid fa-circle-question"></i> <span>Not Available</span></span>`;
+          } else if (roleLower === 'professional') {
+            roleBadge = `<span class="role-badge role-badge--professional"><i class="fa-solid fa-briefcase"></i> <span>Professional</span></span>`;
+          } else {
+            roleBadge = `<span class="role-badge role-badge--student"><i class="fa-solid fa-user-graduate"></i> <span>Student</span></span>`;
+          }
+
+          const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
+          const phoneObj = formatInternationalPhone(lead.phone);
+          const waNumber = lead.phoneWa || phoneObj.wa || (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone);
+          const dialNumber = lead.phoneDial || phoneObj.dial || (cleanPhone ? '+' + (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone) : '');
+          const displayPhone = lead.phone || phoneObj.formatted || 'Not Available';
+          const waName = !isQuizLead ? lead.name : 'there';
+          const waText = encodeURIComponent(`Hi ${waName}, this is Prof. Dr. Minal Pareek's team regarding your JournalismLab enrollment!`);
+
+          const isIncomplete = isQuizLead || isRoleNA || (!lead.institution || lead.institution === '—' || lead.institution === 'Not Available');
+
+          if (!isEditing) {
+            overlay.innerHTML = `
+              <div class="modal-box modal-box--profile" role="dialog" aria-labelledby="profileCardTitle">
+                <button type="button" class="modal-close" id="adminProfileCloseBtn" aria-label="Close profile card">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <div class="profile-card-header">
+                  <div class="profile-card-identity">
+                    <div class="profile-card-avatar">
+                      <i class="fa-solid ${isQuizLead ? 'fa-id-card-clip' : 'fa-user'}"></i>
+                    </div>
+                    <div style="flex:1;">
+                      <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
+                        <h3 class="profile-card-name" id="profileCardTitle">${displayName}</h3>
+                        <button type="button" class="btn btn--xs btn--ghost" id="adminProfileHeaderEditBtn" title="Edit student details while connected on call">
+                          <i class="fa-solid fa-pen-to-square"></i> Edit Details
+                        </button>
+                      </div>
+                      <div class="profile-card-badges">
+                        ${roleBadge}
+                        <span class="role-badge status-${lead.status || 'new'}">
+                          <i class="fa-solid fa-circle-dot"></i> <span style="text-transform:capitalize;">${escapeHTML(lead.status || 'new')}</span>
+                        </span>
+                        <span class="role-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">
+                          <i class="fa-solid fa-route"></i> <span>${escapeHTML(lead.source || 'Website')}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 class="profile-card-name" id="profileCardTitle">${displayName}</h3>
-                  <div class="profile-card-badges">
-                    ${roleBadge}
-                    <span class="role-badge status-${lead.status || 'new'}">
-                      <i class="fa-solid fa-circle-dot"></i> <span style="text-transform:capitalize;">${escapeHTML(lead.status || 'new')}</span>
-                    </span>
-                    <span class="role-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">
-                      <i class="fa-solid fa-route"></i> <span>${escapeHTML(lead.source || 'Website')}</span>
-                    </span>
+
+                ${showSuccess ? `
+                  <div class="profile-save-success">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Student profile details saved and synced to database!</span>
+                  </div>
+                ` : ''}
+
+                ${isIncomplete ? `
+                  <div class="profile-quiz-banner">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                      <i class="fa-solid fa-circle-info" style="color:var(--crimson); font-size:1.05rem;"></i>
+                      <div style="font-size:0.82rem; color:var(--text-secondary); line-height:1.4;">
+                        <strong>Incomplete Info:</strong> Student name or college missing. Fill them in while on the call.
+                      </div>
+                    </div>
+                    <button type="button" class="btn btn--xs btn--primary" id="adminProfileBannerEditBtn">
+                      <i class="fa-solid fa-user-pen"></i> Fill Details
+                    </button>
+                  </div>
+                ` : ''}
+
+                <div class="profile-card-grid">
+                  <div class="profile-field-item">
+                    <div class="profile-field-label">Mobile / WhatsApp Number</div>
+                    <div class="profile-field-value" style="display:flex; align-items:center; gap:0.5rem;">
+                      <a href="tel:${escapeHTML(dialNumber || lead.phone || '')}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-weight:700;">
+                        ${escapeHTML(displayPhone)}
+                      </a>
+                      ${waNumber ? `
+                        <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" style="color:#25d366; font-size:1.05rem;" title="Chat on WhatsApp">
+                          <i class="fa-brands fa-whatsapp"></i>
+                        </a>
+                      ` : ''}
+                    </div>
+                  </div>
+
+                  <div class="profile-field-item">
+                    <div class="profile-field-label">Email Address</div>
+                    <div class="profile-field-value">
+                      ${lead.email && lead.email !== '—' && !lead.email.includes('quiz-visitor') ? `
+                        <a href="mailto:${escapeHTML(lead.email)}" style="color:var(--text-primary); text-decoration:underline;">
+                          ${escapeHTML(lead.email)}
+                        </a>
+                      ` : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
+                    </div>
+                  </div>
+
+                  <div class="profile-field-item">
+                    <div class="profile-field-label">Current Institution</div>
+                    <div class="profile-field-value">
+                      ${lead.institution && lead.institution !== '—' && lead.institution !== 'Not Available' ? escapeHTML(lead.institution) : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
+                    </div>
+                  </div>
+
+                  <div class="profile-field-item">
+                    <div class="profile-field-label">Diagnosed Career Archetype</div>
+                    <div class="profile-field-value" style="font-weight:700; color:var(--text-primary);">
+                      <i class="fa-solid fa-compass" style="color:var(--crimson); margin-right:0.3rem;"></i>
+                      ${escapeHTML(lead.quizResult || 'Not taken')}
+                    </div>
+                  </div>
+
+                  <div class="profile-field-item">
+                    <div class="profile-field-label">Submission Date &amp; Time</div>
+                    <div class="profile-field-value" style="font-family:var(--font-mono); font-size:0.82rem; color:var(--text-secondary);">
+                      ${escapeHTML(lead.submittedDisplay || formatDate(lead.submittedAt))}
+                    </div>
+                  </div>
+
+                  <div class="profile-field-item">
+                    <div class="profile-field-label">Lead Registration ID</div>
+                    <div class="profile-field-value" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">
+                      ${escapeHTML(lead.id)}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="profile-message-box">
+                  <div class="profile-field-label" style="margin-bottom:0.35rem;">
+                    <i class="fa-solid fa-comment-dots"></i> Application Notes / Call Remarks
+                  </div>
+                  <p>${lead.message ? escapeHTML(lead.message) : '<em style="color:var(--text-muted);">No notes recorded yet. Click "Edit Details" to add conversation remarks.</em>'}</p>
+                </div>
+
+                <div class="profile-card-footer">
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    <label for="profileCardStatusSelect" style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
+                      Status:
+                    </label>
+                    <select id="profileCardStatusSelect" class="admin-status-select status-${lead.status || 'new'}">
+                      <option value="new" ${lead.status === 'new' ? 'selected' : ''}>New</option>
+                      <option value="contacted" ${lead.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+                      <option value="confirmed" ${lead.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                      <option value="rejected" ${lead.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                    </select>
+                  </div>
+
+                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                    ${cleanPhone ? `
+                      <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="btn btn--sm" style="background:#25d366; color:#ffffff; border-color:#25d366;">
+                        <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                      </a>
+                    ` : ''}
+                    <button type="button" class="btn btn--sm btn--ghost" id="adminProfileFooterEditBtn">
+                      <i class="fa-solid fa-pen-to-square"></i> Edit Details
+                    </button>
+                    <button type="button" class="btn btn--sm btn--primary" id="adminProfileDoneBtn">
+                      Done
+                    </button>
                   </div>
                 </div>
               </div>
-            </div>
+            `;
 
-            <div class="profile-card-grid">
-              <div class="profile-field-item">
-                <div class="profile-field-label">Mobile / WhatsApp Number</div>
-                <div class="profile-field-value" style="display:flex; align-items:center; gap:0.5rem;">
-                  <a href="tel:${escapeHTML(dialNumber || lead.phone || '')}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-weight:700;">
-                    ${escapeHTML(displayPhone)}
-                  </a>
-                  ${waNumber ? `
-                    <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" style="color:#25d366; font-size:1.05rem;" title="Chat on WhatsApp">
-                      <i class="fa-brands fa-whatsapp"></i>
-                    </a>
-                  ` : ''}
-                </div>
-              </div>
+            // Attach View Mode handlers
+            const closeProfile = () => overlay.remove();
+            overlay.querySelector('#adminProfileCloseBtn').addEventListener('click', closeProfile);
+            overlay.querySelector('#adminProfileDoneBtn').addEventListener('click', closeProfile);
 
-              <div class="profile-field-item">
-                <div class="profile-field-label">Email Address</div>
-                <div class="profile-field-value">
-                  ${lead.email && lead.email !== '—' ? `
-                    <a href="mailto:${escapeHTML(lead.email)}" style="color:var(--text-primary); text-decoration:underline;">
-                      ${escapeHTML(lead.email)}
-                    </a>
-                  ` : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
-                </div>
-              </div>
+            const hEdit = overlay.querySelector('#adminProfileHeaderEditBtn');
+            if (hEdit) hEdit.addEventListener('click', () => renderModal(true));
 
-              <div class="profile-field-item">
-                <div class="profile-field-label">Current Institution</div>
-                <div class="profile-field-value">
-                  ${lead.institution && lead.institution !== '—' ? escapeHTML(lead.institution) : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
-                </div>
-              </div>
+            const bEdit = overlay.querySelector('#adminProfileBannerEditBtn');
+            if (bEdit) bEdit.addEventListener('click', () => renderModal(true));
 
-              <div class="profile-field-item">
-                <div class="profile-field-label">Diagnosed Career Archetype</div>
-                <div class="profile-field-value" style="font-weight:700; color:var(--text-primary);">
-                  <i class="fa-solid fa-compass" style="color:var(--crimson); margin-right:0.3rem;"></i>
-                  ${escapeHTML(lead.quizResult || 'Not taken')}
-                </div>
-              </div>
+            const fEdit = overlay.querySelector('#adminProfileFooterEditBtn');
+            if (fEdit) fEdit.addEventListener('click', () => renderModal(true));
 
-              <div class="profile-field-item">
-                <div class="profile-field-label">Submission Date &amp; Time</div>
-                <div class="profile-field-value" style="font-family:var(--font-mono); font-size:0.82rem; color:var(--text-secondary);">
-                  ${escapeHTML(lead.submittedDisplay || formatDate(lead.submittedAt))}
-                </div>
-              </div>
+            const statusSelect = overlay.querySelector('#profileCardStatusSelect');
+            if (statusSelect) {
+              statusSelect.addEventListener('change', async () => {
+                const newStatus = statusSelect.value;
+                statusSelect.className = `admin-status-select status-${newStatus}`;
+                lead.status = newStatus;
+                setLocalLeads(allLeads);
+                updateStats();
+                renderTable();
 
-              <div class="profile-field-item">
-                <div class="profile-field-label">Lead Registration ID</div>
-                <div class="profile-field-value" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">
-                  ${escapeHTML(lead.id)}
-                </div>
-              </div>
-            </div>
-
-            <div class="profile-message-box">
-              <div class="profile-field-label" style="margin-bottom:0.35rem;">
-                <i class="fa-solid fa-comment-dots"></i> Application Notes / Diagnostic Details
-              </div>
-              <p>${lead.message ? escapeHTML(lead.message) : '<em style="color:var(--text-muted);">No message or notes provided.</em>'}</p>
-            </div>
-
-            <div class="profile-card-footer">
-              <div style="display:flex; align-items:center; gap:0.5rem;">
-                <label for="profileCardStatusSelect" style="font-family:var(--font-mono); font-size:0.75rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">
-                  Status:
-                </label>
-                <select id="profileCardStatusSelect" class="admin-status-select status-${lead.status || 'new'}">
-                  <option value="new" ${lead.status === 'new' ? 'selected' : ''}>New</option>
-                  <option value="contacted" ${lead.status === 'contacted' ? 'selected' : ''}>Contacted</option>
-                  <option value="confirmed" ${lead.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
-                  <option value="rejected" ${lead.status === 'rejected' ? 'selected' : ''}>Rejected</option>
-                </select>
-              </div>
-
-              <div style="display:flex; align-items:center; gap:0.5rem;">
-                ${cleanPhone ? `
-                  <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="btn btn--sm" style="background:#25d366; color:#ffffff; border-color:#25d366;">
-                    <i class="fa-brands fa-whatsapp"></i> WhatsApp
-                  </a>
-                ` : ''}
-                <button type="button" class="btn btn--sm btn--primary" id="adminProfileDoneBtn">
-                  Done
+                if (leadsRef) {
+                  try {
+                    await leadsRef.child(lead.id).update({ status: newStatus });
+                  } catch (err) {
+                    console.warn('Realtime Database status update notice:', err);
+                  }
+                }
+              });
+            }
+          } else {
+            // Edit Mode
+            overlay.innerHTML = `
+              <div class="modal-box modal-box--profile" role="dialog" aria-labelledby="profileEditTitle">
+                <button type="button" class="modal-close" id="adminProfileCloseBtn" aria-label="Cancel editing">
+                  <i class="fa-solid fa-xmark"></i>
                 </button>
-              </div>
-            </div>
-          </div>
-        `;
 
+                <div class="profile-card-header">
+                  <div class="profile-card-identity">
+                    <div class="profile-card-avatar" style="background:#fef2f2; border-color:#fecaca; color:var(--crimson);">
+                      <i class="fa-solid fa-user-pen"></i>
+                    </div>
+                    <div>
+                      <h3 class="profile-card-name" id="profileEditTitle" style="font-size:1.25rem;">Edit Student Information</h3>
+                      <p style="margin:0; font-size:0.8rem; color:var(--text-muted);">
+                        Record or update details while speaking with the student on call / WhatsApp
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <form id="adminLeadEditForm" class="profile-edit-form">
+                  <div class="profile-edit-grid">
+                    <div class="profile-edit-group">
+                      <label class="profile-field-label" for="editLeadName">Student Full Name *</label>
+                      <input type="text" id="editLeadName" class="profile-edit-input" value="${isQuizLead ? '' : escapeHTML(lead.name)}" placeholder="Enter student's full name" required />
+                    </div>
+
+                    <div class="profile-edit-group">
+                      <label class="profile-field-label" for="editLeadRole">Applicant Role</label>
+                      <select id="editLeadRole" class="profile-edit-input">
+                        <option value="Student" ${lead.role !== 'Professional' ? 'selected' : ''}>Student</option>
+                        <option value="Professional" ${lead.role === 'Professional' ? 'selected' : ''}>Professional</option>
+                      </select>
+                    </div>
+
+                    <div class="profile-edit-group">
+                      <label class="profile-field-label" for="editLeadPhone">Mobile / WhatsApp Number *</label>
+                      <input type="tel" id="editLeadPhone" class="profile-edit-input" value="${escapeHTML(displayPhone === 'Not Available' ? '' : displayPhone)}" placeholder="+91 00000 00000" required />
+                    </div>
+
+                    <div class="profile-edit-group">
+                      <label class="profile-field-label" for="editLeadEmail">Email Address</label>
+                      <input type="email" id="editLeadEmail" class="profile-edit-input" value="${lead.email && !lead.email.includes('quiz-visitor') ? escapeHTML(lead.email) : ''}" placeholder="e.g. student@gmail.com" />
+                    </div>
+
+                    <div class="profile-edit-group">
+                      <label class="profile-field-label" for="editLeadInstitution">College / University / Organization</label>
+                      <input type="text" id="editLeadInstitution" class="profile-edit-input" value="${lead.institution && lead.institution !== '—' && lead.institution !== 'Not Available' ? escapeHTML(lead.institution) : ''}" placeholder="e.g. Jadavpur University, Media Dept" />
+                    </div>
+
+                    <div class="profile-edit-group">
+                      <label class="profile-field-label" for="editLeadStatus">Inquiry / Enrollment Status</label>
+                      <select id="editLeadStatus" class="profile-edit-input">
+                        <option value="new" ${lead.status === 'new' ? 'selected' : ''}>New</option>
+                        <option value="contacted" ${lead.status === 'contacted' ? 'selected' : ''}>Contacted</option>
+                        <option value="confirmed" ${lead.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                        <option value="rejected" ${lead.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                      </select>
+                    </div>
+
+                    <div class="profile-edit-group" style="grid-column: 1 / -1;">
+                      <label class="profile-field-label" for="editLeadMessage">Call Remarks / Conversation Notes</label>
+                      <textarea id="editLeadMessage" class="profile-edit-input" rows="3" placeholder="Add notes from your conversation (batch preference, topics of interest, questions asked, etc.)...">${escapeHTML(lead.message || '')}</textarea>
+                    </div>
+                  </div>
+
+                  <div class="profile-edit-actions">
+                    <button type="button" class="btn btn--sm btn--ghost" id="adminProfileCancelEditBtn">
+                      <i class="fa-solid fa-xmark"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn--sm btn--primary" id="adminProfileSaveBtn">
+                      <i class="fa-solid fa-check"></i> Save to Database
+                    </button>
+                  </div>
+                </form>
+              </div>
+            `;
+
+            // Attach Edit Mode handlers
+            const closeProfile = () => overlay.remove();
+            overlay.querySelector('#adminProfileCloseBtn').addEventListener('click', closeProfile);
+            overlay.querySelector('#adminProfileCancelEditBtn').addEventListener('click', () => renderModal(false));
+
+            const editForm = overlay.querySelector('#adminLeadEditForm');
+            editForm.addEventListener('submit', async (e) => {
+              e.preventDefault();
+
+              const enteredName = overlay.querySelector('#editLeadName').value.trim();
+              const enteredRole = overlay.querySelector('#editLeadRole').value;
+              const enteredPhone = overlay.querySelector('#editLeadPhone').value.trim();
+              const enteredEmail = overlay.querySelector('#editLeadEmail').value.trim();
+              const enteredInst = overlay.querySelector('#editLeadInstitution').value.trim();
+              const enteredStatus = overlay.querySelector('#editLeadStatus').value;
+              const enteredMsg = overlay.querySelector('#editLeadMessage').value.trim();
+
+              const pObj = formatInternationalPhone(enteredPhone);
+
+              lead.name = enteredName || 'Not Available';
+              lead.role = enteredRole;
+              lead.phone = pObj.formatted || enteredPhone || 'Not Available';
+              lead.phoneDial = pObj.dial || lead.phoneDial || '';
+              lead.phoneWa = pObj.wa || lead.phoneWa || '';
+              lead.email = enteredEmail || (lead.email.includes('quiz-visitor') ? 'quiz-visitor@journalismlab.in' : '');
+              lead.institution = enteredInst || '—';
+              lead.status = enteredStatus;
+              lead.message = enteredMsg;
+
+              // Save to LocalStorage
+              setLocalLeads(allLeads);
+              updateStats();
+              renderTable();
+
+              // Save to Firebase RTDB
+              if (leadsRef) {
+                try {
+                  await leadsRef.child(lead.id).update({
+                    name: lead.name,
+                    role: lead.role,
+                    phone: lead.phone,
+                    phoneDial: lead.phoneDial,
+                    phoneWa: lead.phoneWa,
+                    email: lead.email,
+                    institution: lead.institution,
+                    status: lead.status,
+                    message: lead.message
+                  });
+                } catch (err) {
+                  console.warn('Firebase RTDB update notice:', err);
+                }
+              }
+
+              // Return to View Mode with success message
+              renderModal(false, true);
+            });
+          }
+        }
+
+        renderModal(false);
         document.body.appendChild(overlay);
 
-        const closeProfile = () => {
-          overlay.remove();
-        };
-
-        overlay.querySelector('#adminProfileCloseBtn').addEventListener('click', closeProfile);
-        overlay.querySelector('#adminProfileDoneBtn').addEventListener('click', closeProfile);
         overlay.addEventListener('click', (e) => {
-          if (e.target === overlay) closeProfile();
+          if (e.target === overlay) overlay.remove();
         });
-
-        const statusSelect = overlay.querySelector('#profileCardStatusSelect');
-        if (statusSelect) {
-          statusSelect.addEventListener('change', async () => {
-            const newStatus = statusSelect.value;
-            statusSelect.className = `admin-status-select status-${newStatus}`;
-            lead.status = newStatus;
-            setLocalLeads(allLeads);
-            updateStats();
-            renderTable();
-
-            if (leadsRef) {
-              try {
-                await leadsRef.child(lead.id).update({ status: newStatus });
-              } catch (err) {
-                console.warn('Realtime Database status update notice:', err);
-              }
-            }
-          });
-        }
       }
 
       // ─── Render Table ─────────────────────────────────────────────
