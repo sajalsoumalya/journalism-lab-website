@@ -1064,6 +1064,63 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════
+   STANDALONE REGISTER PAGE (Minimal Ad-Focused Layout)
+   ════════════════════════════════════════════════════════════════ */
+.register-minimal-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: calc(var(--nav-h) + 2rem) 1.5rem 3.5rem;
+  background: var(--bg-page);
+}
+.register-card {
+  width: 100%;
+  max-width: 620px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  padding: 2.75rem 2.25rem 2.25rem;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.05);
+}
+.register-card__header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.register-card__title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+.register-card__title em {
+  font-style: italic;
+  color: var(--text-muted);
+}
+.register-card__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--bg-subtle);
+  padding: 0.35rem 0.85rem;
+  border-radius: 100px;
+  border: 1px solid var(--border-medium);
+}
+@media (max-width: 600px) {
+  .register-card {
+    padding: 2rem 1.25rem 1.75rem;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
    REGISTER SECTION (Light Mode)
    ════════════════════════════════════════════════════════════════ */
 .register-section {

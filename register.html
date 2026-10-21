@@ -46,163 +46,98 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body style="background: var(--bg-page);">
 
   <!-- ═══════════════════════════════ NAVBAR ═══════════════════════════════ -->
   <nav class="nav" id="navbar">
-    <div class="nav__inner">
+    <div class="nav__inner" style="justify-content: space-between;">
       <a href="index.html" class="nav__logo" aria-label="JournalismLab Home">
         <span class="nav__logo-mark">●</span>
         <span class="nav__logo-text">Journalism<em>Lab</em></span>
       </a>
-      <ul class="nav__links">
-        <li><a href="index.html#about">About</a></li>
-        <li><a href="index.html#instructor">Instructor</a></li>
-        <li><a href="index.html#course">Curriculum</a></li>
-        <li><a href="pathfinder.html">Pathfinder Quiz</a></li>
-        <li><a href="register.html" class="nav__cta">Apply Now <i class="fa-solid fa-arrow-right"></i></a></li>
-      </ul>
-      <button class="nav__hamburger" id="hamburger" aria-label="Toggle navigation menu">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-    <div class="nav__mobile" id="mobileMenu">
-      <a href="index.html">Home</a>
-      <a href="index.html#about">About</a>
-      <a href="index.html#instructor">Instructor</a>
-      <a href="index.html#course">Course</a>
-      <a href="pathfinder.html">Pathfinder Quiz</a>
-      <a href="register.html" class="btn btn--primary" style="margin-top:0.5rem">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
+      <div class="nav__actions">
+        <a href="index.html#course" class="btn btn--ghost" style="padding: 0.55rem 1.15rem; font-size: 0.82rem; font-weight: 600;">
+          Learn More About the Course <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
     </div>
   </nav>
 
-  <!-- ═══════════════════════════════ PAGE HERO ════════════════════════════ -->
-  <header class="page-hero">
-    <div class="container">
-      <div class="page-hero__badge">
-        <i class="fa-solid fa-ticket"></i>
-        <span>Admissions Open · Founding Cohort 01</span>
-      </div>
-
-      <h1 class="page-hero__title">
-        Secure Your Seat in<br /><em>Batch 01.</em>
-      </h1>
-
-      <p class="page-hero__sub">
-        15 seats only. 15 intensive evening sessions. Mentored live by Prof. Dr. Minal Pareek. Get industry-ready, master your storytelling craft, and earn a direct editorial internship opportunity.
-      </p>
-
-      <div class="page-hero__features">
-        <span><i class="fa-solid fa-calendar-days"></i> Starts 26 Oct 2026</span>
-        <span><i class="fa-solid fa-clock"></i> Monday to Friday · 9:00 PM – 10:00 PM IST</span>
-        <span><i class="fa-solid fa-video"></i> Live on Google Meet</span>
-        <span><i class="fa-solid fa-users"></i> 15 Students Maximum</span>
-      </div>
-    </div>
-  </header>
-
   <!-- ═══════════════════════════════ APPLICATION SECTION ══════════════════ -->
-  <section class="register-section">
-    <div class="container">
-      <div class="register-section__inner">
-        <div class="register-section__left">
-          <div class="section-label">Founding Cohort Application</div>
-          <h2 class="register-section__headline">
-            One application.<br />
-            15 seats.<br />
-            <em>Your media breakthrough.</em>
-          </h2>
-          <p class="register-section__body">
-            Please submit your details below. Once verified through the quick security step, our admissions team will connect with you directly via WhatsApp within 24 hours with your enrollment package and onboarding schedule.
-          </p>
+  <main class="register-minimal-page">
+    <div class="register-card">
+      <div class="register-card__header">
+        <h1 class="register-card__title">
+          Founding Cohort <em>Application</em>
+        </h1>
+        <div class="register-card__meta">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span>Starts 26 Oct · Mon–Fri 9–10 PM IST · 15 Seats Only</span>
+        </div>
+      </div>
 
-          <div class="register-section__fee">
-            <span class="fee-tag">Batch 1 Founding Cohort Tuition</span>
-            <div class="fee-amount">
-              <span class="fee-old">₹15,000</span>
-              <span class="fee-new">₹3,000</span>
-            </div>
-          </div>
+      <!-- Application Form -->
+      <form class="register-form" id="registerForm">
+        <div class="form-group">
+          <label for="name">Full Name *</label>
+          <input type="text" id="name" name="name" placeholder="Your full name" required />
+        </div>
 
-          <ul class="register-checklist">
-            <li><i class="fa-solid fa-clock"></i> <strong>Class Schedule:</strong> Monday to Friday · 9:00 PM to 10:00 PM IST</li>
-            <li><i class="fa-solid fa-calendar-days"></i> 15 live interactive sessions via Google Meet</li>
-            <li><i class="fa-solid fa-chalkboard-user"></i> 1-on-1 feedback on camera & reporting assignments</li>
-            <li><i class="fa-solid fa-circle-check"></i> Lifetime access to class recordings & toolkits</li>
-            <li><i class="fa-solid fa-rocket"></i> Direct internship placement recommendations</li>
-            <li><i class="fa-solid fa-certificate"></i> Certificate of Completion signed by Prof. Dr. Minal Pareek</li>
-          </ul>
+        <div class="form-group">
+          <label for="phone">WhatsApp Number *</label>
+          <input type="tel" id="phone" name="phone" placeholder="+91 00000 00000" required />
+        </div>
 
-          <!-- Instructor mini card -->
-          <div style="margin-top:2.5rem; padding:1.25rem; background:var(--gray-100); border-radius:var(--radius); border:1px solid var(--gray-200); display:flex; align-items:center; gap:1.25rem;">
-            <img src="assets/images/instructor.jpg" alt="Prof. Dr. Minal Pareek" style="width:68px; height:68px; border-radius:50%; object-fit:cover; object-position:center top; border:2px solid var(--black);" />
-            <div>
-              <p style="font-weight:700; color:var(--black); font-size:0.95rem; margin-bottom:0.15rem;">Prof. Dr. Minal Pareek</p>
-              <p style="font-size:0.8rem; color:var(--gray-700); margin-bottom:0.4rem;">Lead Mentor · Host, "Voices with Dr. Minal"</p>
-              <a href="https://www.youtube.com/channel/UCVy2yOxx0FfU8klVRhKr37w" target="_blank" rel="noopener noreferrer" style="font-size:0.78rem; color:#ff0000; text-decoration:none; font-weight:600;">
-                <i class="fa-brands fa-youtube"></i> Watch on YouTube <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.65rem"></i>
-              </a>
-            </div>
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <input type="email" id="email" name="email" placeholder="you@email.com" required />
+        </div>
+
+        <!-- Current Institution -->
+        <div class="form-group">
+          <label for="institution">Current Institution *</label>
+          <input type="text" id="institution" name="institution" placeholder="Your current university, college, or workplace" required />
+        </div>
+
+        <!-- Student or Professional toggle -->
+        <div class="form-group">
+          <label>I am currently a *</label>
+          <div class="role-selector">
+            <label class="role-option">
+              <input type="radio" name="role" value="Student" checked required />
+              <span class="role-pill">
+                <i class="fa-solid fa-user-graduate"></i>
+                <span>Student</span>
+              </span>
+            </label>
+            <label class="role-option">
+              <input type="radio" name="role" value="Professional" required />
+              <span class="role-pill">
+                <i class="fa-solid fa-briefcase"></i>
+                <span>Professional</span>
+              </span>
+            </label>
           </div>
         </div>
 
-        <!-- Application Form with Updated Fields -->
-        <form class="register-form" id="registerForm">
-          <div class="form-group">
-            <label for="name">Full Name *</label>
-            <input type="text" id="name" name="name" placeholder="Your full name" required />
-          </div>
+        <div class="form-group">
+          <label for="msg">Anything you'd like us to know?</label>
+          <textarea id="msg" name="msg" rows="3" placeholder="Tell us about your storytelling interests, background, or goals (optional)"></textarea>
+        </div>
 
-          <div class="form-group">
-            <label for="phone">WhatsApp Number *</label>
-            <input type="tel" id="phone" name="phone" placeholder="+91 00000 00000" required />
-          </div>
+        <button type="submit" class="btn btn--primary btn--full" style="padding: 0.95rem 1.5rem; font-size: 1rem; font-weight: 700;">
+          Reserve My Seat <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <p class="form-note">
+          <i class="fa-solid fa-shield-halved" style="font-size:0.75rem"></i> Clicking opens quick security verification. Safe & confidential.
+        </p>
+      </form>
 
-          <div class="form-group">
-            <label for="email">Email Address *</label>
-            <input type="email" id="email" name="email" placeholder="you@email.com" required />
-          </div>
-
-          <!-- Updated: Current Institution -->
-          <div class="form-group">
-            <label for="institution">Current Institution *</label>
-            <input type="text" id="institution" name="institution" placeholder="Your current university, college, or workplace" required />
-          </div>
-
-          <!-- Updated: Student or Professional toggle -->
-          <div class="form-group">
-            <label>I am currently a *</label>
-            <div class="role-selector">
-              <label class="role-option">
-                <input type="radio" name="role" value="Student" checked required />
-                <span class="role-pill">
-                  <i class="fa-solid fa-user-graduate"></i>
-                  <span>Student</span>
-                </span>
-              </label>
-              <label class="role-option">
-                <input type="radio" name="role" value="Professional" required />
-                <span class="role-pill">
-                  <i class="fa-solid fa-briefcase"></i>
-                  <span>Professional</span>
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="msg">Anything you'd like us to know?</label>
-            <textarea id="msg" name="msg" rows="3" placeholder="Tell us about your storytelling interests, background, or goals (optional)"></textarea>
-          </div>
-
-          <button type="submit" class="btn btn--primary btn--full">
-            Reserve My Seat <i class="fa-solid fa-arrow-right"></i>
-          </button>
-          <p class="form-note"><i class="fa-solid fa-shield-halved" style="font-size:0.75rem"></i> Clicking opens quick security verification. Safe & confidential.</p>
-        </form>
+      <div class="pathfinder-footer-subtle" style="margin-top: 2rem;">
+        <span>© 2026 JournalismLab · Batch 01 · <a href="#admin">Admin Portal</a></span>
       </div>
     </div>
-  </section>
+  </main>
 
   <!-- ═══════════════════════════════ MODALS ════════════════════════════════ -->
 
@@ -248,7 +183,7 @@
   <!-- Success Modal with Confetti Popper -->
   <div class="modal-overlay" id="successModal" aria-hidden="true" role="dialog" aria-labelledby="successTitle">
     <div class="modal-box modal-box--success">
-      <button type="button" class="modal-close" id="successCloseBtn" aria-label="Close modal">
+      <button type="button" class="modal-close" id="successCloseBtn" aria-label="Close dialog">
         <i class="fa-solid fa-xmark"></i>
       </button>
       <div class="success-icon-wrap">
@@ -279,7 +214,7 @@
       </div>
 
       <div class="success-actions">
-        <a href="https://wa.me/918100462957?text=Hi%20Prof.%20Dr.%20Minal%20Pareek,%20I%20just%20submitted%20my%20registration%20for%20the%20Journalism%20Workshop!" target="_blank" rel="noopener noreferrer" class="btn btn--whatsapp btn--full">
+        <a href="https://wa.me/918100462957?text=Hi%20Prof.%20Dr.%20Minal%20Pareek,%20I%20have%20submitted%20my%20application%20for%20the%20Journalism%20Workshop!" target="_blank" rel="noopener noreferrer" class="btn btn--whatsapp btn--full">
           <i class="fa-brands fa-whatsapp"></i> Chat with Us on WhatsApp
         </a>
         <button type="button" class="btn btn--ghost btn--full" id="successDismissBtn">
@@ -291,48 +226,6 @@
 
   <!-- Canvas for Confetti Popper -->
   <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
-
-  <!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer__inner">
-        <div class="footer__brand">
-          <a href="index.html" class="footer__logo">
-            <span class="nav__logo-mark">●</span>
-            <span class="nav__logo-text">Journalism<em>Lab</em></span>
-          </a>
-          <p style="font-size:0.85rem; color:var(--gray-500); max-width:300px;">
-            A 15-day industry-ready journalism cohort led by Prof. Dr. Minal Pareek.
-          </p>
-        </div>
-
-        <div class="footer__nav">
-          <span class="footer__nav-title">Navigation</span>
-          <a href="index.html">Main Website</a>
-          <a href="index.html#instructor">Instructor Profile</a>
-          <a href="index.html#course">Curriculum</a>
-          <a href="pathfinder.html">Career Path Quiz Tool</a>
-        </div>
-
-        <div class="footer__info">
-          <span class="footer__nav-title">Admissions Inquiries</span>
-          <p><strong>Schedule: Monday to Friday · 9:00 PM to 10:00 PM IST</strong></p>
-          <p>WhatsApp: +91 8100462957</p>
-          <p>Online Live Cohort · Google Meet</p>
-          <p>Strict Limit: 15 Seats Only</p>
-        </div>
-
-        <div class="footer__copy">
-          <span class="footer__nav-title">Privacy & Policy</span>
-          <p>© 2026 JournalismLab. All rights reserved.</p>
-          <p>Your information is stored securely and never sold to third parties.</p>
-          <p style="margin-top:0.6rem;"><a href="#admin" class="footer-admin-link" style="color:var(--text-light); font-size:0.75rem; text-decoration:none;"><i class="fa-solid fa-lock" style="font-size:0.7rem; margin-right:4px;"></i> Admin Portal</a></p>
-        </div>
-      </div>
-      <div class="footer__line"></div>
-      <p class="footer__tagline">"You look like the next journalist."</p>
-    </div>
-  </footer>
 
   <!-- ═══════════════════════════════ WHATSAPP FAB ═════════════════════════ -->
   <a href="https://wa.me/918100462957?text=Hi%20Prof.%20Dr.%20Minal%20Pareek,%20I'm%20on%20the%20registration%20page%20and%20have%20a%20question!" target="_blank" rel="noopener noreferrer" class="whatsapp-fab" aria-label="Chat with us on WhatsApp at 8100462957">
