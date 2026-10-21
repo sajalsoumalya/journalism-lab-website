@@ -46,63 +46,25 @@
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body style="background: var(--bg-page);">
 
   <!-- ═══════════════════════════════ NAVBAR ═══════════════════════════════ -->
   <nav class="nav" id="navbar">
-    <div class="nav__inner">
+    <div class="nav__inner" style="justify-content: space-between;">
       <a href="index.html" class="nav__logo" aria-label="JournalismLab Home">
         <span class="nav__logo-mark">●</span>
         <span class="nav__logo-text">Journalism<em>Lab</em></span>
       </a>
-      <ul class="nav__links">
-        <li><a href="index.html#about">About</a></li>
-        <li><a href="index.html#instructor">Instructor</a></li>
-        <li><a href="index.html#course">Course</a></li>
-        <li><a href="pathfinder.html" class="active">Pathfinder Tool</a></li>
-        <li><a href="register.html" class="nav__cta">Apply Now <i class="fa-solid fa-arrow-right"></i></a></li>
-      </ul>
-      <button class="nav__hamburger" id="hamburger" aria-label="Toggle navigation menu">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-    <div class="nav__mobile" id="mobileMenu">
-      <a href="index.html">Home</a>
-      <a href="index.html#about">About</a>
-      <a href="index.html#instructor">Instructor</a>
-      <a href="index.html#course">Course</a>
-      <a href="pathfinder.html">Pathfinder Tool</a>
-      <a href="register.html" class="btn btn--primary" style="margin-top:0.5rem">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
+      <div class="nav__actions">
+        <a href="register.html" class="btn btn--primary" style="padding: 0.55rem 1.35rem; font-size: 0.82rem; font-weight: 700;">
+          Enroll Now <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </div>
     </div>
   </nav>
 
-  <!-- ═══════════════════════════════ PAGE HERO ════════════════════════════ -->
-  <header class="page-hero">
-    <div class="container">
-      <div class="page-hero__badge">
-        <i class="fa-solid fa-compass"></i>
-        <span>CMMD Career Diagnostics · 100% Free</span>
-      </div>
-
-      <h1 class="page-hero__title">
-        Which Journalism Career<br /><em>Fits You Best?</em>
-      </h1>
-
-      <p class="page-hero__sub">
-        Answer 5 intuitive scenario questions. We will analyze your instincts and reveal whether your future lies in on-air anchoring, visual photojournalism, sharp ad copywriting, or investigative digital media.
-      </p>
-
-      <div class="page-hero__features">
-        <span><i class="fa-solid fa-clock"></i> 90 Seconds</span>
-        <span><i class="fa-solid fa-list-check"></i> 5 Scenarios</span>
-        <span><i class="fa-solid fa-bullseye"></i> 9 Media Disciplines</span>
-        <span><i class="fa-solid fa-certificate"></i> Verified Recommendation</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- ═══════════════════════════════ QUIZ CONTAINER ═══════════════════════ -->
-  <section class="quiz-section" style="padding-top: 4rem;">
+  <!-- ═══════════════════════════════ MAIN QUIZ CONTAINER ══════════════════ -->
+  <main class="pathfinder-page">
     <div class="container">
       <div class="quiz-card" id="quizCard">
         <!-- Progress bar -->
@@ -138,89 +100,23 @@
               <p class="quiz-result__course-name">15-Day Industry-Ready Journalism Workshop</p>
               <p class="quiz-result__course-meta">Prof. Dr. Minal Pareek · Mon to Fri, 9 PM – 10 PM IST · Starts Oct 26 · ₹3,000</p>
               <a href="register.html" class="btn btn--primary" style="margin-top:1rem; width:100%">
-                Reserve Your Seat <i class="fa-solid fa-arrow-right"></i>
+                Enroll Now <i class="fa-solid fa-arrow-right"></i>
               </a>
             </div>
           </div>
 
           <div style="margin-top:2rem; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
             <button class="btn btn--ghost" id="retakeBtn"><i class="fa-solid fa-arrow-rotate-left"></i> Retake Quiz</button>
-            <a href="register.html" class="btn btn--primary">Proceed to Registration <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="register.html" class="btn btn--primary">Enroll Now <i class="fa-solid fa-arrow-right"></i></a>
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ═══════════════════════════════ INSTRUCTOR TEASER ════════════════════ -->
-  <section class="about" style="padding: 5rem 0; background:var(--bg-subtle);">
-    <div class="container">
-      <div class="about__grid" style="align-items:center;">
-        <div style="max-width:320px; margin:0 auto;">
-          <div class="instructor-photo-frame" style="box-shadow: 0 15px 35px rgba(0,0,0,0.08);">
-            <img src="assets/images/instructor.jpg" alt="Prof. Dr. Minal Pareek" />
-          </div>
-        </div>
-        <div>
-          <div class="section-label">Your Workshop Mentor</div>
-          <h2 style="font-family:var(--font-serif); font-size:clamp(1.75rem,3vw,2.5rem); margin-bottom:1rem; color:var(--text-primary);">
-            Prof. Dr. Minal Pareek
-          </h2>
-          <p style="color:var(--text-secondary); font-size:1rem; line-height:1.7; margin-bottom:1.5rem;">
-            Senior media educator, broadcaster, and host of <em>Voices with Dr. Minal</em>. She will personally lead all 15 live sessions, critique your assignments, and guide you directly toward newsroom readiness and internship placements.
-          </p>
-          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-            <a href="register.html" class="btn btn--primary">Apply for Batch 01 <i class="fa-solid fa-arrow-right"></i></a>
-            <a href="https://www.youtube.com/channel/UCVy2yOxx0FfU8klVRhKr37w" target="_blank" rel="noopener noreferrer" class="btn btn--ghost">
-              <i class="fa-brands fa-youtube" style="color:#ff3333"></i> YouTube Channel <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.75rem"></i>
-            </a>
-          </div>
-        </div>
+      <div class="pathfinder-footer-subtle">
+        <span>© 2026 JournalismLab · CMMD Career Diagnostics · <a href="#admin">Admin Portal</a></span>
       </div>
     </div>
-  </section>
-
-  <!-- ═══════════════════════════════ FOOTER ═══════════════════════════════ -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer__inner">
-        <div class="footer__brand">
-          <a href="index.html" class="footer__logo">
-            <span class="nav__logo-mark">●</span>
-            <span class="nav__logo-text">Journalism<em>Lab</em></span>
-          </a>
-          <p style="font-size:0.85rem; color:var(--gray-500); max-width:300px;">
-            CMMD Career Diagnostics & 15-Day Journalism Workshop led by Prof. Dr. Minal Pareek.
-          </p>
-        </div>
-
-        <div class="footer__nav">
-          <span class="footer__nav-title">Navigation</span>
-          <a href="index.html">Main Website</a>
-          <a href="index.html#instructor">Meet Dr. Minal Pareek</a>
-          <a href="index.html#course">Curriculum</a>
-          <a href="register.html">Batch 01 Registration</a>
-        </div>
-
-        <div class="footer__info">
-          <span class="footer__nav-title">Admissions & Contact</span>
-          <p>Schedule: Monday to Friday · 9:00 PM to 10:00 PM IST</p>
-          <p>WhatsApp Support: +91 8100462957</p>
-          <p>Next Batch Kickoff: 26 October 2026</p>
-          <p>15 Founding Seats Only</p>
-        </div>
-
-        <div class="footer__copy">
-          <span class="footer__nav-title">Legal & Security</span>
-          <p>© 2026 JournalismLab. All rights reserved.</p>
-          <p>Personal data is stored securely and never sold.</p>
-          <p style="margin-top:0.6rem;"><a href="#admin" class="footer-admin-link" style="color:var(--text-light); font-size:0.75rem; text-decoration:none;"><i class="fa-solid fa-lock" style="font-size:0.7rem; margin-right:4px;"></i> Admin Portal</a></p>
-        </div>
-      </div>
-      <div class="footer__line"></div>
-      <p class="footer__tagline">"You look like the next journalist."</p>
-    </div>
-  </footer>
+  </main>
 
   <!-- ═══════════════════════════════ MODALS ════════════════════════════════ -->
 

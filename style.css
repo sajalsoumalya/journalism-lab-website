@@ -1028,6 +1028,40 @@ body {
   color: var(--text-primary);
   font-size: 0.75rem;
 }
+/* ════════════════════════════════════════════════════════════════
+   STANDALONE PATHFINDER PAGE (Minimal Ad-Focused Layout)
+   ════════════════════════════════════════════════════════════════ */
+.pathfinder-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: calc(var(--nav-h) + 2rem) 1.5rem 3.5rem;
+  background: var(--bg-page);
+}
+.pathfinder-page .container {
+  width: 100%;
+  max-width: 720px;
+}
+.pathfinder-page .quiz-card {
+  margin: 0 auto;
+}
+.pathfinder-footer-subtle {
+  margin-top: 2rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-light);
+  letter-spacing: 0.05em;
+}
+.pathfinder-footer-subtle a {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.pathfinder-footer-subtle a:hover {
+  text-decoration: underline;
+}
 
 /* ════════════════════════════════════════════════════════════════
    REGISTER SECTION (Light Mode)
