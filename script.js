@@ -657,10 +657,47 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ─── Firebase Realtime Database & Lead Management ─────────────
-  const env = window.__ENV__ || {};
-  const ADMIN_EMAIL    = env.ADMIN_EMAIL    || "admin@journalismlab.in";
-  const ADMIN_PASSWORD = env.ADMIN_PASSWORD || "JLab@2026!";
+  function resolveFirebaseConfig() {
+    const cfg = window.firebaseConfig || window.FIREBASE_CONFIG || window.__ENV__ || {};
+    const isValid = val => typeof val === 'string' && val.trim() !== '' && !val.startsWith('${');
 
+    const apiKey = isValid(cfg.apiKey) ? cfg.apiKey :
+                   isValid(cfg.FIREBASE_API_KEY) ? cfg.FIREBASE_API_KEY : null;
+    if (!apiKey) return null;
+
+    const projectId = isValid(cfg.projectId) ? cfg.projectId :
+                      isValid(cfg.FIREBASE_PROJECT_ID) ? cfg.FIREBASE_PROJECT_ID : undefined;
+
+    const authDomain = isValid(cfg.authDomain) ? cfg.authDomain :
+                       isValid(cfg.FIREBASE_AUTH_DOMAIN) ? cfg.FIREBASE_AUTH_DOMAIN :
+                       (projectId ? `${projectId}.firebaseapp.com` : undefined);
+
+    const databaseURL = isValid(cfg.databaseURL) ? cfg.databaseURL :
+                        isValid(cfg.FIREBASE_DATABASE_URL) ? cfg.FIREBASE_DATABASE_URL :
+                        (projectId ? `https://${projectId}-default-rtdb.firebaseio.com` : undefined);
+
+    const storageBucket = isValid(cfg.storageBucket) ? cfg.storageBucket :
+                          isValid(cfg.FIREBASE_STORAGE_BUCKET) ? cfg.FIREBASE_STORAGE_BUCKET :
+                          (projectId ? `${projectId}.appspot.com` : undefined);
+
+    const messagingSenderId = isValid(cfg.messagingSenderId) ? cfg.messagingSenderId :
+                              isValid(cfg.FIREBASE_MESSAGING_SENDER_ID) ? cfg.FIREBASE_MESSAGING_SENDER_ID : undefined;
+
+    const appId = isValid(cfg.appId) ? cfg.appId :
+                  isValid(cfg.FIREBASE_APP_ID) ? cfg.FIREBASE_APP_ID : undefined;
+
+    return {
+      apiKey,
+      authDomain,
+      databaseURL,
+      projectId,
+      storageBucket,
+      messagingSenderId,
+      appId
+    };
+  }
+
+  const env = window.__ENV__ || {};
   let rtdb = null;
   let leadsRef = null;
   const LEADS_KEY = 'journalism_leads';
@@ -668,19 +705,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize Firebase RTDB if config is available
   if (typeof firebase !== 'undefined') {
-    const hasConfig = env.FIREBASE_API_KEY && !env.FIREBASE_API_KEY.startsWith('${');
-    if (hasConfig) {
+    const fbConfig = resolveFirebaseConfig();
+    if (fbConfig) {
       try {
-        const fbConfig = {
-          apiKey:            env.FIREBASE_API_KEY,
-          authDomain:        env.FIREBASE_AUTH_DOMAIN,
-          databaseURL:       env.FIREBASE_DATABASE_URL || `https://${env.FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com`,
-          projectId:         env.FIREBASE_PROJECT_ID,
-          storageBucket:     env.FIREBASE_STORAGE_BUCKET,
-          messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID,
-          appId:             env.FIREBASE_APP_ID
-        };
-        firebase.initializeApp(fbConfig);
+        if (!firebase.apps.length) {
+          firebase.initializeApp(fbConfig);
+        }
         rtdb = firebase.database();
         leadsRef = rtdb.ref(LEADS_KEY);
       } catch (err) {

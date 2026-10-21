@@ -5,6 +5,16 @@
 //  The Dockerfile runs envsubst to fill these placeholders.
 // ═══════════════════════════════════════════════════════
 window.__ENV__ = {
+  // Exact Firebase Web SDK variable names
+  apiKey:                       "${apiKey}",
+  authDomain:                   "${authDomain}",
+  databaseURL:                  "${databaseURL}",
+  projectId:                    "${projectId}",
+  storageBucket:                "${storageBucket}",
+  messagingSenderId:            "${messagingSenderId}",
+  appId:                        "${appId}",
+
+  // Uppercase / Prefixed aliases
   FIREBASE_API_KEY:             "${FIREBASE_API_KEY}",
   FIREBASE_AUTH_DOMAIN:         "${FIREBASE_AUTH_DOMAIN}",
   FIREBASE_DATABASE_URL:        "${FIREBASE_DATABASE_URL}",
@@ -12,6 +22,7 @@ window.__ENV__ = {
   FIREBASE_STORAGE_BUCKET:      "${FIREBASE_STORAGE_BUCKET}",
   FIREBASE_MESSAGING_SENDER_ID: "${FIREBASE_MESSAGING_SENDER_ID}",
   FIREBASE_APP_ID:              "${FIREBASE_APP_ID}",
+
   ADMIN_EMAIL:                  "${ADMIN_EMAIL}",
   ADMIN_PASSWORD:               "${ADMIN_PASSWORD}",
   ADMIN_EMAILS:                 "${ADMIN_EMAILS}"
