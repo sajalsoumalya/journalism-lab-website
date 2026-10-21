@@ -1265,7 +1265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     URL.revokeObjectURL(url);
   }
 
-  // ─── Triggers to open Admin ───────────────────────────────────
+  // ─── Triggers to open Admin Portal ───────────────────────────
   let footerTapCount = 0;
   const taglines = document.querySelectorAll('.footer__tagline');
   taglines.forEach(tagline => {
@@ -1274,7 +1274,7 @@ document.addEventListener('DOMContentLoaded', () => {
       footerTapCount++;
       if (footerTapCount >= 3) {
         footerTapCount = 0;
-        openAdminLogin();
+        window.location.href = 'admin.html';
       }
     });
   });
@@ -1282,17 +1282,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('a[href="#admin"]').forEach(link => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      openAdminLogin();
+      window.location.href = 'admin.html';
     });
   });
 
   if (window.location.hash === '#admin') {
-    setTimeout(openAdminLogin, 350);
+    window.location.href = 'admin.html';
   }
 
   window.addEventListener('hashchange', () => {
     if (window.location.hash === '#admin') {
-      openAdminLogin();
+      window.location.href = 'admin.html';
     }
   });
 

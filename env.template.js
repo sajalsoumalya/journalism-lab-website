@@ -13,5 +13,6 @@ window.__ENV__ = {
   FIREBASE_MESSAGING_SENDER_ID: "${FIREBASE_MESSAGING_SENDER_ID}",
   FIREBASE_APP_ID:              "${FIREBASE_APP_ID}",
   ADMIN_EMAIL:                  "${ADMIN_EMAIL}",
-  ADMIN_PASSWORD:               "${ADMIN_PASSWORD}"
+  ADMIN_PASSWORD:               "${ADMIN_PASSWORD}",
+  ADMIN_EMAILS:                 "${ADMIN_EMAILS}"
 };

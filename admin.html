@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JournalismLab — Admin Lead Management</title>
+  <meta name="robots" content="noindex, nofollow" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome 6 (Icons only — Zero emojis) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    /* Admin Portal Dedicated Layout */
+    body.admin-body-wrap {
+      background: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .admin-container {
+      width: 100%;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    /* Auth Views Container */
+    .admin-auth-wrapper {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .admin-auth-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: 12px;
+      padding: 2.5rem 2rem;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    }
+
+    .admin-auth-card__logo {
+      font-family: var(--font-serif);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .admin-auth-card__logo em {
+      font-style: italic;
+      color: var(--brand-accent);
+    }
+
+    .admin-auth-card__badge {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      background: var(--brand-black);
+      color: #ffffff;
+      padding: 0.25rem 0.65rem;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 1.25rem;
+      font-weight: 700;
+    }
+
+    .admin-auth-card__title {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .admin-auth-card__desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 1.75rem;
+    }
+
+    .btn--google {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      width: 100%;
+      background: #ffffff;
+      color: #1f2937;
+      border: 1px solid #d1d5db;
+      padding: 0.75rem 1.25rem;
+      border-radius: 6px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn--google:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn--google i {
+      color: #ea4335;
+      font-size: 1.15rem;
+    }
+
+    .admin-auth-meta {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-light);
+      margin-top: 1.5rem;
+      line-height: 1.5;
+    }
+
+    /* Access Denied View */
+    .admin-denied-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      margin-bottom: 1rem;
+    }
+
+    .admin-denied-email {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      padding: 0.35rem 0.65rem;
+      border-radius: 4px;
+      color: #111827;
+      display: inline-block;
+      margin-bottom: 1.25rem;
+      word-break: break-all;
+    }
+
+    /* Admin Navigation Header Bar */
+    .admin-topbar {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-medium);
+      padding: 0.75rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 900;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+
+    .admin-topbar__inner {
+      max-width: 1320px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .admin-topbar__brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .admin-topbar__brand {
+      font-family: var(--font-serif);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .admin-topbar__brand em {
+      font-style: italic;
+      color: var(--brand-accent);
+    }
+
+    .admin-topbar__controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .admin-user-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.3rem 0.65rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-medium);
+      border-radius: 100px;
+      font-size: 0.78rem;
+      color: var(--text-primary);
+    }
+
+    .admin-user-pill__avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--brand-black);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 700;
+      overflow: hidden;
+    }
+
+    .admin-user-pill__avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Live connection indicator */
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+      animation: livePulse 2s infinite;
+    }
+
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.15); }
+    }
+
+    /* Search and Quick Filters */
+    .admin-search-wrapper {
+      position: relative;
+      min-width: 260px;
+    }
+
+    .admin-search-wrapper i {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 0.85rem;
+    }
+
+    .admin-search-wrapper input {
+      width: 100%;
+      padding: 0.45rem 0.85rem 0.45rem 2.2rem;
+      font-size: 0.85rem;
+      border: 1px solid var(--border-medium);
+      background: var(--bg-surface);
+      border-radius: 6px;
+      outline: none;
+      color: var(--text-primary);
+      transition: border-color var(--transition);
+    }
+
+    .admin-search-wrapper input:focus {
+      border-color: var(--brand-black);
+    }
+
+    /* Lead table refinements */
+    .admin-table th,
+    .admin-table td {
+      white-space: nowrap;
+    }
+
+    .admin-table td.wrap-cell {
+      white-space: normal;
+      min-width: 200px;
+      max-width: 280px;
+    }
+
+    .admin-table td.source-cell {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* Loading overlay */
+    .admin-loading-view {
+      min-height: 60vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .admin-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-medium);
+      border-top-color: var(--brand-black);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .admin-topbar__inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .admin-topbar__controls {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .admin-search-wrapper {
+        min-width: 100%;
+      }
+      .admin-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body class="admin-body-wrap">
+
+  <!-- ═══════════════════════════════ LOADING STATE ═══════════════════════════════ -->
+  <div id="adminLoadingState" class="admin-loading-view">
+    <div class="admin-spinner"></div>
+    <p style="font-family:var(--font-mono); font-size:0.8rem; letter-spacing:0.05em;">Connecting to Firebase &amp; Authenticating…</p>
+  </div>
+
+  <!-- ═══════════════════════════════ LOGIN STATE ═══════════════════════════════ -->
+  <div id="adminLoginState" class="admin-auth-wrapper" style="display: none;">
+    <div class="admin-auth-card">
+      <a href="index.html" class="admin-auth-card__logo">
+        <span class="nav__logo-mark">●</span>
+        <span>Journalism<em>Lab</em></span>
+      </a>
+      <div>
+        <span class="admin-auth-card__badge">
+          <i class="fa-solid fa-lock"></i> Staff Only
+        </span>
+      </div>
+      <h1 class="admin-auth-card__title">Admin Portal</h1>
+      <p class="admin-auth-card__desc">
+        Access student registrations, career questionnaire submissions, and applicant records.
+      </p>
+
+      <button type="button" class="btn--google" id="adminGoogleSignInBtn">
+        <i class="fa-brands fa-google"></i> Sign in with Google
+      </button>
+
+      <div id="adminAuthError" class="admin-login-error" style="display: none; text-align: left; margin-top: 1rem;">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span id="adminAuthErrorMsg">Authentication failed. Please try again.</span>
+      </div>
+
+      <p class="admin-auth-meta">
+        Authorized Google accounts only.<br />
+        Managed via Firebase Authentication &amp; Realtime Database.
+      </p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ ACCESS DENIED STATE ═══════════════════════════════ -->
+  <div id="adminDeniedState" class="admin-auth-wrapper" style="display: none;">
+    <div class="admin-auth-card">
+      <div class="admin-denied-badge">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <h1 class="admin-auth-card__title">Access Denied</h1>
+      <p class="admin-auth-card__desc" style="margin-bottom: 0.75rem;">
+        The Google account you signed in with is not authorized to manage JournalismLab leads:
+      </p>
+      <div>
+        <span class="admin-denied-email" id="deniedUserEmail">user@example.com</span>
+      </div>
+      <p class="admin-auth-card__desc" style="font-size:0.82rem;">
+        If you are an administrator, make sure your email is listed in the <code>ADMIN_EMAILS</code> environment configuration.
+      </p>
+
+      <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem;">
+        <button type="button" class="btn btn--sm btn--primary" id="adminDeniedSwitchBtn">
+          <i class="fa-solid fa-repeat"></i> Switch Account
+        </button>
+        <button type="button" class="btn btn--sm btn--ghost" id="adminDeniedSignOutBtn">
+          <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ DASHBOARD STATE ═══════════════════════════════ -->
+  <div id="adminDashboardState" style="display: none;">
+    
+    <!-- Top Navigation Bar -->
+    <header class="admin-topbar">
+      <div class="admin-topbar__inner">
+        <div class="admin-topbar__brand-wrap">
+          <a href="index.html" class="admin-topbar__brand" title="View Public Website">
+            <span class="nav__logo-mark">●</span>
+            <span>Journalism<em>Lab</em></span>
+          </a>
+          <span class="admin-header__badge">
+            <span class="live-dot"></span> Firebase RTDB Live
+          </span>
+        </div>
+
+        <div class="admin-topbar__controls">
+          <div class="admin-user-pill" id="adminUserPill">
+            <span class="admin-user-pill__avatar" id="adminUserAvatar">A</span>
+            <span id="adminUserName" style="font-weight:600;">Admin</span>
+          </div>
+
+          <button type="button" class="btn btn--sm btn--ghost" id="adminSignOutBtn" title="Sign out of Admin Portal">
+            <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Dashboard Content -->
+    <div class="admin-container">
+      
+      <!-- Statistics Row -->
+      <div class="admin-stats-row">
+        <div class="admin-stat">
+          <span class="admin-stat__num" id="dashTotal">0</span>
+          <span class="admin-stat__label"><i class="fa-solid fa-users"></i> Total Registrations</span>
+        </div>
+        <div class="admin-stat">
+          <span class="admin-stat__num stat--new" id="dashNew">0</span>
+          <span class="admin-stat__label"><i class="fa-solid fa-bell"></i> New Inquiries</span>
+        </div>
+        <div class="admin-stat">
+          <span class="admin-stat__num stat--contacted" id="dashContacted">0</span>
+          <span class="admin-stat__label"><i class="fa-solid fa-comments"></i> In Contact</span>
+        </div>
+        <div class="admin-stat">
+          <span class="admin-stat__num stat--confirmed" id="dashConfirmed">0</span>
+          <span class="admin-stat__label"><i class="fa-solid fa-circle-check"></i> Confirmed (Batch 1)</span>
+        </div>
+      </div>
+
+      <!-- Applicant Table Card -->
+      <div class="admin-table-wrap">
+        
+        <!-- Table Top Bar -->
+        <div class="admin-table-header">
+          <div>
+            <h3>Applicant Directory</h3>
+            <span id="dashTableMeta" style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">
+              Showing 0 applicants
+            </span>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap;">
+            <div class="admin-search-wrapper">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="dashSearchInput" placeholder="Search name, phone, email, college…" autocomplete="off" />
+            </div>
+
+            <button type="button" class="btn btn--sm btn--ghost" id="dashExportBtn" title="Export as CSV spreadsheet">
+              <i class="fa-solid fa-file-csv"></i> Export CSV
+            </button>
+            <button type="button" class="btn btn--sm btn--ghost" id="dashRefreshBtn" title="Sync latest data">
+              <i class="fa-solid fa-arrows-rotate"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="admin-filters" id="dashFilterPills">
+          <button type="button" class="admin-filter-btn active" data-filter="all">All Registrations</button>
+          <button type="button" class="admin-filter-btn" data-filter="new">New</button>
+          <button type="button" class="admin-filter-btn" data-filter="contacted">Contacted</button>
+          <button type="button" class="admin-filter-btn" data-filter="confirmed">Confirmed</button>
+          <button type="button" class="admin-filter-btn" data-filter="student">Students</button>
+          <button type="button" class="admin-filter-btn" data-filter="professional">Professionals</button>
+        </div>
+
+        <!-- Table Container -->
+        <div style="overflow-x: auto;">
+          <table class="admin-table" id="dashLeadTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Applicant</th>
+                <th>Role</th>
+                <th>Phone / WhatsApp</th>
+                <th>Email</th>
+                <th>Institution</th>
+                <th>Quiz Career Match</th>
+                <th>Status</th>
+                <th>Source</th>
+                <th>Submitted</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="dashTableBody">
+              <tr>
+                <td colspan="11" style="text-align:center; padding:3rem; color:var(--text-muted);">
+                  Loading applicant records…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bottom Action Bar -->
+        <div class="admin-actions-bar">
+          <span id="dashFooterCount" style="font-size:0.8rem; color:var(--text-muted);">
+            Real-time synchronization active.
+          </span>
+          <div style="display:flex; gap:0.5rem;">
+            <button type="button" class="btn btn--sm btn--ghost" id="dashAddMockLeadBtn">
+              <i class="fa-solid fa-plus"></i> Add Test Lead
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Runtime Config (Injected by Docker or local) -->
+  <script src="env.js" onerror="console.warn('env.js not found, falling back to window.__ENV__');"></script>
+
+  <!-- Firebase SDKs (v10 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+  <!-- Admin Application Logic -->
+  <script>
+    (function() {
+      'use strict';
+
+      // ─── Environment & Admin Authorization Setup ─────────────────
+      const env = window.__ENV__ || {};
+
+      // Parse comma-separated ADMIN_EMAILS environment variable
+      const rawAdminEmails = env.ADMIN_EMAILS || "";
+      const adminEmailList = rawAdminEmails
+        .split(',')
+        .map(e => e.trim().toLowerCase())
+        .filter(Boolean);
+
+      // Legacy fallback email if ADMIN_EMAILS is unset
+      const legacyAdminEmail = (env.ADMIN_EMAIL || '').trim().toLowerCase();
+      if (legacyAdminEmail && !legacyAdminEmail.startsWith('${') && !adminEmailList.includes(legacyAdminEmail)) {
+        adminEmailList.push(legacyAdminEmail);
+      }
+
+      const LEADS_KEY = 'journalism_leads';
+      const LOCAL_STORAGE_KEY = 'journalism_lab_leads';
+
+      let rtdb = null;
+      let leadsRef = null;
+      let auth = null;
+      let currentUser = null;
+      let allLeads = [];
+      let currentFilter = 'all';
+      let searchQuery = '';
+
+      // DOM Elements
+      const loadingState   = document.getElementById('adminLoadingState');
+      const loginState     = document.getElementById('adminLoginState');
+      const deniedState    = document.getElementById('adminDeniedState');
+      const dashboardState = document.getElementById('adminDashboardState');
+
+      const googleSignInBtn = document.getElementById('adminGoogleSignInBtn');
+      const authErrorBox    = document.getElementById('adminAuthError');
+      const authErrorMsg    = document.getElementById('adminAuthErrorMsg');
+
+      const deniedUserEmail    = document.getElementById('deniedUserEmail');
+      const deniedSwitchBtn    = document.getElementById('adminDeniedSwitchBtn');
+      const deniedSignOutBtn   = document.getElementById('adminDeniedSignOutBtn');
+
+      const adminUserAvatar = document.getElementById('adminUserAvatar');
+      const adminUserName   = document.getElementById('adminUserName');
+      const adminSignOutBtn = document.getElementById('adminSignOutBtn');
+
+      const dashSearchInput = document.getElementById('dashSearchInput');
+      const dashFilterPills = document.getElementById('dashFilterPills');
+      const dashExportBtn   = document.getElementById('dashExportBtn');
+      const dashRefreshBtn  = document.getElementById('dashRefreshBtn');
+      const dashAddMockBtn  = document.getElementById('dashAddMockLeadBtn');
+
+      const dashTableBody   = document.getElementById('dashTableBody');
+      const dashTableMeta   = document.getElementById('dashTableMeta');
+      const dashFooterCount = document.getElementById('dashFooterCount');
+
+      const dashTotal       = document.getElementById('dashTotal');
+      const dashNew         = document.getElementById('dashNew');
+      const dashContacted   = document.getElementById('dashContacted');
+      const dashConfirmed   = document.getElementById('dashConfirmed');
+
+      // ─── LocalStorage Fallback Helpers ───────────────────────────
+      function getLocalLeads() {
+        try {
+          const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+          return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function setLocalLeads(data) {
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+          console.warn('LocalStorage save failed:', e);
+        }
+      }
+
+      // Pre-seed demo leads if completely empty
+      if (getLocalLeads().length === 0) {
+        setLocalLeads([
+          {
+            id: 'lead_seed_1',
+            name: 'Aarav Sharma',
+            phone: '+91 98765 43210',
+            email: 'aarav.sharma@example.com',
+            institution: 'Delhi University',
+            role: 'Student',
+            message: 'Passionate about live broadcast anchoring and ground investigative reporting.',
+            quizResult: "You're a Natural Anchor",
+            status: 'new',
+            submittedAt: new Date(Date.now() - 7200000).toISOString(),
+            submittedDisplay: 'Today · 2 hrs ago',
+            source: 'Landing Page'
+          },
+          {
+            id: 'lead_seed_2',
+            name: 'Priyanka Sen',
+            phone: '+91 98300 12345',
+            email: 'priyanka.sen@media.in',
+            institution: 'Freelance Media Strategist',
+            role: 'Professional',
+            message: 'Looking to transition from print copy to investigative video journalism.',
+            quizResult: "You're a Video Storyteller",
+            status: 'contacted',
+            submittedAt: new Date(Date.now() - 86400000).toISOString(),
+            submittedDisplay: 'Yesterday · 4:15 PM',
+            source: 'Register Page'
+          }
+        ]);
+      }
+
+      // ─── State Management ─────────────────────────────────────────
+      function showState(target) {
+        loadingState.style.display   = (target === 'loading') ? 'flex' : 'none';
+        loginState.style.display     = (target === 'login') ? 'flex' : 'none';
+        deniedState.style.display    = (target === 'denied') ? 'flex' : 'none';
+        dashboardState.style.display = (target === 'dashboard') ? 'block' : 'none';
+      }
+
+      // ─── Authorization Check ──────────────────────────────────────
+      function isAuthorized(email) {
+        if (!email) return false;
+        const normalized = email.trim().toLowerCase();
+
+        // If admin emails configured in env
+        if (adminEmailList.length > 0) {
+          return adminEmailList.includes(normalized);
+        }
+
+        // If no admin emails are configured at all in development, permit signed-in user
+        console.warn('ADMIN_EMAILS not configured in environment; permitting authenticated Google user:', normalized);
+        return true;
+      }
+
+      // ─── Initialize Firebase ──────────────────────────────────────
+      function initFirebase() {
+        const hasConfig = env.FIREBASE_API_KEY && !env.FIREBASE_API_KEY.startsWith('${');
+
+        if (typeof firebase !== 'undefined' && hasConfig) {
+          try {
+            const fbConfig = {
+              apiKey:            env.FIREBASE_API_KEY,
+              authDomain:        env.FIREBASE_AUTH_DOMAIN,
+              databaseURL:       env.FIREBASE_DATABASE_URL || `https://${env.FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com`,
+              projectId:         env.FIREBASE_PROJECT_ID,
+              storageBucket:     env.FIREBASE_STORAGE_BUCKET,
+              messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID,
+              appId:             env.FIREBASE_APP_ID
+            };
+
+            if (!firebase.apps.length) {
+              firebase.initializeApp(fbConfig);
+            }
+
+            auth = firebase.auth();
+            rtdb = firebase.database();
+            leadsRef = rtdb.ref(LEADS_KEY);
+
+            // Listen to auth state
+            auth.onAuthStateChanged(handleAuthStateChange);
+            return;
+          } catch (err) {
+            console.error('Firebase initialization error:', err);
+          }
+        }
+
+        // Fallback when Firebase config is missing or local mock
+        console.warn('Firebase config missing or unpopulated; showing local admin mode.');
+        showState('login');
+      }
+
+      // ─── Handle Auth State Changes ────────────────────────────────
+      function handleAuthStateChange(user) {
+        if (!user) {
+          currentUser = null;
+          showState('login');
+          return;
+        }
+
+        currentUser = user;
+        const userEmail = (user.email || '').toLowerCase();
+
+        if (isAuthorized(userEmail)) {
+          // Authorized! Render Dashboard
+          setupDashboardUser(user);
+          showState('dashboard');
+          bindRealtimeLeads();
+        } else {
+          // Unauthorized email
+          deniedUserEmail.textContent = user.email || 'No email associated';
+          showState('denied');
+        }
+      }
+
+      // ─── Google Sign-In ───────────────────────────────────────────
+      async function signInWithGoogle() {
+        if (!auth) {
+          // Mock login for offline/development if Firebase not configured
+          alert('Firebase Auth is not configured. Running in Local Storage demo mode.');
+          currentUser = {
+            displayName: 'Local Administrator',
+            email: 'admin@journalismlab.org',
+            photoURL: ''
+          };
+          setupDashboardUser(currentUser);
+          showState('dashboard');
+          loadOfflineLeads();
+          return;
+        }
+
+        authErrorBox.style.display = 'none';
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        try {
+          googleSignInBtn.disabled = true;
+          googleSignInBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in…';
+          await auth.signInWithPopup(provider);
+        } catch (error) {
+          console.error('Google Sign-In failed:', error);
+          authErrorMsg.textContent = error.message || 'Google sign-in failed. Please try again.';
+          authErrorBox.style.display = 'flex';
+        } finally {
+          googleSignInBtn.disabled = false;
+          googleSignInBtn.innerHTML = '<i class="fa-brands fa-google"></i> Sign in with Google';
+        }
+      }
+
+      // ─── Sign Out ─────────────────────────────────────────────────
+      async function signOutAdmin() {
+        if (auth) {
+          try {
+            await auth.signOut();
+          } catch (e) {
+            console.error('Sign out error:', e);
+          }
+        }
+        currentUser = null;
+        showState('login');
+      }
+
+      // ─── Setup User Profile in Topbar ─────────────────────────────
+      function setupDashboardUser(user) {
+        const name = user.displayName || user.email || 'Admin';
+        adminUserName.textContent = name;
+
+        if (user.photoURL) {
+          adminUserAvatar.innerHTML = `<img src="${escapeHTML(user.photoURL)}" alt="${escapeHTML(name)}" />`;
+        } else {
+          adminUserAvatar.textContent = (name[0] || 'A').toUpperCase();
+        }
+      }
+
+      // ─── Bind Realtime Database ───────────────────────────────────
+      function bindRealtimeLeads() {
+        if (!leadsRef) {
+          loadOfflineLeads();
+          return;
+        }
+
+        leadsRef.on('value', (snapshot) => {
+          const val = snapshot.val();
+          if (val) {
+            allLeads = Object.keys(val).map(key => ({
+              id: key,
+              ...val[key]
+            })).reverse();
+            setLocalLeads(allLeads);
+          } else {
+            allLeads = getLocalLeads();
+          }
+          updateStats();
+          renderTable();
+        }, (err) => {
+          console.warn('Realtime Database listener failed, falling back to local storage:', err);
+          loadOfflineLeads();
+        });
+      }
+
+      function loadOfflineLeads() {
+        allLeads = getLocalLeads();
+        updateStats();
+        renderTable();
+      }
+
+      // ─── Stats Calculation ────────────────────────────────────────
+      function updateStats() {
+        const total = allLeads.length;
+        const countNew = allLeads.filter(l => (l.status || 'new') === 'new').length;
+        const countContacted = allLeads.filter(l => l.status === 'contacted').length;
+        const countConfirmed = allLeads.filter(l => l.status === 'confirmed').length;
+
+        dashTotal.textContent     = total;
+        dashNew.textContent       = countNew;
+        dashContacted.textContent = countContacted;
+        dashConfirmed.textContent = countConfirmed;
+      }
+
+      // ─── Filter & Search ──────────────────────────────────────────
+      function getFilteredLeads() {
+        return allLeads.filter(lead => {
+          const status = lead.status || 'new';
+          const role = (lead.role || 'Student').toLowerCase();
+
+          if (currentFilter === 'new' && status !== 'new') return false;
+          if (currentFilter === 'contacted' && status !== 'contacted') return false;
+          if (currentFilter === 'confirmed' && status !== 'confirmed') return false;
+          if (currentFilter === 'student' && role !== 'student') return false;
+          if (currentFilter === 'professional' && role !== 'professional') return false;
+
+          if (searchQuery) {
+            const haystack = [
+              lead.name,
+              lead.phone,
+              lead.email,
+              lead.institution,
+              lead.role,
+              lead.quizResult,
+              lead.message,
+              lead.source
+            ].join(' ').toLowerCase();
+
+            if (!haystack.includes(searchQuery)) return false;
+          }
+
+          return true;
+        });
+      }
+
+      // ─── Render Table ─────────────────────────────────────────────
+      function renderTable() {
+        const filtered = getFilteredLeads();
+
+        dashTableMeta.textContent   = `Showing ${filtered.length} of ${allLeads.length} applicants`;
+        dashFooterCount.textContent = `${filtered.length} applicant record${filtered.length === 1 ? '' : 's'} displayed`;
+
+        if (filtered.length === 0) {
+          dashTableBody.innerHTML = `
+            <tr>
+              <td colspan="11" style="text-align:center; padding:3.5rem 1rem; color:var(--text-muted); font-style:italic;">
+                No applicant records match the current filter or search criteria.
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        dashTableBody.innerHTML = filtered.map((lead, idx) => {
+          const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
+          const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+          const waText = encodeURIComponent(`Hi ${lead.name || 'there'}, this is Prof. Dr. Minal Pareek's team regarding your JournalismLab enrollment!`);
+
+          const isStudent = (lead.role || 'Student').toLowerCase() === 'student';
+          const roleClass = isStudent ? 'role-badge--student' : 'role-badge--professional';
+          const roleIcon  = isStudent ? '<i class="fa-solid fa-user-graduate"></i>' : '<i class="fa-solid fa-briefcase"></i>';
+          const currentStatus = lead.status || 'new';
+
+          return `
+            <tr>
+              <td style="font-family:var(--font-mono); font-size:0.75rem; color:var(--text-light);">${idx + 1}</td>
+              <td class="wrap-cell">
+                <strong style="color:var(--text-primary); font-size:0.9rem;">${escapeHTML(lead.name || 'Unnamed')}</strong>
+                ${lead.message ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;"><em>"${escapeHTML(lead.message)}"</em></div>` : ''}
+              </td>
+              <td>
+                <span class="role-badge ${roleClass}">
+                  ${roleIcon} <span>${escapeHTML(lead.role || 'Student')}</span>
+                </span>
+              </td>
+              <td>
+                <a href="tel:${escapeHTML(lead.phone || '')}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-size:0.82rem;">
+                  ${escapeHTML(lead.phone || '—')}
+                </a>
+              </td>
+              <td>
+                <a href="mailto:${escapeHTML(lead.email || '')}" style="color:var(--text-muted); text-decoration:none; font-size:0.82rem;">
+                  ${escapeHTML(lead.email || '—')}
+                </a>
+              </td>
+              <td class="wrap-cell" style="font-size:0.82rem; color:var(--text-secondary);">
+                ${escapeHTML(lead.institution || '—')}
+              </td>
+              <td style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">
+                ${escapeHTML(lead.quizResult || 'Not taken')}
+              </td>
+              <td>
+                <select class="admin-status-select status-${currentStatus}" data-id="${escapeHTML(lead.id)}">
+                  <option value="new" ${currentStatus === 'new' ? 'selected' : ''}>New</option>
+                  <option value="contacted" ${currentStatus === 'contacted' ? 'selected' : ''}>Contacted</option>
+                  <option value="confirmed" ${currentStatus === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                  <option value="rejected" ${currentStatus === 'rejected' ? 'selected' : ''}>Rejected</option>
+                </select>
+              </td>
+              <td class="source-cell">
+                ${escapeHTML(lead.source || 'Website')}
+              </td>
+              <td style="font-size:0.76rem; color:var(--text-muted); white-space:nowrap;">
+                ${escapeHTML(lead.submittedDisplay || formatDate(lead.submittedAt))}
+              </td>
+              <td>
+                <div style="display:flex; align-items:center; gap:0.4rem;">
+                  <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="admin-action-btn admin-wa-action" title="Open WhatsApp chat">
+                    <i class="fa-brands fa-whatsapp"></i>
+                  </a>
+                  <button type="button" class="admin-action-btn admin-del-action delete-lead-btn" data-id="${escapeHTML(lead.id)}" title="Delete lead">
+                    <i class="fa-solid fa-trash-can"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        // Attach Status change listeners
+        dashTableBody.querySelectorAll('.admin-status-select').forEach(sel => {
+          sel.addEventListener('change', async (e) => {
+            const id = sel.dataset.id;
+            const newStatus = sel.value;
+            sel.className = `admin-status-select status-${newStatus}`;
+
+            const item = allLeads.find(l => l.id === id);
+            if (item) item.status = newStatus;
+            setLocalLeads(allLeads);
+            updateStats();
+
+            if (leadsRef) {
+              try {
+                await leadsRef.child(id).update({ status: newStatus });
+              } catch (err) {
+                console.warn('RTDB status update failed:', err);
+              }
+            }
+          });
+        });
+
+        // Attach Delete listeners
+        dashTableBody.querySelectorAll('.delete-lead-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            if (!confirm('Are you sure you want to permanently delete this registration record?')) return;
+
+            allLeads = allLeads.filter(l => l.id !== id);
+            setLocalLeads(allLeads);
+            updateStats();
+            renderTable();
+
+            if (leadsRef) {
+              try {
+                await leadsRef.child(id).remove();
+              } catch (err) {
+                console.warn('RTDB delete failed:', err);
+              }
+            }
+          });
+        });
+      }
+
+      // ─── CSV Export ───────────────────────────────────────────────
+      function exportCSV() {
+        const data = getFilteredLeads();
+        if (!data.length) {
+          alert('No applicants match the current filter to export.');
+          return;
+        }
+
+        const headers = [
+          '#',
+          'Full Name',
+          'Role',
+          'Phone / WhatsApp',
+          'Email Address',
+          'Institution',
+          'Career Questionnaire Result',
+          'Status',
+          'Source',
+          'Submitted At',
+          'Notes / Message'
+        ];
+
+        const rows = data.map((l, i) => [
+          i + 1,
+          l.name || '',
+          l.role || 'Student',
+          l.phone || '',
+          l.email || '',
+          l.institution || '',
+          l.quizResult || 'Not taken',
+          l.status || 'new',
+          l.source || 'Website',
+          l.submittedAt || '',
+          (l.message || '').replace(/"/g, '""').replace(/\n/g, ' ')
+        ]);
+
+        const csvContent = [
+          headers.map(h => `"${h}"`).join(','),
+          ...rows.map(r => r.map(f => `"${String(f).replace(/"/g, '""')}"`).join(','))
+        ].join('\r\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `journalism_leads_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      // ─── Helper Functions ─────────────────────────────────────────
+      function escapeHTML(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function formatDate(iso) {
+        if (!iso) return '—';
+        try {
+          const d = new Date(iso);
+          return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        } catch (e) {
+          return iso;
+        }
+      }
+
+      // ─── Event Listeners ──────────────────────────────────────────
+      googleSignInBtn.addEventListener('click', signInWithGoogle);
+      adminSignOutBtn.addEventListener('click', signOutAdmin);
+      deniedSignOutBtn.addEventListener('click', signOutAdmin);
+      deniedSwitchBtn.addEventListener('click', signInWithGoogle);
+
+      dashSearchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.toLowerCase().trim();
+        renderTable();
+      });
+
+      dashFilterPills.addEventListener('click', (e) => {
+        const btn = e.target.closest('.admin-filter-btn');
+        if (!btn) return;
+        dashFilterPills.querySelectorAll('.admin-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderTable();
+      });
+
+      dashExportBtn.addEventListener('click', exportCSV);
+      dashRefreshBtn.addEventListener('click', () => {
+        if (leadsRef) {
+          bindRealtimeLeads();
+        } else {
+          loadOfflineLeads();
+        }
+      });
+
+      dashAddMockBtn.addEventListener('click', () => {
+        const names = ['Tanvi Mukherjee', 'Rohan Bose', 'Meera Kapoor', 'Aditya Verma', 'Siddharth Rao'];
+        const colleges = ['Jadavpur University', 'St. Xavier\'s College', 'Amity Media School', 'Symbiosis Media', 'Christ University'];
+        const roles = ['Student', 'Professional'];
+        const results = ['You\'re a Natural Anchor', 'You\'re a Video Storyteller', 'You\'re a Visual Journalist', 'You\'re an Investigative Writer'];
+
+        const randomName = names[Math.floor(Math.random() * names.length)];
+        const randomCollege = colleges[Math.floor(Math.random() * colleges.length)];
+        const randomRole = roles[Math.floor(Math.random() * roles.length)];
+        const randomResult = results[Math.floor(Math.random() * results.length)];
+        const randomPhone = '+91 ' + Math.floor(9000000000 + Math.random() * 999999999);
+
+        const newLead = {
+          id: 'lead_' + Date.now(),
+          name: randomName,
+          phone: randomPhone,
+          email: randomName.toLowerCase().replace(' ', '.') + '@gmail.com',
+          institution: randomCollege,
+          role: randomRole,
+          message: 'Excited for the founding cohort with Dr. Minal Pareek.',
+          quizResult: randomResult,
+          status: 'new',
+          submittedAt: new Date().toISOString(),
+          submittedDisplay: 'Just now',
+          source: 'Manual Test'
+        };
+
+        allLeads.unshift(newLead);
+        setLocalLeads(allLeads);
+        updateStats();
+        renderTable();
+
+        if (leadsRef) {
+          leadsRef.child(newLead.id).set(newLead).catch(err => {
+            console.warn('Realtime Database mock lead write failed:', err);
+          });
+        }
+      });
+
+      // ─── Initialize on DOM Ready ──────────────────────────────────
+      document.addEventListener('DOMContentLoaded', initFirebase);
+    })();
+  </script>
+</body>
+</html>

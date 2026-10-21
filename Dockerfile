@@ -9,6 +9,7 @@ FROM nginx:1.25-alpine
 COPY index.html       /usr/share/nginx/html/
 COPY pathfinder.html  /usr/share/nginx/html/
 COPY register.html    /usr/share/nginx/html/
+COPY admin.html       /usr/share/nginx/html/
 COPY style.css        /usr/share/nginx/html/
 COPY script.js        /usr/share/nginx/html/
 COPY assets/          /usr/share/nginx/html/assets/
