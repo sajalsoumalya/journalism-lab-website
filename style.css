@@ -864,50 +864,6 @@ body {
   color: var(--text-muted);
 }
 
-/* Quiz Disclaimer Box (Light Mode) */
-.quiz-disclaimer {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius);
-  text-align: left;
-}
-.quiz-disclaimer__header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--text-primary);
-  margin-bottom: 0.75rem;
-}
-.quiz-disclaimer__header i {
-  color: var(--text-primary);
-  font-size: 0.85rem;
-}
-.quiz-disclaimer__text {
-  font-size: 0.82rem;
-  line-height: 1.6;
-  color: var(--text-muted);
-  margin-bottom: 0.75rem;
-}
-.quiz-disclaimer__text:last-of-type {
-  margin-bottom: 0.75rem;
-}
-.quiz-disclaimer__agreement {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  font-style: italic;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border-light);
-}
-
 /* ════════════════════════════════════════════════════════════════
    COURSE (Light Mode)
    ════════════════════════════════════════════════════════════════ */
