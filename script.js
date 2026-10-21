@@ -135,6 +135,88 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Standardize and uniformly format telephone numbers for database storage, telecalling, and WhatsApp
+  function formatInternationalPhone(rawInput, iti) {
+    if (!rawInput && !iti) return { formatted: '', dial: '', wa: '' };
+
+    const raw = String(rawInput || '').trim();
+    const rawDigits = raw.replace(/\D/g, '');
+    if (rawDigits.length < 5) {
+      return { formatted: '', dial: '', wa: '' };
+    }
+
+    let digitsOnly = '';
+    let dialCode = '91';
+
+    if (iti && typeof iti.getSelectedCountryData === 'function') {
+      const countryData = iti.getSelectedCountryData();
+      dialCode = (countryData && countryData.dialCode) ? String(countryData.dialCode) : '91';
+      const e164 = iti.getNumber ? iti.getNumber() : '';
+      if (e164 && e164.startsWith('+')) {
+        digitsOnly = e164.replace(/\D/g, '');
+      }
+    }
+
+    if (!digitsOnly) {
+      if (raw.startsWith('+')) {
+        const match = raw.match(/^\+(\d{1,4})[\s.-]+(.*)$/);
+        if (match) {
+          dialCode = match[1];
+          const national = match[2].replace(/\D/g, '');
+          digitsOnly = dialCode + national;
+        } else {
+          const d = rawDigits;
+          if (d.startsWith('91') && d.length === 12) {
+            dialCode = '91';
+            digitsOnly = d;
+          } else if (d.startsWith('1') && d.length === 11) {
+            dialCode = '1';
+            digitsOnly = d;
+          } else if (d.startsWith('44') && d.length >= 11) {
+            dialCode = '44';
+            digitsOnly = d;
+          } else {
+            digitsOnly = d;
+          }
+        }
+      } else {
+        if (rawDigits.length === 10) {
+          digitsOnly = dialCode + rawDigits;
+        } else if (rawDigits.length === 11 && rawDigits.startsWith('0')) {
+          digitsOnly = dialCode + rawDigits.slice(1);
+        } else if (rawDigits.startsWith(dialCode)) {
+          digitsOnly = rawDigits;
+        } else {
+          digitsOnly = dialCode + rawDigits;
+        }
+      }
+    }
+
+    if (digitsOnly.length === 10) {
+      digitsOnly = dialCode + digitsOnly;
+    }
+
+    let nationalPart = '';
+    if (digitsOnly.startsWith(dialCode)) {
+      nationalPart = digitsOnly.slice(dialCode.length);
+    } else {
+      nationalPart = digitsOnly;
+    }
+
+    let formattedNational = nationalPart;
+    if (dialCode === '91' && nationalPart.length === 10) {
+      formattedNational = nationalPart.slice(0, 5) + ' ' + nationalPart.slice(5);
+    } else if (dialCode === '1' && nationalPart.length === 10) {
+      formattedNational = nationalPart.slice(0, 3) + ' ' + nationalPart.slice(3, 6) + ' ' + nationalPart.slice(6);
+    }
+
+    const formatted = `+${dialCode} ${formattedNational}`.trim();
+    const dial = `+${digitsOnly}`;
+    const wa = digitsOnly;
+
+    return { formatted, dial, wa };
+  }
+
   // Auto-initialize any tel inputs found in the DOM
   document.querySelectorAll('input[type="tel"]').forEach(input => initIntlPhone(input));
 
@@ -339,17 +421,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const rawValue = phoneInput ? phoneInput.value.trim() : '';
         const digits = rawValue.replace(/\D/g, '');
 
-        let fullNumber = '';
-        let isValid = false;
+        const phoneObj = formatInternationalPhone(rawValue, iti);
+        const fullNumber = phoneObj.formatted || rawValue;
 
         if (iti) {
           const countryData = iti.getSelectedCountryData();
           const isIndia = (countryData && countryData.iso2 === 'in');
           isValid = iti.isValidNumber() || digits.length >= (isIndia ? 10 : 7);
-          fullNumber = iti.getNumber() || (countryData?.dialCode ? `+${countryData.dialCode} ${rawValue}` : rawValue);
         } else {
           isValid = digits.length >= 10;
-          fullNumber = rawValue.startsWith('+') ? rawValue : `+91 ${rawValue}`;
         }
 
         if (!rawValue || !isValid || digits.length < 7) {
@@ -374,6 +454,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (phoneInput) phoneInput.classList.remove('error');
 
         window.userQuizPhone = fullNumber;
+        window.userQuizPhoneDial = phoneObj.dial;
+        window.userQuizPhoneWa = phoneObj.wa;
 
         // Auto-fill phone field in any registration forms on page
         const regPhoneInputs = document.querySelectorAll('input[type="tel"][name="phone"], #phone');
@@ -485,10 +567,13 @@ document.addEventListener('DOMContentLoaded', () => {
       // Automatically capture quiz lead if mobile phone was entered
       if (window.userQuizPhone && !window.quizLeadCaptured) {
         window.quizLeadCaptured = true;
+        const phoneObj = formatInternationalPhone(window.userQuizPhone);
         const quizLead = {
           id: 'lead_quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
           name: 'Not Available',
-          phone: window.userQuizPhone,
+          phone: phoneObj.formatted || window.userQuizPhone,
+          phoneDial: phoneObj.dial || window.userQuizPhoneDial || '',
+          phoneWa: phoneObj.wa || window.userQuizPhoneWa || '',
           email: 'quiz-visitor@journalismlab.in',
           institution: '—',
           role: 'Not Available',
@@ -696,29 +781,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const applicantName = pendingFormData ? pendingFormData.get('name') : 'there';
       openSuccessModal(applicantName);
 
-      // Format phone number via intl-tel-input or fallback
-      let formattedPhone = '';
+      // Format phone number uniformly with country code via formatInternationalPhone
       const regPhoneInput = activeFormElement ? activeFormElement.querySelector('input[type="tel"][name="phone"], #phone') : document.querySelector('input[type="tel"]');
       const formIti = regPhoneInput ? (itiMap.get(regPhoneInput) || initIntlPhone(regPhoneInput)) : null;
+      const rawInputVal = (regPhoneInput && regPhoneInput.value.trim()) || (pendingFormData ? pendingFormData.get('phone') : '') || window.userQuizPhone || '';
 
-      if (formIti && formIti.getNumber()) {
-        formattedPhone = formIti.getNumber();
-      } else if (regPhoneInput && regPhoneInput.value.trim()) {
-        const raw = regPhoneInput.value.trim();
-        const countryData = formIti ? formIti.getSelectedCountryData() : null;
-        formattedPhone = raw.startsWith('+') ? raw : (countryData?.dialCode ? `+${countryData.dialCode} ${raw}` : `+91 ${raw}`);
-      } else if (pendingFormData && pendingFormData.get('phone')) {
-        const raw = pendingFormData.get('phone').trim();
-        formattedPhone = raw.startsWith('+') ? raw : `+91 ${raw}`;
-      } else if (window.userQuizPhone) {
-        formattedPhone = window.userQuizPhone;
-      }
+      const phoneObj = formatInternationalPhone(rawInputVal, formIti);
 
       // Record lead in Firebase Realtime Database and LocalStorage
       const leadData = {
         id: 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         name: (pendingFormData ? pendingFormData.get('name') : '') || applicantName || 'Applicant',
-        phone: formattedPhone || 'Not Available',
+        phone: phoneObj.formatted || window.userQuizPhone || 'Not Available',
+        phoneDial: phoneObj.dial || window.userQuizPhoneDial || '',
+        phoneWa: phoneObj.wa || window.userQuizPhoneWa || '',
         email: (pendingFormData ? pendingFormData.get('email') : '') || '',
         institution: (pendingFormData ? pendingFormData.get('institution') : '') || '—',
         role: (pendingFormData ? pendingFormData.get('role') : '') || 'Student',
@@ -996,6 +1072,18 @@ document.addEventListener('DOMContentLoaded', () => {
           l.role = 'Not Available';
         }
       }
+      if (l.phone && l.phone !== 'Not Available' && l.phone !== '—') {
+        const phoneObj = formatInternationalPhone(l.phone);
+        if (phoneObj.formatted) {
+          l.phone = phoneObj.formatted;
+        }
+        if (!l.phoneDial && phoneObj.dial) {
+          l.phoneDial = phoneObj.dial;
+        }
+        if (!l.phoneWa && phoneObj.wa) {
+          l.phoneWa = phoneObj.wa;
+        }
+      }
       return l;
     });
   }
@@ -1025,6 +1113,8 @@ document.addEventListener('DOMContentLoaded', () => {
         id: 'lead_seed_1',
         name: 'Aarav Sharma',
         phone: '+91 98765 43210',
+        phoneDial: '+919876543210',
+        phoneWa: '919876543210',
         email: 'aarav.sharma@example.com',
         institution: 'Delhi University',
         role: 'Student',
@@ -1039,6 +1129,8 @@ document.addEventListener('DOMContentLoaded', () => {
         id: 'lead_seed_2',
         name: 'Priyanka Sen',
         phone: '+91 98300 12345',
+        phoneDial: '+919830012345',
+        phoneWa: '919830012345',
         email: 'priyanka.sen@media.in',
         institution: 'Freelance Media Strategist',
         role: 'Professional',
@@ -1053,6 +1145,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.recordLead = async function(leadData) {
+    if (leadData && leadData.phone && leadData.phone !== 'Not Available' && leadData.phone !== '—') {
+      const pObj = formatInternationalPhone(leadData.phone);
+      if (pObj.formatted) leadData.phone = pObj.formatted;
+      if (!leadData.phoneDial && pObj.dial) leadData.phoneDial = pObj.dial;
+      if (!leadData.phoneWa && pObj.wa) leadData.phoneWa = pObj.wa;
+    }
     const current = getStoredLeads();
     current.unshift(leadData);
     setStoredLeads(current);
@@ -1326,12 +1424,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const randomCollege = colleges[Math.floor(Math.random() * colleges.length)];
       const randomRole = roles[Math.floor(Math.random() * roles.length)];
       const randomResult = results[Math.floor(Math.random() * results.length)];
-      const randomPhone = '+91 ' + Math.floor(9000000000 + Math.random() * 999999999);
+      const randomDigits = String(Math.floor(9000000000 + Math.random() * 999999999));
+      const phoneObj = formatInternationalPhone(randomDigits);
 
       const mockLead = {
         id: 'lead_' + Date.now(),
         name: randomName,
-        phone: randomPhone,
+        phone: phoneObj.formatted,
+        phoneDial: phoneObj.dial,
+        phoneWa: phoneObj.wa,
         email: randomName.toLowerCase().replace(' ', '.') + '@gmail.com',
         institution: randomCollege,
         role: randomRole,
@@ -1410,6 +1511,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const pool = [
           isQuizLead ? 'not available' : (lead.name || ''),
           lead.phone,
+          lead.phoneDial,
+          lead.phoneWa,
           lead.email,
           lead.institution,
           isRoleNA ? 'not available' : lead.role,
@@ -1458,7 +1561,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
-    const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+    const phoneObj = formatInternationalPhone(lead.phone);
+    const waNumber = lead.phoneWa || phoneObj.wa || (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone);
+    const dialNumber = lead.phoneDial || phoneObj.dial || (cleanPhone ? '+' + (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone) : '');
+    const displayPhone = lead.phone || phoneObj.formatted || 'Not Available';
     const waName = !isQuizLead ? lead.name : 'there';
     const waText = encodeURIComponent(`Hi ${waName}, this is Prof. Dr. Minal Pareek's team regarding your JournalismLab application!`);
 
@@ -1497,10 +1603,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="profile-field-item">
             <div class="profile-field-label">Mobile / WhatsApp Number</div>
             <div class="profile-field-value" style="display:flex; align-items:center; gap:0.5rem;">
-              <a href="tel:${escapeHTML(lead.phone)}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-weight:700;">
-                ${escapeHTML(lead.phone || 'Not Available')}
+              <a href="tel:${escapeHTML(dialNumber || lead.phone || '')}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-weight:700;">
+                ${escapeHTML(displayPhone)}
               </a>
-              ${cleanPhone ? `
+              ${waNumber ? `
                 <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" style="color:#25d366; font-size:1.05rem;" title="Chat on WhatsApp">
                   <i class="fa-brands fa-whatsapp"></i>
                 </a>
@@ -1639,7 +1745,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tbody.innerHTML = filtered.map((lead, idx) => {
       const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
-      const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+      const phoneObj = formatInternationalPhone(lead.phone);
+      const waNumber = lead.phoneWa || phoneObj.wa || (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone);
+      const dialNumber = lead.phoneDial || phoneObj.dial || (cleanPhone ? '+' + (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone) : '');
+      const displayPhone = lead.phone || phoneObj.formatted || '—';
       const isQuizLead = !lead.name || lead.name.trim() === '' || lead.name === 'Not Available' || lead.name.startsWith('Quiz Lead');
       const displayName = isQuizLead ? '<span style="color:var(--text-secondary); font-weight:600; font-style:italic;">Not Available</span>' : `<strong>${escapeHTML(lead.name)}</strong>`;
       const waName = !isQuizLead ? lead.name : 'there';
@@ -1672,8 +1781,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ${roleBadge}
           </td>
           <td>
-            <a href="tel:${escapeHTML(lead.phone)}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-size:0.8rem;">
-              ${escapeHTML(lead.phone || '—')}
+            <a href="tel:${escapeHTML(dialNumber || lead.phone || '')}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-size:0.8rem;">
+              ${escapeHTML(displayPhone)}
             </a>
           </td>
           <td>
@@ -1704,7 +1813,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <button type="button" class="admin-action-btn admin-view-action admin-view-lead-btn" data-id="${escapeHTML(lead.id)}" title="View Student Profile Card">
                 <i class="fa-solid fa-eye"></i>
               </button>
-              ${cleanPhone ? `
+              ${waNumber ? `
                 <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="admin-action-btn admin-wa-action" title="Open WhatsApp chat">
                   <i class="fa-brands fa-whatsapp"></i>
                 </a>

@@ -637,6 +637,88 @@
       const dashContacted   = document.getElementById('dashContacted');
       const dashConfirmed   = document.getElementById('dashConfirmed');
 
+      // ─── Telephone Number Standardization Helper ──────────────────
+      function formatInternationalPhone(rawInput, iti) {
+        if (!rawInput && !iti) return { formatted: '', dial: '', wa: '' };
+
+        const raw = String(rawInput || '').trim();
+        const rawDigits = raw.replace(/\D/g, '');
+        if (rawDigits.length < 5) {
+          return { formatted: '', dial: '', wa: '' };
+        }
+
+        let digitsOnly = '';
+        let dialCode = '91';
+
+        if (iti && typeof iti.getSelectedCountryData === 'function') {
+          const countryData = iti.getSelectedCountryData();
+          dialCode = (countryData && countryData.dialCode) ? String(countryData.dialCode) : '91';
+          const e164 = iti.getNumber ? iti.getNumber() : '';
+          if (e164 && e164.startsWith('+')) {
+            digitsOnly = e164.replace(/\D/g, '');
+          }
+        }
+
+        if (!digitsOnly) {
+          if (raw.startsWith('+')) {
+            const match = raw.match(/^\+(\d{1,4})[\s.-]+(.*)$/);
+            if (match) {
+              dialCode = match[1];
+              const national = match[2].replace(/\D/g, '');
+              digitsOnly = dialCode + national;
+            } else {
+              const d = rawDigits;
+              if (d.startsWith('91') && d.length === 12) {
+                dialCode = '91';
+                digitsOnly = d;
+              } else if (d.startsWith('1') && d.length === 11) {
+                dialCode = '1';
+                digitsOnly = d;
+              } else if (d.startsWith('44') && d.length >= 11) {
+                dialCode = '44';
+                digitsOnly = d;
+              } else {
+                digitsOnly = d;
+              }
+            }
+          } else {
+            if (rawDigits.length === 10) {
+              digitsOnly = dialCode + rawDigits;
+            } else if (rawDigits.length === 11 && rawDigits.startsWith('0')) {
+              digitsOnly = dialCode + rawDigits.slice(1);
+            } else if (rawDigits.startsWith(dialCode)) {
+              digitsOnly = rawDigits;
+            } else {
+              digitsOnly = dialCode + rawDigits;
+            }
+          }
+        }
+
+        if (digitsOnly.length === 10) {
+          digitsOnly = dialCode + digitsOnly;
+        }
+
+        let nationalPart = '';
+        if (digitsOnly.startsWith(dialCode)) {
+          nationalPart = digitsOnly.slice(dialCode.length);
+        } else {
+          nationalPart = digitsOnly;
+        }
+
+        let formattedNational = nationalPart;
+        if (dialCode === '91' && nationalPart.length === 10) {
+          formattedNational = nationalPart.slice(0, 5) + ' ' + nationalPart.slice(5);
+        } else if (dialCode === '1' && nationalPart.length === 10) {
+          formattedNational = nationalPart.slice(0, 3) + ' ' + nationalPart.slice(3, 6) + ' ' + nationalPart.slice(6);
+        }
+
+        const formatted = `+${dialCode} ${formattedNational}`.trim();
+        const dial = `+${digitsOnly}`;
+        const wa = digitsOnly;
+
+        return { formatted, dial, wa };
+      }
+
       // ─── LocalStorage Fallback Helpers ───────────────────────────
       function normalizeLeads(leads) {
         if (!Array.isArray(leads)) return [];
@@ -648,6 +730,18 @@
             }
             if (!l.role || l.role === 'Student' || l.role === 'Quiz Lead') {
               l.role = 'Not Available';
+            }
+          }
+          if (l.phone && l.phone !== 'Not Available' && l.phone !== '—') {
+            const phoneObj = formatInternationalPhone(l.phone);
+            if (phoneObj.formatted) {
+              l.phone = phoneObj.formatted;
+            }
+            if (!l.phoneDial && phoneObj.dial) {
+              l.phoneDial = phoneObj.dial;
+            }
+            if (!l.phoneWa && phoneObj.wa) {
+              l.phoneWa = phoneObj.wa;
             }
           }
           return l;
@@ -678,6 +772,8 @@
             id: 'lead_seed_1',
             name: 'Aarav Sharma',
             phone: '+91 98765 43210',
+            phoneDial: '+919876543210',
+            phoneWa: '919876543210',
             email: 'aarav.sharma@example.com',
             institution: 'Delhi University',
             role: 'Student',
@@ -692,6 +788,8 @@
             id: 'lead_seed_2',
             name: 'Priyanka Sen',
             phone: '+91 98300 12345',
+            phoneDial: '+919830012345',
+            phoneWa: '919830012345',
             email: 'priyanka.sen@media.in',
             institution: 'Freelance Media Strategist',
             role: 'Professional',
@@ -947,6 +1045,8 @@
             const haystack = [
               isQuizLead ? 'not available' : (lead.name || ''),
               lead.phone,
+              lead.phoneDial,
+              lead.phoneWa,
               lead.email,
               lead.institution,
               isRoleNA ? 'not available' : lead.role,
@@ -986,7 +1086,10 @@
         }
 
         const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
-        const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+        const phoneObj = formatInternationalPhone(lead.phone);
+        const waNumber = lead.phoneWa || phoneObj.wa || (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone);
+        const dialNumber = lead.phoneDial || phoneObj.dial || (cleanPhone ? '+' + (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone) : '');
+        const displayPhone = lead.phone || phoneObj.formatted || 'Not Available';
         const waName = !isQuizLead ? lead.name : 'there';
         const waText = encodeURIComponent(`Hi ${waName}, this is Prof. Dr. Minal Pareek's team regarding your JournalismLab enrollment!`);
 
@@ -1025,10 +1128,10 @@
               <div class="profile-field-item">
                 <div class="profile-field-label">Mobile / WhatsApp Number</div>
                 <div class="profile-field-value" style="display:flex; align-items:center; gap:0.5rem;">
-                  <a href="tel:${escapeHTML(lead.phone)}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-weight:700;">
-                    ${escapeHTML(lead.phone || 'Not Available')}
+                  <a href="tel:${escapeHTML(dialNumber || lead.phone || '')}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-weight:700;">
+                    ${escapeHTML(displayPhone)}
                   </a>
-                  ${cleanPhone ? `
+                  ${waNumber ? `
                     <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" style="color:#25d366; font-size:1.05rem;" title="Chat on WhatsApp">
                       <i class="fa-brands fa-whatsapp"></i>
                     </a>
@@ -1164,7 +1267,10 @@
 
         dashTableBody.innerHTML = filtered.map((lead, idx) => {
           const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
-          const waNumber = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+          const phoneObj = formatInternationalPhone(lead.phone);
+          const waNumber = lead.phoneWa || phoneObj.wa || (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone);
+          const dialNumber = lead.phoneDial || phoneObj.dial || (cleanPhone ? '+' + (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone) : '');
+          const displayPhone = lead.phone || phoneObj.formatted || '—';
           const isQuizLead = !lead.name || lead.name.trim() === '' || lead.name === 'Not Available' || lead.name.startsWith('Quiz Lead');
           const displayName = isQuizLead ? '<span style="color:var(--text-secondary); font-weight:600; font-style:italic;">Not Available</span>' : `<strong style="color:var(--text-primary); font-size:0.9rem;">${escapeHTML(lead.name || 'Unnamed')}</strong>`;
           const waName = !isQuizLead ? lead.name : 'there';
@@ -1197,8 +1303,8 @@
                 ${roleBadge}
               </td>
               <td>
-                <a href="tel:${escapeHTML(lead.phone || '')}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-size:0.82rem;">
-                  ${escapeHTML(lead.phone || '—')}
+                <a href="tel:${escapeHTML(dialNumber || lead.phone || '')}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-size:0.82rem;">
+                  ${escapeHTML(displayPhone)}
                 </a>
               </td>
               <td>
@@ -1233,7 +1339,7 @@
                   <button type="button" class="admin-action-btn admin-view-action admin-view-lead-btn" data-id="${escapeHTML(lead.id)}" title="View Student Profile Card">
                     <i class="fa-solid fa-eye"></i>
                   </button>
-                  ${cleanPhone ? `
+                  ${waNumber ? `
                     <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="admin-action-btn admin-wa-action" title="Open WhatsApp chat">
                       <i class="fa-brands fa-whatsapp"></i>
                     </a>
@@ -1421,13 +1527,15 @@
         const randomName = names[Math.floor(Math.random() * names.length)];
         const randomCollege = colleges[Math.floor(Math.random() * colleges.length)];
         const randomRole = roles[Math.floor(Math.random() * roles.length)];
-        const randomResult = results[Math.floor(Math.random() * results.length)];
-        const randomPhone = '+91 ' + Math.floor(9000000000 + Math.random() * 999999999);
+        const randomDigits = String(Math.floor(9000000000 + Math.random() * 999999999));
+        const phoneObj = formatInternationalPhone(randomDigits);
 
         const newLead = {
           id: 'lead_' + Date.now(),
           name: randomName,
-          phone: randomPhone,
+          phone: phoneObj.formatted,
+          phoneDial: phoneObj.dial,
+          phoneWa: phoneObj.wa,
           email: randomName.toLowerCase().replace(' ', '.') + '@gmail.com',
           institution: randomCollege,
           role: randomRole,
