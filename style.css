@@ -1263,6 +1263,18 @@ body {
   color: var(--brand-black);
   font-size: 0.95rem;
 }
+.register-campaign-link {
+  margin-top: 2rem;
+}
+.register-campaign-link a {
+  color: var(--gray-700);
+  font-size: 0.85rem;
+  text-decoration: underline;
+  transition: color var(--transition);
+}
+.register-campaign-link a:hover {
+  color: var(--brand-black);
+}
 
 /* Form (Light Mode) */
 .register-form { display: flex; flex-direction: column; gap: 1.25rem; }
@@ -2323,10 +2335,18 @@ body {
   }
   .register-section__inner {
     grid-template-columns: 1fr;
-    gap: 2.25rem;
+    gap: 1.5rem;
   }
   .register-section__headline {
     font-size: clamp(1.6rem, 5.5vw, 2.2rem);
+    margin-bottom: 0;
+  }
+  /* Minimal Mobile View: Hide repetitive copy and clutter */
+  .register-section__body,
+  .register-section__fee,
+  .register-checklist,
+  .register-campaign-link {
+    display: none !important;
   }
   .footer {
     padding: 3rem 0 2rem;
