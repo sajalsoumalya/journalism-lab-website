@@ -1,0 +1,30 @@
+{
+  "rules": {
+    "journalism_leads": {
+      // 1. READ: ONLY authenticated admin Google accounts can view/download leads
+      ".read": "auth != null && (auth.token.email == 'soumalya9862@gmail.com' || auth.token.email == 'minalpareek18@gmail.com' || auth.token.email == 'admin@journalismlab.in')",
+
+      // 2. WRITE PERMISSIONS PER LEAD:
+      "$lead_id": {
+        // Read: Restricted to authenticated admins only
+        ".read": "auth != null && (auth.token.email == 'soumalya9862@gmail.com' || auth.token.email == 'minalpareek18@gmail.com' || auth.token.email == 'admin@journalismlab.in')",
+
+        // Write:
+        // - Authenticated Admins: Full control (update status, delete, edit)
+        // - Public Visitors: CAN ONLY CREATE A NEW RECORD (!data.exists() && newData.exists())
+        //   CANNOT OVERWRITE existing records (!data.exists())
+        //   CANNOT DELETE records (newData.exists())
+        ".write": "auth != null || (!data.exists() && newData.exists())",
+
+        // 3. DATA VALIDATION: Block spam, empty payloads, and malformed submissions
+        ".validate": "newData.hasChildren(['name', 'phone', 'email']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('phone').isString() && newData.child('phone').val().length >= 8 && newData.child('email').isString() && newData.child('email').val().contains('@')"
+      }
+    },
+
+    // 4. Default: Block all reads and writes on any other paths
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}

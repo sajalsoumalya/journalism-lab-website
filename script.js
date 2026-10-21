@@ -13,6 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const env = window.__ENV__ || window.firebaseConfig || {};
 
+  // ─── Prohibit and sanitize URL parameter submissions ──────────
+  if (window.location.search && (window.location.search.includes('name=') || window.location.search.includes('phone=') || window.location.search.includes('email='))) {
+    try {
+      window.history.replaceState(null, document.title, window.location.pathname);
+    } catch (e) {}
+  }
+
   // ─── Navbar scroll effect ─────────────────────────────────────
   const navbar = document.getElementById('navbar');
   if (navbar) {
