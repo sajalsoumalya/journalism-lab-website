@@ -12,6 +12,9 @@ COPY register.html    /usr/share/nginx/html/
 COPY style.css        /usr/share/nginx/html/
 COPY script.js        /usr/share/nginx/html/
 COPY assets/          /usr/share/nginx/html/assets/
+COPY robots.txt       /usr/share/nginx/html/
+COPY sitemap.xml      /usr/share/nginx/html/
+COPY site.webmanifest /usr/share/nginx/html/
 COPY env.template.js  /usr/share/nginx/html/
 
 # Copy nginx config

@@ -11,6 +11,7 @@
   <meta name="keywords" content="journalism workshop, mass communication, Prof Dr Minal Pareek, career quiz, journalism lab, anchoring, copywriting, video journalism, career path finder" />
   <meta name="author" content="Prof. Dr. Minal Pareek / JournalismLab" />
   <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://journalismlab.org/" />
 
   <!-- Open Graph / Facebook / Meta -->
   <meta property="og:type" content="website" />
@@ -18,15 +19,20 @@
   <meta property="og:url" content="https://journalismlab.org/" />
   <meta property="og:title" content="JournalismLab — 15-Day Industry-Ready Workshop | Prof. Dr. Minal Pareek" />
   <meta property="og:description" content="A 15-day intensive industry-ready workshop crafted for the ones who have a story to tell. Mentored live by Prof. Dr. Minal Pareek. 15 seats only." />
-  <meta property="og:image" content="assets/images/og-image.jpg" />
+  <meta property="og:image" content="https://journalismlab.org/assets/images/og-image.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="https://journalismlab.org/" />
   <meta name="twitter:title" content="JournalismLab — 15-Day Industry-Ready Workshop | Prof. Dr. Minal Pareek" />
   <meta name="twitter:description" content="Crafted for aspiring journalists and media storytellers. A 15-day intensive online workshop led by Prof. Dr. Minal Pareek. 15 seats only." />
-  <meta name="twitter:image" content="assets/images/og-image.jpg" />
+  <meta name="twitter:image" content="https://journalismlab.org/assets/images/og-image.jpg" />
+
+  <!-- Mobile & PWA -->
+  <meta name="theme-color" content="#111111" />
+  <link rel="manifest" href="site.webmanifest" />
 
   <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg" />
@@ -34,6 +40,83 @@
   <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png" />
   <link rel="shortcut icon" href="assets/images/favicon.ico" />
+
+  <!-- Structured Data (Schema.org JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "EducationalOrganization",
+        "@id": "https://journalismlab.org/#organization",
+        "name": "JournalismLab",
+        "url": "https://journalismlab.org/",
+        "logo": "https://journalismlab.org/assets/images/icon-512.png",
+        "description": "A premier media cohort training the next generation of fearless, industry-ready journalists.",
+        "sameAs": [
+          "https://minal.media"
+        ]
+      },
+      {
+        "@type": "Person",
+        "@id": "https://journalismlab.org/#instructor",
+        "name": "Prof. Dr. Minal Pareek",
+        "jobTitle": "Lead Instructor & Media Educator",
+        "url": "https://minal.media",
+        "sameAs": [
+          "https://minal.media"
+        ],
+        "worksFor": {
+          "@id": "https://journalismlab.org/#organization"
+        }
+      },
+      {
+        "@type": "Course",
+        "@id": "https://journalismlab.org/#course",
+        "name": "JournalismLab — 15-Day Industry-Ready Workshop",
+        "description": "Crafted for aspiring journalists and media storytellers. A 15-day intensive online workshop covering TV anchoring, investigative reporting, newsroom scripting, mobile journalism, and news packaging.",
+        "provider": {
+          "@id": "https://journalismlab.org/#organization"
+        },
+        "instructor": {
+          "@id": "https://journalismlab.org/#instructor"
+        },
+        "educationalCredentialAwarded": "Verified Certificate of Completion",
+        "totalHistoricalEnrollment": 15,
+        "offers": {
+          "@type": "Offer",
+          "category": "Founding Batch Tuition",
+          "price": "3000",
+          "priceCurrency": "INR",
+          "availability": "https://schema.org/LimitedAvailability",
+          "url": "https://journalismlab.org/#register",
+          "validFrom": "2026-10-21"
+        },
+        "hasCourseInstance": {
+          "@type": "CourseInstance",
+          "courseMode": "Online",
+          "courseWorkload": "PT15H",
+          "startDate": "2026-10-26",
+          "location": {
+            "@type": "VirtualLocation",
+            "name": "Google Meet"
+          }
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://journalismlab.org/"
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -196,7 +279,7 @@
 
           <div class="instructor-profile-compact">
             <div class="instructor-photo-frame">
-              <img src="assets/images/instructor.jpg" alt="Prof. Dr. Minal Pareek — Media Veteran &amp; Instructor" />
+              <img src="assets/images/instructor.jpg" alt="Prof. Dr. Minal Pareek — Media Veteran &amp; Instructor" width="88" height="88" loading="lazy" />
             </div>
             <div class="instructor-profile-info">
               <h2 class="instructor-name">Prof. Dr. Minal Pareek</h2>
