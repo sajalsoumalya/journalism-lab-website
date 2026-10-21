@@ -585,6 +585,7 @@ body {
   background: var(--brand-accent);
   animation: pulse 2s infinite;
 }
+.instructor-web-pill,
 .instructor-yt-pill {
   position: relative;
   width: 100%;
@@ -599,27 +600,30 @@ body {
   align-items: center;
   justify-content: space-between;
   text-decoration: none;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 600;
   transition: var(--transition);
 }
+.instructor-web-pill:hover,
 .instructor-yt-pill:hover {
   background: var(--brand-black);
   color: var(--brand-white);
   border-color: var(--brand-black);
   transform: translateY(-2px);
 }
+.instructor-web-pill span,
 .instructor-yt-pill span {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.instructor-yt-pill i.fa-youtube {
-  color: #ff0000;
-  font-size: 1.15rem;
+.instructor-web-pill i.fa-globe {
+  color: var(--crimson);
+  font-size: 1.05rem;
+  transition: color var(--transition);
 }
-.instructor-yt-pill:hover i.fa-youtube {
-  color: #ffffff;
+.instructor-web-pill:hover i.fa-globe {
+  color: var(--brand-white);
 }
 
 .instructor-content {}

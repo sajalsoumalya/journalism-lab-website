@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     {
       q: "Which platform do you consume the most content on?",
       options: [
-        { text: "YouTube — long-form video, documentaries",       score: "video" },
+        { text: "Documentaries & long-form video platforms",       score: "video" },
         { text: "Instagram Reels & TikTok short video formats",    score: "reels" },
         { text: "News publications and investigative articles",    score: "web"   },
         { text: "LinkedIn and Twitter for industry conversations", score: "ad"    },
