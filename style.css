@@ -1056,9 +1056,6 @@ body {
   font-weight: 700;
   white-space: nowrap;
 }
-.btn-text-short {
-  display: none;
-}
 .pathfinder-footer-subtle {
   margin-top: 2rem;
   text-align: center;
@@ -2244,12 +2241,6 @@ body {
 }
 
 @media (max-width: 540px) {
-  .btn-text-full {
-    display: none;
-  }
-  .btn-text-short {
-    display: inline;
-  }
   .nav-cta-btn {
     padding: 0.45rem 0.85rem;
     font-size: 0.78rem;
