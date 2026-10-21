@@ -1037,8 +1037,9 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: calc(var(--nav-h) + 2rem) 1.5rem 3.5rem;
+  padding: calc(var(--nav-h) + 2.5rem) 1.5rem 4rem;
   background: var(--bg-page);
+  box-sizing: border-box;
 }
 .pathfinder-page .container {
   width: 100%;
@@ -1046,6 +1047,17 @@ body {
 }
 .pathfinder-page .quiz-card {
   margin: 0 auto;
+  scroll-margin-top: calc(var(--nav-h) + 1.25rem);
+}
+
+.nav-cta-btn {
+  padding: 0.55rem 1.3rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.btn-text-short {
+  display: none;
 }
 .pathfinder-footer-subtle {
   margin-top: 2rem;
@@ -1340,6 +1352,9 @@ body {
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
   transform: scale(0.92) translateY(15px);
   transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  max-height: calc(100vh - 2.5rem);
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 .modal-overlay.active .modal-box {
   transform: scale(1) translateY(0);
@@ -2089,7 +2104,11 @@ body {
   .register-section__inner { grid-template-columns: 1fr; gap: 3rem; }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 768px) {
+  .nav__inner {
+    padding: 0 1.25rem;
+    gap: 1rem;
+  }
   .nav__links { display: none; }
   .nav__hamburger { display: flex; }
   .hero__meta { gap: 1rem; }
@@ -2102,16 +2121,228 @@ body {
   .about__stats { grid-template-columns: repeat(2, 1fr); }
   .instructor-highlights { grid-template-columns: 1fr; }
   .footer__inner { flex-direction: column; gap: 2rem; }
-  .whatsapp-fab { bottom: 20px; right: 20px; }
-  .whatsapp-fab__label { display: none; }
-  .whatsapp-fab__btn { width: 54px; height: 54px; font-size: 28px; }
-  .modal-box { padding: 2rem 1.25rem; }
+
+  /* Minimal ad-focused landing pages */
+  .pathfinder-page {
+    min-height: 100vh;
+    justify-content: flex-start;
+    padding: calc(var(--nav-h) + 1.25rem) 1rem 6.5rem;
+  }
+  .pathfinder-page .container {
+    padding: 0;
+    max-width: 100%;
+  }
+  .quiz-card {
+    padding: 1.6rem 1.2rem;
+    max-width: 100%;
+    border-radius: 8px;
+    box-sizing: border-box;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.05);
+  }
+  .quiz-progress {
+    margin-bottom: 1.35rem;
+  }
+  .quiz-q {
+    font-size: 1.25rem;
+    line-height: 1.35;
+    margin-bottom: 1.25rem;
+  }
+  .quiz-opt {
+    padding: 0.85rem 1.1rem;
+    font-size: 0.9rem;
+    min-height: 48px;
+  }
+  .quiz-result__icon {
+    font-size: 2.35rem;
+    margin-bottom: 0.75rem;
+  }
+  .quiz-result__title {
+    font-size: 1.55rem;
+    line-height: 1.25;
+    margin-bottom: 0.5rem;
+  }
+  .quiz-result__desc {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    margin: 0 auto 1.35rem;
+    max-width: 100%;
+  }
+  .quiz-result__nudge {
+    font-size: 0.68rem;
+    margin-bottom: 0.65rem;
+  }
+  .quiz-result__course-card {
+    padding: 1.25rem 1.15rem;
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: 8px;
+  }
+  .quiz-result__course-badge {
+    font-size: 0.58rem;
+    padding: 0.2rem 0.55rem;
+    margin-bottom: 0.5rem;
+  }
+  .quiz-result__course-name {
+    font-size: 1.05rem;
+    line-height: 1.3;
+    margin-bottom: 0.35rem;
+  }
+  .quiz-result__course-meta {
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+  .quiz-result__course-card .btn {
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+  }
+
+  /* Register Minimal Page */
+  .register-minimal-page {
+    min-height: 100vh;
+    justify-content: flex-start;
+    padding: calc(var(--nav-h) + 1.25rem) 1rem 6.5rem;
+  }
+  .register-card {
+    padding: 1.75rem 1.25rem 1.5rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .register-card__title {
+    font-size: 1.45rem;
+  }
+  .register-card__meta {
+    font-size: 0.68rem;
+    padding: 0.3rem 0.65rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  /* Floating WhatsApp FAB */
+  .whatsapp-fab {
+    bottom: 16px;
+    right: 16px;
+  }
+  .whatsapp-fab__label {
+    display: none;
+  }
+  .whatsapp-fab__btn {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    box-shadow: 0 6px 18px rgba(37, 211, 102, 0.35), 0 2px 8px rgba(0,0,0,0.12);
+  }
+  .modal-box {
+    padding: 1.75rem 1.25rem;
+  }
+  .pathfinder-footer-subtle {
+    margin-top: 1.25rem;
+    font-size: 0.68rem;
+    line-height: 1.5;
+    padding: 0 0.5rem;
+  }
+}
+
+@media (max-width: 540px) {
+  .btn-text-full {
+    display: none;
+  }
+  .btn-text-short {
+    display: inline;
+  }
+  .nav-cta-btn {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.78rem;
+  }
 }
 
 @media (max-width: 480px) {
-  .container { padding: 0 1.25rem; }
-  .quiz-card { padding: 1.5rem 1.25rem; }
-  .hero { padding: calc(var(--nav-h) + 2rem) 1.25rem 5rem; }
-  .about__stats { grid-template-columns: repeat(2, 1fr); }
-  .role-selector { grid-template-columns: 1fr; }
+  .nav__inner {
+    padding: 0 0.85rem;
+  }
+  .nav__logo-text {
+    font-size: 1.05rem;
+  }
+  .container {
+    padding: 0 1rem;
+  }
+  .hero {
+    padding: calc(var(--nav-h) + 2rem) 1rem 5rem;
+  }
+  .pathfinder-page {
+    padding: calc(var(--nav-h) + 0.85rem) 0.75rem 6.5rem;
+  }
+  .quiz-card {
+    padding: 1.25rem 0.85rem;
+    border-radius: 6px;
+  }
+  .quiz-progress {
+    margin-bottom: 1.1rem;
+  }
+  .quiz-q {
+    font-size: 1.12rem;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+  }
+  .quiz-opt {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.86rem;
+    min-height: 44px;
+    gap: 0.5rem;
+  }
+  .quiz-result__icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  .quiz-result__title {
+    font-size: 1.35rem;
+    margin-bottom: 0.4rem;
+  }
+  .quiz-result__desc {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0 auto 1.15rem;
+  }
+  .quiz-result__course-card {
+    padding: 1rem 0.85rem;
+    border-radius: 6px;
+  }
+  .quiz-result__course-badge {
+    font-size: 0.55rem;
+    padding: 0.18rem 0.5rem;
+  }
+  .quiz-result__course-name {
+    font-size: 0.95rem;
+    line-height: 1.3;
+  }
+  .quiz-result__course-meta {
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+  .quiz-result__course-card .btn {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.85rem;
+  }
+  .register-minimal-page {
+    padding: calc(var(--nav-h) + 0.85rem) 0.75rem 6.5rem;
+  }
+  .register-card {
+    padding: 1.25rem 0.85rem 1.25rem;
+  }
+  .register-card__title {
+    font-size: 1.3rem;
+  }
+  .register-card__meta {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.55rem;
+  }
+  .about__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .role-selector {
+    grid-template-columns: 1fr;
+  }
+  .modal-box {
+    padding: 1.5rem 1rem;
+  }
 }
