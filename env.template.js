@@ -25,5 +25,10 @@ window.__ENV__ = {
 
   ADMIN_EMAIL:                  "${ADMIN_EMAIL}",
   ADMIN_PASSWORD:               "${ADMIN_PASSWORD}",
-  ADMIN_EMAILS:                 "${ADMIN_EMAILS}"
+  ADMIN_EMAILS:                 "${ADMIN_EMAILS}",
+
+  // Captcha Security API Key
+  CAPTCHA_API_KEY:              "${CAPTCHA_API_KEY}",
+  CAPTCHA_SITE_KEY:             "${CAPTCHA_SITE_KEY}",
+  captchaApiKey:                "${captchaApiKey}"
 };

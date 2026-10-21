@@ -319,6 +319,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ─── Captcha Engine & Form Submission ─────────────────────────
+  const captchaApiKey = (env.CAPTCHA_API_KEY && !env.CAPTCHA_API_KEY.startsWith('${')) ? env.CAPTCHA_API_KEY :
+                        (env.CAPTCHA_SITE_KEY && !env.CAPTCHA_SITE_KEY.startsWith('${')) ? env.CAPTCHA_SITE_KEY :
+                        (env.captchaApiKey && !env.captchaApiKey.startsWith('${')) ? env.captchaApiKey : null;
+
   let currentCaptcha = '';
   const captchaModal     = document.getElementById('captchaModal');
   const captchaCloseBtn  = document.getElementById('captchaCloseBtn');
@@ -487,6 +491,8 @@ document.addEventListener('DOMContentLoaded', () => {
         message: (pendingFormData ? pendingFormData.get('msg') : '') || '',
         quizResult: window.lastQuizResultTitle || 'Not taken',
         status: 'new',
+        captchaVerified: true,
+        captchaSecured: Boolean(captchaApiKey),
         submittedAt: new Date().toISOString(),
         submittedDisplay: new Date().toLocaleDateString('en-IN', {
           day: '2-digit', month: 'short', year: 'numeric',

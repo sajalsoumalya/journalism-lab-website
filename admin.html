@@ -1085,6 +1085,7 @@
           'Career Questionnaire Result',
           'Status',
           'Source',
+          'Captcha Security',
           'Submitted At',
           'Notes / Message'
         ];
@@ -1099,6 +1100,7 @@
           l.quizResult || 'Not taken',
           l.status || 'new',
           l.source || 'Website',
+          l.captchaVerified !== false ? 'Verified' : 'Unverified',
           l.submittedAt || '',
           (l.message || '').replace(/"/g, '""').replace(/\n/g, ' ')
         ]);
