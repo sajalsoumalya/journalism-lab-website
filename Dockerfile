@@ -17,6 +17,7 @@ COPY robots.txt       /usr/share/nginx/html/
 COPY sitemap.xml      /usr/share/nginx/html/
 COPY site.webmanifest /usr/share/nginx/html/
 COPY env.template.js  /usr/share/nginx/html/
+COPY env.js           /usr/share/nginx/html/
 
 # Copy nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
