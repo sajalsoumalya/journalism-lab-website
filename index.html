@@ -592,6 +592,30 @@
         <p>The Career Path Quiz provides general career guidance based on the responses submitted by participants. The results are indicative only and may not be completely accurate. They should not be treated as professional career advice or the sole basis for making career decisions.</p>
         <p>All personal information collected through this quiz will be stored securely and will never be sold to third parties.</p>
         <p>JournalismLab shall not be held responsible for any errors, inaccuracies or misleading recommendations in the quiz results, or for any decisions or consequences arising from reliance on them, to the extent permitted by applicable law.</p>
+
+        <div class="disclaimer-phone-group">
+          <label for="quizUserPhone" class="disclaimer-phone-label">
+            <span>Mobile / WhatsApp Number <span style="color:var(--crimson);">*</span></span>
+            <span class="disclaimer-phone-badge">Required to view results</span>
+          </label>
+          <div class="quiz-phone-input-wrap">
+            <span class="quiz-phone-icon"><i class="fa-solid fa-phone"></i></span>
+            <input 
+              type="tel" 
+              id="quizUserPhone" 
+              class="quiz-phone-input" 
+              placeholder="+91 00000 00000" 
+              autocomplete="tel"
+              inputmode="tel"
+              required
+            />
+          </div>
+          <p id="quizPhoneError" class="quiz-phone-error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>Please enter a valid 10-digit mobile number to proceed.</span>
+          </p>
+        </div>
+
         <div class="disclaimer-modal-consent">
           <i class="fa-solid fa-circle-check"></i>
           <span>By proceeding, you acknowledge and agree to these terms.</span>

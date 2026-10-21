@@ -174,11 +174,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function openQuizDisclaimer(score, btn) {
       pendingScore = score;
       pendingBtn = btn;
+      const phoneInput = document.getElementById('quizUserPhone');
+      const phoneErr = document.getElementById('quizPhoneError');
+      if (phoneErr) phoneErr.style.display = 'none';
+      if (phoneInput) {
+        phoneInput.classList.remove('error');
+        if (window.userQuizPhone && !phoneInput.value) {
+          phoneInput.value = window.userQuizPhone;
+        }
+      }
       if (quizDisclaimerModal) {
         quizDisclaimerModal.classList.add('active');
         quizDisclaimerModal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
       }
+      setTimeout(() => {
+        if (phoneInput) phoneInput.focus();
+      }, 150);
     }
 
     function closeQuizDisclaimer(proceed = false) {
@@ -207,8 +219,53 @@ document.addEventListener('DOMContentLoaded', () => {
       pendingBtn = null;
     }
 
+    const quizUserPhone = document.getElementById('quizUserPhone');
+    const quizPhoneError = document.getElementById('quizPhoneError');
+
+    if (quizUserPhone) {
+      quizUserPhone.addEventListener('input', () => {
+        const digits = quizUserPhone.value.replace(/\D/g, '');
+        if (digits.length >= 10) {
+          if (quizPhoneError) quizPhoneError.style.display = 'none';
+          quizUserPhone.classList.remove('error');
+        }
+      });
+
+      quizUserPhone.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (quizDisclaimerOkBtn) quizDisclaimerOkBtn.click();
+        }
+      });
+    }
+
     if (quizDisclaimerOkBtn) {
       quizDisclaimerOkBtn.addEventListener('click', () => {
+        const phoneInput = document.getElementById('quizUserPhone');
+        const phoneErr = document.getElementById('quizPhoneError');
+        const rawPhone = phoneInput ? phoneInput.value.trim() : '';
+        const digits = rawPhone.replace(/\D/g, '');
+
+        if (!rawPhone || digits.length < 10) {
+          if (phoneErr) phoneErr.style.display = 'flex';
+          if (phoneInput) {
+            phoneInput.classList.add('error');
+            phoneInput.focus();
+          }
+          return;
+        }
+
+        if (phoneErr) phoneErr.style.display = 'none';
+        if (phoneInput) phoneInput.classList.remove('error');
+
+        window.userQuizPhone = rawPhone;
+
+        // Auto-fill phone field in any registration forms on page
+        const regPhoneInputs = document.querySelectorAll('input[type="tel"][name="phone"], input[name="phone"]');
+        regPhoneInputs.forEach(input => {
+          if (!input.value) input.value = rawPhone;
+        });
+
         closeQuizDisclaimer(true);
       });
     }
@@ -304,6 +361,34 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resDesc) resDesc.textContent = res.desc;
       window.lastQuizResultTitle = res.title;
 
+      // Automatically capture quiz lead if mobile phone was entered
+      if (window.userQuizPhone && !window.quizLeadCaptured) {
+        window.quizLeadCaptured = true;
+        const quizLead = {
+          id: 'lead_quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+          name: 'Quiz Lead (' + (res.title || 'Diagnostic') + ')',
+          phone: window.userQuizPhone,
+          email: '',
+          institution: '—',
+          role: 'Student',
+          message: 'Completed Career Diagnostic Quiz. Diagnosed Archetype: ' + (res.title || 'Unknown'),
+          quizResult: res.title || 'Completed',
+          status: 'new',
+          captchaVerified: true,
+          captchaSecured: (typeof captchaApiKey !== 'undefined' && Boolean(captchaApiKey)),
+          submittedAt: new Date().toISOString(),
+          submittedDisplay: new Date().toLocaleDateString('en-IN', {
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+          }),
+          source: window.location.pathname.includes('pathfinder') ? 'Pathfinder Quiz' : 'Diagnostic Quiz'
+        };
+
+        if (typeof window.recordLead === 'function') {
+          window.recordLead(quizLead);
+        }
+      }
+
       // Scroll to quiz card so user sees result cleanly
       if (quizCard) {
         quizCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -317,6 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
         disclaimerAgreed = false;
         pendingScore = null;
         pendingBtn = null;
+        window.quizLeadCaptured = false;
         if (quizResult) quizResult.style.display = 'none';
         if (questionWrap) questionWrap.style.display = 'block';
         renderQuestion(0);
@@ -493,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const leadData = {
         id: 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         name: (pendingFormData ? pendingFormData.get('name') : '') || applicantName || 'Applicant',
-        phone: (pendingFormData ? pendingFormData.get('phone') : '') || '',
+        phone: (pendingFormData ? pendingFormData.get('phone') : '') || window.userQuizPhone || '',
         email: (pendingFormData ? pendingFormData.get('email') : '') || '',
         institution: (pendingFormData ? pendingFormData.get('institution') : '') || '—',
         role: (pendingFormData ? pendingFormData.get('role') : '') || 'Student',
