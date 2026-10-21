@@ -916,8 +916,21 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentAdminFilter = 'all';
   let adminSearchQuery = '';
 
+  const rawAdminEmails = (env.ADMIN_EMAILS && !env.ADMIN_EMAILS.startsWith('${')) ? env.ADMIN_EMAILS :
+                         (env.ADMIN_EMAIL && !env.ADMIN_EMAIL.startsWith('${')) ? env.ADMIN_EMAIL :
+                         'admin@journalismlab.in,soumalya9862@gmail.com,minalpareek18@gmail.com';
+
+  const authorizedAdminEmails = rawAdminEmails
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  const adminPassword = (env.ADMIN_PASSWORD && !env.ADMIN_PASSWORD.startsWith('${')) ? env.ADMIN_PASSWORD : 'JLab@2026!';
+
   function openAdminLogin() {
     if (document.getElementById('adminLoginOverlay')) return;
+
+    const defaultEmailPlaceholder = authorizedAdminEmails[0] || 'admin@journalismlab.in';
 
     const modalHTML = `
       <div class="modal-overlay active" id="adminLoginOverlay" style="z-index:10006;">
@@ -935,7 +948,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <form id="adminLoginForm">
             <div class="form-group">
               <label for="adminEmailInput" style="color:var(--text-secondary)">Admin Email</label>
-              <input type="email" id="adminEmailInput" value="${ADMIN_EMAIL}" required />
+              <input type="email" id="adminEmailInput" placeholder="${defaultEmailPlaceholder}" required />
             </div>
             <div class="form-group" style="margin-top:0.75rem;">
               <label for="adminPassInput" style="color:var(--text-secondary)">Password</label>
@@ -960,7 +973,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.getElementById('adminLoginCloseBtn');
     const errBox = document.getElementById('adminLoginErr');
 
-    setTimeout(() => passInput && passInput.focus(), 120);
+    setTimeout(() => {
+      const emailInput = document.getElementById('adminEmailInput');
+      if (emailInput && !emailInput.value) {
+        emailInput.focus();
+      } else if (passInput) {
+        passInput.focus();
+      }
+    }, 120);
 
     closeBtn.addEventListener('click', () => overlay.remove());
     overlay.addEventListener('click', (e) => {
@@ -969,10 +989,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const enteredEmail = document.getElementById('adminEmailInput').value.trim();
+      const enteredEmail = document.getElementById('adminEmailInput').value.trim().toLowerCase();
       const enteredPass  = passInput.value;
 
-      if (enteredEmail === ADMIN_EMAIL && enteredPass === ADMIN_PASSWORD) {
+      const isEmailAuthorized = (authorizedAdminEmails.length === 0 || authorizedAdminEmails.includes(enteredEmail));
+      const isPassValid = (enteredPass === adminPassword);
+
+      if (isEmailAuthorized && isPassValid) {
         overlay.remove();
         openAdminPanel();
       } else {
