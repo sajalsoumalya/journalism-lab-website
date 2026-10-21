@@ -56,6 +56,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ─── International Telephone Input Helper (Free Library) ──────
+  const itiMap = new WeakMap();
+
+  function initIntlPhone(input) {
+    if (!input) return null;
+    if (itiMap.has(input)) return itiMap.get(input);
+
+    if (typeof window.intlTelInput !== 'function') {
+      return null;
+    }
+
+    try {
+      const iti = window.intlTelInput(input, {
+        initialCountry: 'in',
+        preferredCountries: ['in', 'us', 'ae', 'gb', 'sa', 'sg', 'ca', 'au'],
+        separateDialCode: true,
+        strictMode: true,
+        dropdownContainer: document.body,
+        utilsScript: 'https://cdn.jsdelivr.net/npm/intl-tel-input@24.5.0/build/js/utils.js'
+      });
+      itiMap.set(input, iti);
+      return iti;
+    } catch (err) {
+      console.warn('intl-tel-input initialization notice:', err);
+      return null;
+    }
+  }
+
+  // Auto-initialize any tel inputs found in the DOM
+  document.querySelectorAll('input[type="tel"]').forEach(input => initIntlPhone(input));
+
   // ─── Quiz Engine ──────────────────────────────────────────────
   const QUESTIONS = [
     {
@@ -175,18 +206,14 @@ document.addEventListener('DOMContentLoaded', () => {
       pendingScore = score;
       pendingBtn = btn;
       const phoneInput = document.getElementById('quizUserPhone');
-      const countrySelect = document.getElementById('quizUserCountryCode');
       const phoneErr = document.getElementById('quizPhoneError');
-      const phoneWrap = document.getElementById('quizPhoneInputWrap');
       if (phoneErr) phoneErr.style.display = 'none';
-      if (phoneWrap) phoneWrap.classList.remove('error');
       if (phoneInput) {
         phoneInput.classList.remove('error');
+        const iti = initIntlPhone(phoneInput);
         if (window.userQuizPhone && !phoneInput.value) {
-          const parts = window.userQuizPhone.trim().split(/\s+/);
-          if (parts.length >= 2 && parts[0].startsWith('+')) {
-            if (countrySelect) countrySelect.value = parts[0];
-            phoneInput.value = parts.slice(1).join(' ');
+          if (iti) {
+            iti.setNumber(window.userQuizPhone);
           } else {
             phoneInput.value = window.userQuizPhone;
           }
@@ -230,17 +257,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const quizUserPhone = document.getElementById('quizUserPhone');
     const quizPhoneError = document.getElementById('quizPhoneError');
-    const quizPhoneInputWrap = document.getElementById('quizPhoneInputWrap');
 
     if (quizUserPhone) {
+      initIntlPhone(quizUserPhone);
+
       quizUserPhone.addEventListener('input', () => {
+        const iti = itiMap.get(quizUserPhone);
         const digits = quizUserPhone.value.replace(/\D/g, '');
-        const countryCode = document.getElementById('quizUserCountryCode')?.value || '+91';
-        const minLen = countryCode === '+91' ? 10 : 7;
-        if (digits.length >= minLen) {
+        const isValid = iti ? (iti.isValidNumber() || digits.length >= 7) : digits.length >= 10;
+        if (isValid) {
           if (quizPhoneError) quizPhoneError.style.display = 'none';
           quizUserPhone.classList.remove('error');
-          if (quizPhoneInputWrap) quizPhoneInputWrap.classList.remove('error');
         }
       });
 
@@ -255,20 +282,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (quizDisclaimerOkBtn) {
       quizDisclaimerOkBtn.addEventListener('click', () => {
         const phoneInput = document.getElementById('quizUserPhone');
-        const countrySelect = document.getElementById('quizUserCountryCode');
         const phoneErr = document.getElementById('quizPhoneError');
-        const phoneWrap = document.getElementById('quizPhoneInputWrap');
-        const countryCode = countrySelect ? countrySelect.value : '+91';
-        const rawPhone = phoneInput ? phoneInput.value.trim() : '';
-        const digits = rawPhone.replace(/\D/g, '');
-        const minLen = countryCode === '+91' ? 10 : 7;
+        const iti = phoneInput ? (itiMap.get(phoneInput) || initIntlPhone(phoneInput)) : null;
+        const rawValue = phoneInput ? phoneInput.value.trim() : '';
+        const digits = rawValue.replace(/\D/g, '');
 
-        if (!rawPhone || digits.length < minLen) {
+        let fullNumber = '';
+        let isValid = false;
+
+        if (iti) {
+          const countryData = iti.getSelectedCountryData();
+          const isIndia = (countryData && countryData.iso2 === 'in');
+          isValid = iti.isValidNumber() || digits.length >= (isIndia ? 10 : 7);
+          fullNumber = iti.getNumber() || (countryData?.dialCode ? `+${countryData.dialCode} ${rawValue}` : rawValue);
+        } else {
+          isValid = digits.length >= 10;
+          fullNumber = rawValue.startsWith('+') ? rawValue : `+91 ${rawValue}`;
+        }
+
+        if (!rawValue || !isValid || digits.length < 7) {
           if (phoneErr) {
             phoneErr.style.display = 'flex';
             const errSpan = phoneErr.querySelector('span');
             if (errSpan) {
-              errSpan.textContent = countryCode === '+91'
+              const countryIso = iti ? iti.getSelectedCountryData()?.iso2 : 'in';
+              errSpan.textContent = countryIso === 'in'
                 ? 'Please enter a valid 10-digit mobile number to proceed.'
                 : 'Please enter a valid mobile number to proceed.';
             }
@@ -277,25 +315,23 @@ document.addEventListener('DOMContentLoaded', () => {
             phoneInput.classList.add('error');
             phoneInput.focus();
           }
-          if (phoneWrap) phoneWrap.classList.add('error');
           return;
         }
 
         if (phoneErr) phoneErr.style.display = 'none';
         if (phoneInput) phoneInput.classList.remove('error');
-        if (phoneWrap) phoneWrap.classList.remove('error');
 
-        const fullPhone = `${countryCode} ${rawPhone}`;
-        window.userQuizPhone = fullPhone;
+        window.userQuizPhone = fullNumber;
 
-        // Auto-fill phone field and country code in any registration forms on page
-        const regPhoneInputs = document.querySelectorAll('input[type="tel"][name="phone"], input[name="phone"]');
+        // Auto-fill phone field in any registration forms on page
+        const regPhoneInputs = document.querySelectorAll('input[type="tel"][name="phone"], #phone');
         regPhoneInputs.forEach(input => {
-          if (!input.value) input.value = rawPhone;
-        });
-        const regCountrySelects = document.querySelectorAll('select[name="country_code"]');
-        regCountrySelects.forEach(select => {
-          select.value = countryCode;
+          const regIti = itiMap.get(input) || initIntlPhone(input);
+          if (regIti) {
+            regIti.setNumber(fullNumber);
+          } else {
+            input.value = fullNumber;
+          }
         });
 
         closeQuizDisclaimer(true);
@@ -607,16 +643,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const applicantName = pendingFormData ? pendingFormData.get('name') : 'there';
       openSuccessModal(applicantName);
 
-      // Combine country calling code + telephone number
-      const rawCountryCode = (pendingFormData ? pendingFormData.get('country_code') : '') || '+91';
-      const rawPhoneNumber = (pendingFormData ? pendingFormData.get('phone') : '') || '';
+      // Format phone number via intl-tel-input or fallback
       let formattedPhone = '';
-      if (rawPhoneNumber) {
-        if (rawPhoneNumber.trim().startsWith('+')) {
-          formattedPhone = rawPhoneNumber.trim();
-        } else {
-          formattedPhone = `${rawCountryCode} ${rawPhoneNumber.trim()}`;
-        }
+      const regPhoneInput = activeFormElement ? activeFormElement.querySelector('input[type="tel"][name="phone"], #phone') : document.querySelector('input[type="tel"]');
+      const formIti = regPhoneInput ? (itiMap.get(regPhoneInput) || initIntlPhone(regPhoneInput)) : null;
+
+      if (formIti && formIti.getNumber()) {
+        formattedPhone = formIti.getNumber();
+      } else if (regPhoneInput && regPhoneInput.value.trim()) {
+        const raw = regPhoneInput.value.trim();
+        const countryData = formIti ? formIti.getSelectedCountryData() : null;
+        formattedPhone = raw.startsWith('+') ? raw : (countryData?.dialCode ? `+${countryData.dialCode} ${raw}` : `+91 ${raw}`);
+      } else if (pendingFormData && pendingFormData.get('phone')) {
+        const raw = pendingFormData.get('phone').trim();
+        formattedPhone = raw.startsWith('+') ? raw : `+91 ${raw}`;
       } else if (window.userQuizPhone) {
         formattedPhone = window.userQuizPhone;
       }
@@ -686,12 +726,34 @@ document.addEventListener('DOMContentLoaded', () => {
   // Attach submission listener to any registration forms on page
   const registerForms = document.querySelectorAll('form.register-form');
   registerForms.forEach(form => {
+    const phoneInput = form.querySelector('input[type="tel"]');
+    if (phoneInput) {
+      initIntlPhone(phoneInput);
+      phoneInput.addEventListener('input', () => phoneInput.setCustomValidity(''));
+    }
+
     form.addEventListener('submit', function(e) {
       e.preventDefault();
       if (!form.checkValidity()) {
         form.reportValidity();
         return;
       }
+
+      if (phoneInput) {
+        const formIti = itiMap.get(phoneInput) || initIntlPhone(phoneInput);
+        const digits = phoneInput.value.replace(/\D/g, '');
+        const isIndia = formIti && formIti.getSelectedCountryData()?.iso2 === 'in';
+        const isValid = formIti ? (formIti.isValidNumber() || digits.length >= (isIndia ? 10 : 7)) : digits.length >= 7;
+
+        if (!isValid) {
+          phoneInput.setCustomValidity(isIndia ? 'Please enter a valid 10-digit mobile number.' : 'Please enter a valid telephone number.');
+          phoneInput.reportValidity();
+          return;
+        } else {
+          phoneInput.setCustomValidity('');
+        }
+      }
+
       const formData = new FormData(form);
       openCaptchaModal(form, formData);
     });

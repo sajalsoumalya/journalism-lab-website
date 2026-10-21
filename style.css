@@ -1842,78 +1842,103 @@ body {
   letter-spacing: normal;
   text-transform: none;
 }
-/* Unified Phone Input with Country Code Dropdown */
-.phone-input-group {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: stretch !important;
+/* ─── International Telephone Input (intl-tel-input) Integration ─── */
+.iti {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.iti input[type="tel"] {
+  width: 100% !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.95rem !important;
+  padding: 0.85rem 1rem !important;
   border: 1px solid var(--border-medium) !important;
   border-radius: var(--radius) !important;
   background: var(--bg-surface) !important;
-  overflow: hidden !important;
+  color: var(--text-primary) !important;
   transition: border-color var(--transition), box-shadow var(--transition);
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
+  box-sizing: border-box !important;
 }
-.phone-input-group:focus-within {
+
+.iti input[type="tel"]:focus {
   border-color: var(--brand-black) !important;
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05) !important;
+  outline: none !important;
 }
-.phone-input-group.error {
+
+.iti input[type="tel"].error {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
 }
 
-.phone-input-group select.phone-country-select {
-  border: none !important;
-  border-right: 1px solid var(--border-medium) !important;
+.iti__selected-country {
+  padding-left: 10px !important;
+  padding-right: 6px !important;
   background: var(--bg-subtle) !important;
-  color: var(--text-primary) !important;
-  font-family: var(--font-mono) !important;
-  font-size: 0.85rem !important;
-  font-weight: 700 !important;
-  padding: 0.85rem 0.65rem 0.85rem 0.8rem !important;
-  outline: none !important;
-  box-shadow: none !important;
-  cursor: pointer;
-  flex-shrink: 0 !important;
-  border-radius: 0 !important;
-  width: auto !important;
-  min-width: 96px !important;
-  max-width: 115px !important;
+  border-right: 1px solid var(--border-medium) !important;
+  border-top-left-radius: var(--radius) !important;
+  border-bottom-left-radius: var(--radius) !important;
   transition: background-color var(--transition);
 }
-.phone-input-group select.phone-country-select:focus {
-  background: #ffffff !important;
-  border-color: var(--border-medium) !important;
-  box-shadow: none !important;
+
+.iti__selected-country:hover {
+  background-color: #f0f0f0 !important;
 }
 
-.phone-input-group input[type="tel"] {
-  border: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  border-radius: 0 !important;
-  padding: 0.85rem 0.95rem !important;
-  flex: 1 !important;
-  width: 100% !important;
+.iti__selected-dial-code {
   font-family: var(--font-mono) !important;
-  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  font-size: 0.86rem !important;
   color: var(--text-primary) !important;
+  margin-left: 6px !important;
+}
+
+.iti--container {
+  z-index: 99999 !important;
+}
+
+.iti__dropdown-content {
+  background-color: #ffffff !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-medium) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.14) !important;
+  font-family: var(--font-sans) !important;
+  z-index: 99999 !important;
+}
+
+.iti__search-input {
+  background: var(--bg-subtle) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-medium) !important;
+  border-radius: 4px !important;
+  padding: 0.5rem 0.65rem !important;
+  font-size: 0.85rem !important;
   outline: none !important;
 }
-.phone-input-group input[type="tel"]:focus {
-  border: none !important;
-  box-shadow: none !important;
+
+.iti__country {
+  padding: 8px 10px !important;
+  font-size: 0.88rem !important;
 }
 
-.disclaimer-phone-group .phone-input-group select.phone-country-select {
-  padding: 0.75rem 0.65rem 0.75rem 0.75rem !important;
+.iti__country-name {
+  font-weight: 500 !important;
 }
-.disclaimer-phone-group .phone-input-group input[type="tel"] {
-  padding: 0.75rem 0.85rem !important;
+
+.iti__dial-code {
+  font-family: var(--font-mono) !important;
+  font-size: 0.82rem !important;
+  color: var(--text-muted) !important;
 }
+
+.disclaimer-phone-group .iti input[type="tel"] {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+}
+
 .quiz-phone-error {
   display: none;
   align-items: center;
