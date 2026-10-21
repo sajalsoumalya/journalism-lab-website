@@ -1094,7 +1094,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   padding: calc(var(--nav-h) + 2.5rem) 1.5rem 4rem;
   background: var(--bg-page);
