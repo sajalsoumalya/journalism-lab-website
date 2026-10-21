@@ -574,10 +574,10 @@ document.addEventListener('DOMContentLoaded', () => {
           phone: phoneObj.formatted || window.userQuizPhone,
           phoneDial: phoneObj.dial || window.userQuizPhoneDial || '',
           phoneWa: phoneObj.wa || window.userQuizPhoneWa || '',
-          email: 'quiz-visitor@journalismlab.in',
-          institution: '—',
+          email: 'Not Available',
+          institution: 'Not Available',
           role: 'Not Available',
-          message: 'Completed Career Diagnostic Quiz. Diagnosed Archetype: ' + (res.title || 'Unknown'),
+          message: 'Not Available',
           quizResult: res.title || 'Completed',
           status: 'new',
           captchaVerified: true,
@@ -1065,11 +1065,22 @@ document.addEventListener('DOMContentLoaded', () => {
     return leads.map(l => {
       const isQuiz = (l.name && l.name.startsWith('Quiz Lead')) || (l.id && l.id.startsWith('lead_quiz_')) || (l.source && l.source.includes('Quiz'));
       if (isQuiz) {
-        if (!l.name || l.name.startsWith('Quiz Lead')) {
-          l.name = 'Not Available';
+        if (!l.adminVerified) {
+          if (!l.name || l.name.startsWith('Quiz Lead')) {
+            l.name = 'Not Available';
+          }
+          if (!l.role || l.role === 'Quiz Lead' || l.role === 'Student') {
+            l.role = 'Not Available';
+          }
         }
-        if (!l.role || l.role === 'Student' || l.role === 'Quiz Lead') {
-          l.role = 'Not Available';
+        if (!l.email || l.email.includes('quiz-visitor') || l.email === '—') {
+          l.email = 'Not Available';
+        }
+        if (!l.institution || l.institution === '—') {
+          l.institution = 'Not Available';
+        }
+        if (!l.message || l.message.startsWith('Completed Career Diagnostic Quiz')) {
+          l.message = 'Not Available';
         }
       }
       if (l.phone && l.phone !== 'Not Available' && l.phone !== '—') {
@@ -1647,7 +1658,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="profile-field-item">
                 <div class="profile-field-label">Email Address</div>
                 <div class="profile-field-value">
-                  ${lead.email && lead.email !== '—' && !lead.email.includes('quiz-visitor') ? `
+                  ${lead.email && lead.email !== '—' && lead.email !== 'Not Available' && !lead.email.includes('quiz-visitor') ? `
                     <a href="mailto:${escapeHTML(lead.email)}" style="color:var(--text-primary); text-decoration:underline;">
                       ${escapeHTML(lead.email)}
                     </a>
@@ -1689,7 +1700,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="profile-field-label" style="margin-bottom:0.35rem;">
                 <i class="fa-solid fa-comment-dots"></i> Application Notes / Call Remarks
               </div>
-              <p>${lead.message ? escapeHTML(lead.message) : '<em style="color:var(--text-muted);">No notes recorded yet. Click "Edit Details" to add conversation remarks.</em>'}</p>
+              <p>${(lead.message && lead.message !== 'Not Available' && !lead.message.startsWith('Completed Career Diagnostic Quiz')) ? escapeHTML(lead.message) : '<em style="color:var(--text-muted); font-style:italic;">Not Available</em>'}</p>
             </div>
 
             <div class="profile-card-footer">
@@ -1799,7 +1810,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <div class="profile-edit-group">
                   <label class="profile-field-label" for="editLeadEmail">Email Address</label>
-                  <input type="email" id="editLeadEmail" class="profile-edit-input" value="${lead.email && !lead.email.includes('quiz-visitor') ? escapeHTML(lead.email) : ''}" placeholder="e.g. student@gmail.com" />
+                  <input type="email" id="editLeadEmail" class="profile-edit-input" value="${lead.email && !lead.email.includes('quiz-visitor') && lead.email !== 'Not Available' ? escapeHTML(lead.email) : ''}" placeholder="e.g. student@gmail.com" />
                 </div>
 
                 <div class="profile-edit-group">
@@ -1819,7 +1830,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 <div class="profile-edit-group" style="grid-column: 1 / -1;">
                   <label class="profile-field-label" for="editLeadMessage">Call Remarks / Conversation Notes</label>
-                  <textarea id="editLeadMessage" class="profile-edit-input" rows="3" placeholder="Add notes from your conversation (batch preference, topics of interest, questions asked, etc.)...">${escapeHTML(lead.message || '')}</textarea>
+                  <textarea id="editLeadMessage" class="profile-edit-input" rows="3" placeholder="Add notes from your conversation (batch preference, topics of interest, questions asked, etc.)...">${(lead.message && lead.message !== 'Not Available' && !lead.message.startsWith('Completed Career Diagnostic Quiz')) ? escapeHTML(lead.message) : ''}</textarea>
                 </div>
               </div>
 
@@ -1855,14 +1866,15 @@ document.addEventListener('DOMContentLoaded', () => {
           const pObj = formatInternationalPhone(enteredPhone);
 
           lead.name = enteredName || 'Not Available';
-          lead.role = enteredRole;
+          lead.role = enteredRole || 'Not Available';
           lead.phone = pObj.formatted || enteredPhone || 'Not Available';
           lead.phoneDial = pObj.dial || lead.phoneDial || '';
           lead.phoneWa = pObj.wa || lead.phoneWa || '';
-          lead.email = enteredEmail || (lead.email.includes('quiz-visitor') ? 'quiz-visitor@journalismlab.in' : '');
-          lead.institution = enteredInst || '—';
+          lead.email = enteredEmail || 'Not Available';
+          lead.institution = enteredInst || 'Not Available';
           lead.status = enteredStatus;
-          lead.message = enteredMsg;
+          lead.message = enteredMsg || 'Not Available';
+          lead.adminVerified = true;
 
           // Save to LocalStorage
           setStoredLeads(allAdminLeads);
@@ -1881,7 +1893,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 email: lead.email,
                 institution: lead.institution,
                 status: lead.status,
-                message: lead.message
+                message: lead.message,
+                adminVerified: true
               });
             } catch (err) {
               console.warn('Firebase RTDB update notice:', err);
@@ -1956,7 +1969,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <button type="button" class="admin-applicant-link admin-view-lead-btn" data-id="${escapeHTML(lead.id)}" title="Click to view student profile card">
               ${displayName}
             </button>
-            ${lead.message ? `<div style="font-size:0.75rem; color:var(--text-muted); max-width:240px; margin-top:2px;"><em>"${escapeHTML(lead.message)}"</em></div>` : ''}
+            ${(lead.message && lead.message !== 'Not Available' && !lead.message.startsWith('Completed Career Diagnostic Quiz')) ? `<div style="font-size:0.75rem; color:var(--text-muted); max-width:240px; margin-top:2px;"><em>"${escapeHTML(lead.message)}"</em></div>` : ''}
           </td>
           <td>
             ${roleBadge}
@@ -1967,14 +1980,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </a>
           </td>
           <td>
-            ${lead.email && lead.email !== '—' ? `
+            ${lead.email && lead.email !== '—' && lead.email !== 'Not Available' && !lead.email.includes('quiz-visitor') ? `
               <a href="mailto:${escapeHTML(lead.email)}" style="color:var(--text-muted); text-decoration:none; font-size:0.8rem;">
                 ${escapeHTML(lead.email)}
               </a>
-            ` : '<span style="color:var(--text-muted); font-size:0.8rem;">—</span>'}
+            ` : '<span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">Not Available</span>'}
           </td>
           <td style="font-size:0.82rem; color:var(--text-secondary); max-width:180px;">
-            ${escapeHTML(lead.institution || '—')}
+            ${(lead.institution && lead.institution !== '—' && lead.institution !== 'Not Available') ? escapeHTML(lead.institution) : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
           </td>
           <td style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">
             ${escapeHTML(lead.quizResult || 'Not taken')}
@@ -2088,19 +2101,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const expName = isQuizLead ? 'Not Available' : (l.name || 'Not Available');
       const expRole = isRoleNA ? 'Not Available' : (l.role || 'Not Available');
+      const expEmail = (!l.email || l.email === '—' || l.email.includes('quiz-visitor') || l.email === 'Not Available') ? 'Not Available' : l.email;
+      const expInst = (!l.institution || l.institution === '—' || l.institution === 'Not Available') ? 'Not Available' : l.institution;
+      const expMsg = (!l.message || l.message === 'Not Available' || l.message.startsWith('Completed Career Diagnostic Quiz')) ? 'Not Available' : l.message;
 
       return [
         idx + 1,
         expName,
         expRole,
         l.phone || '',
-        l.email || '',
-        l.institution || '',
+        expEmail,
+        expInst,
         l.quizResult || 'Not taken',
         l.status || 'new',
         l.submittedAt || '',
         l.source || 'Website',
-        (l.message || '').replace(/"/g, '""').replace(/\n/g, ' ')
+        expMsg.replace(/"/g, '""').replace(/\n/g, ' ')
       ];
     });
 

@@ -17,7 +17,7 @@
         ".write": "auth != null || (!data.exists() && newData.exists())",
 
         // 3. DATA VALIDATION: Block spam, empty payloads, and malformed submissions
-        ".validate": "newData.hasChildren(['name', 'phone', 'email']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('phone').isString() && newData.child('phone').val().length >= 8 && newData.child('email').isString() && newData.child('email').val().contains('@')"
+        ".validate": "newData.hasChildren(['name', 'phone', 'email']) && newData.child('name').isString() && newData.child('name').val().length > 0 && newData.child('phone').isString() && newData.child('phone').val().length >= 8 && newData.child('email').isString() && (newData.child('email').val() == 'Not Available' || newData.child('email').val().contains('@'))"
       }
     },
 
