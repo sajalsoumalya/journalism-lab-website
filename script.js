@@ -175,12 +175,21 @@ document.addEventListener('DOMContentLoaded', () => {
       pendingScore = score;
       pendingBtn = btn;
       const phoneInput = document.getElementById('quizUserPhone');
+      const countrySelect = document.getElementById('quizUserCountryCode');
       const phoneErr = document.getElementById('quizPhoneError');
+      const phoneWrap = document.getElementById('quizPhoneInputWrap');
       if (phoneErr) phoneErr.style.display = 'none';
+      if (phoneWrap) phoneWrap.classList.remove('error');
       if (phoneInput) {
         phoneInput.classList.remove('error');
         if (window.userQuizPhone && !phoneInput.value) {
-          phoneInput.value = window.userQuizPhone;
+          const parts = window.userQuizPhone.trim().split(/\s+/);
+          if (parts.length >= 2 && parts[0].startsWith('+')) {
+            if (countrySelect) countrySelect.value = parts[0];
+            phoneInput.value = parts.slice(1).join(' ');
+          } else {
+            phoneInput.value = window.userQuizPhone;
+          }
         }
       }
       if (quizDisclaimerModal) {
@@ -221,13 +230,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const quizUserPhone = document.getElementById('quizUserPhone');
     const quizPhoneError = document.getElementById('quizPhoneError');
+    const quizPhoneInputWrap = document.getElementById('quizPhoneInputWrap');
 
     if (quizUserPhone) {
       quizUserPhone.addEventListener('input', () => {
         const digits = quizUserPhone.value.replace(/\D/g, '');
-        if (digits.length >= 10) {
+        const countryCode = document.getElementById('quizUserCountryCode')?.value || '+91';
+        const minLen = countryCode === '+91' ? 10 : 7;
+        if (digits.length >= minLen) {
           if (quizPhoneError) quizPhoneError.style.display = 'none';
           quizUserPhone.classList.remove('error');
+          if (quizPhoneInputWrap) quizPhoneInputWrap.classList.remove('error');
         }
       });
 
@@ -242,28 +255,47 @@ document.addEventListener('DOMContentLoaded', () => {
     if (quizDisclaimerOkBtn) {
       quizDisclaimerOkBtn.addEventListener('click', () => {
         const phoneInput = document.getElementById('quizUserPhone');
+        const countrySelect = document.getElementById('quizUserCountryCode');
         const phoneErr = document.getElementById('quizPhoneError');
+        const phoneWrap = document.getElementById('quizPhoneInputWrap');
+        const countryCode = countrySelect ? countrySelect.value : '+91';
         const rawPhone = phoneInput ? phoneInput.value.trim() : '';
         const digits = rawPhone.replace(/\D/g, '');
+        const minLen = countryCode === '+91' ? 10 : 7;
 
-        if (!rawPhone || digits.length < 10) {
-          if (phoneErr) phoneErr.style.display = 'flex';
+        if (!rawPhone || digits.length < minLen) {
+          if (phoneErr) {
+            phoneErr.style.display = 'flex';
+            const errSpan = phoneErr.querySelector('span');
+            if (errSpan) {
+              errSpan.textContent = countryCode === '+91'
+                ? 'Please enter a valid 10-digit mobile number to proceed.'
+                : 'Please enter a valid mobile number to proceed.';
+            }
+          }
           if (phoneInput) {
             phoneInput.classList.add('error');
             phoneInput.focus();
           }
+          if (phoneWrap) phoneWrap.classList.add('error');
           return;
         }
 
         if (phoneErr) phoneErr.style.display = 'none';
         if (phoneInput) phoneInput.classList.remove('error');
+        if (phoneWrap) phoneWrap.classList.remove('error');
 
-        window.userQuizPhone = rawPhone;
+        const fullPhone = `${countryCode} ${rawPhone}`;
+        window.userQuizPhone = fullPhone;
 
-        // Auto-fill phone field in any registration forms on page
+        // Auto-fill phone field and country code in any registration forms on page
         const regPhoneInputs = document.querySelectorAll('input[type="tel"][name="phone"], input[name="phone"]');
         regPhoneInputs.forEach(input => {
           if (!input.value) input.value = rawPhone;
+        });
+        const regCountrySelects = document.querySelectorAll('select[name="country_code"]');
+        regCountrySelects.forEach(select => {
+          select.value = countryCode;
         });
 
         closeQuizDisclaimer(true);
@@ -368,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
           id: 'lead_quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
           name: 'Not Available',
           phone: window.userQuizPhone,
-          email: '',
+          email: 'quiz-visitor@journalismlab.in',
           institution: '—',
           role: 'Not Available',
           message: 'Completed Career Diagnostic Quiz. Diagnosed Archetype: ' + (res.title || 'Unknown'),
@@ -575,11 +607,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const applicantName = pendingFormData ? pendingFormData.get('name') : 'there';
       openSuccessModal(applicantName);
 
+      // Combine country calling code + telephone number
+      const rawCountryCode = (pendingFormData ? pendingFormData.get('country_code') : '') || '+91';
+      const rawPhoneNumber = (pendingFormData ? pendingFormData.get('phone') : '') || '';
+      let formattedPhone = '';
+      if (rawPhoneNumber) {
+        if (rawPhoneNumber.trim().startsWith('+')) {
+          formattedPhone = rawPhoneNumber.trim();
+        } else {
+          formattedPhone = `${rawCountryCode} ${rawPhoneNumber.trim()}`;
+        }
+      } else if (window.userQuizPhone) {
+        formattedPhone = window.userQuizPhone;
+      }
+
       // Record lead in Firebase Realtime Database and LocalStorage
       const leadData = {
         id: 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         name: (pendingFormData ? pendingFormData.get('name') : '') || applicantName || 'Applicant',
-        phone: (pendingFormData ? pendingFormData.get('phone') : '') || window.userQuizPhone || '',
+        phone: formattedPhone || 'Not Available',
         email: (pendingFormData ? pendingFormData.get('email') : '') || '',
         institution: (pendingFormData ? pendingFormData.get('institution') : '') || '—',
         role: (pendingFormData ? pendingFormData.get('role') : '') || 'Student',

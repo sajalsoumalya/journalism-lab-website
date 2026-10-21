@@ -1842,38 +1842,77 @@ body {
   letter-spacing: normal;
   text-transform: none;
 }
-.quiz-phone-input-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.quiz-phone-icon {
-  position: absolute;
-  left: 0.95rem;
-  color: var(--text-muted);
-  pointer-events: none;
-  font-size: 0.85rem;
-}
-.quiz-phone-input {
-  width: 100%;
-  padding: 0.75rem 0.9rem 0.75rem 2.45rem;
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius);
-  font-family: var(--font-mono);
-  font-size: 0.92rem;
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  outline: none;
-  box-sizing: border-box;
+/* Unified Phone Input with Country Code Dropdown */
+.phone-input-group {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: stretch !important;
+  border: 1px solid var(--border-medium) !important;
+  border-radius: var(--radius) !important;
+  background: var(--bg-surface) !important;
+  overflow: hidden !important;
   transition: border-color var(--transition), box-shadow var(--transition);
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
-.quiz-phone-input:focus {
-  border-color: var(--text-primary);
-  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
+.phone-input-group:focus-within {
+  border-color: var(--brand-black) !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05) !important;
 }
-.quiz-phone-input.error {
+.phone-input-group.error {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12) !important;
+}
+
+.phone-input-group select.phone-country-select {
+  border: none !important;
+  border-right: 1px solid var(--border-medium) !important;
+  background: var(--bg-subtle) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+  padding: 0.85rem 0.65rem 0.85rem 0.8rem !important;
+  outline: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  flex-shrink: 0 !important;
+  border-radius: 0 !important;
+  width: auto !important;
+  min-width: 96px !important;
+  max-width: 115px !important;
+  transition: background-color var(--transition);
+}
+.phone-input-group select.phone-country-select:focus {
+  background: #ffffff !important;
+  border-color: var(--border-medium) !important;
+  box-shadow: none !important;
+}
+
+.phone-input-group input[type="tel"] {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0.85rem 0.95rem !important;
+  flex: 1 !important;
+  width: 100% !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.92rem !important;
+  color: var(--text-primary) !important;
+  outline: none !important;
+}
+.phone-input-group input[type="tel"]:focus {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.disclaimer-phone-group .phone-input-group select.phone-country-select {
+  padding: 0.75rem 0.65rem 0.75rem 0.75rem !important;
+}
+.disclaimer-phone-group .phone-input-group input[type="tel"] {
+  padding: 0.75rem 0.85rem !important;
 }
 .quiz-phone-error {
   display: none;
