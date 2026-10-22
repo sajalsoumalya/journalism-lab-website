@@ -670,16 +670,12 @@ document.addEventListener('DOMContentLoaded', () => {
           restartWrap.style.display = 'flex';
         }
       } else {
-        const isPathfinder = window.location.pathname.includes('pathfinder');
-        const defaultText = isPathfinder ? 'Start Career Diagnostic' : 'Start Now';
-        quizStartBtn.innerHTML = `${defaultText} <i class="fa-solid fa-arrow-right"></i>`;
+        quizStartBtn.innerHTML = `Start Now <i class="fa-solid fa-arrow-right"></i>`;
         quizStartBtn.removeAttribute('title');
         quizStartBtn.removeAttribute('aria-label');
 
         if (startNote) {
-          startNote.innerHTML = isPathfinder
-            ? 'Free 5-minute diagnostic &bull; No registration required to begin'
-            : 'Free &bull; No Signup Required';
+          startNote.innerHTML = 'Free &bull; No Signup Required';
         }
 
         if (restartWrap) {
