@@ -1581,10 +1581,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function openSuccessModal(name) {
+  function openSuccessModal(name, isDuplicate = false) {
     if (successTitle) {
       const firstName = (name || 'there').trim().split(' ')[0];
-      successTitle.textContent = `You're in, ${firstName}!`;
+      successTitle.textContent = isDuplicate ? `Welcome back, ${firstName}!` : `You're in, ${firstName}!`;
+    }
+    const successSub = successModal ? successModal.querySelector('.modal-sub') : null;
+    if (successSub) {
+      successSub.innerHTML = isDuplicate
+        ? 'Your registration details have been updated. We already have your inquiry on file and will reach out via WhatsApp within 24 hours.'
+        : 'Your seat application has been securely received. Prof. Dr. Minal Pareek will personally reach out on WhatsApp within 24 hours.';
     }
     if (successModal) {
       successModal.classList.add('active');
@@ -1632,7 +1638,6 @@ document.addEventListener('DOMContentLoaded', () => {
       // Success!
       closeCaptchaModal();
       const applicantName = pendingFormData ? pendingFormData.get('name') : 'there';
-      openSuccessModal(applicantName);
 
       // Format phone number uniformly with country code via formatInternationalPhone
       const regPhoneInput = activeFormElement ? activeFormElement.querySelector('input[type="tel"][name="phone"], #phone') : document.querySelector('input[type="tel"]');
@@ -1640,15 +1645,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const rawInputVal = (regPhoneInput && regPhoneInput.value.trim()) || (pendingFormData ? pendingFormData.get('phone') : '') || window.userQuizPhone || '';
 
       const phoneObj = formatInternationalPhone(rawInputVal, formIti);
+      const emailVal = (pendingFormData ? pendingFormData.get('email') : '') || '';
 
-      // Record lead in Firebase Realtime Database and LocalStorage
+      // Check if applicant is already registered by phone or email
+      const isDuplicate = findExistingLeadIndex(getStoredLeads(), { phone: phoneObj.formatted || rawInputVal, email: emailVal }) >= 0;
+      openSuccessModal(applicantName, isDuplicate);
+
+      // Record lead in Firebase Realtime Database and LocalStorage (deduplicates automatically)
       const leadData = {
         id: 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         name: (pendingFormData ? pendingFormData.get('name') : '') || applicantName || 'Applicant',
         phone: phoneObj.formatted || window.userQuizPhone || 'Not Available',
         phoneDial: phoneObj.dial || window.userQuizPhoneDial || '',
         phoneWa: phoneObj.wa || window.userQuizPhoneWa || '',
-        email: (pendingFormData ? pendingFormData.get('email') : '') || '',
+        email: emailVal,
         institution: (pendingFormData ? pendingFormData.get('institution') : '') || '—',
         role: (pendingFormData ? pendingFormData.get('role') : '') || 'Student',
         gender: (pendingFormData ? pendingFormData.get('gender') : '') || 'Not Available',
@@ -1675,10 +1685,12 @@ document.addEventListener('DOMContentLoaded', () => {
         activeFormElement.innerHTML = `
           <div class="form-success">
             <div class="form-success__icon"><i class="fa-solid fa-circle-check"></i></div>
-            <h3 class="form-success__title">Application Confirmed, ${firstName}!</h3>
+            <h3 class="form-success__title">${isDuplicate ? 'Application Updated' : 'Application Confirmed'}, ${firstName}!</h3>
             <p class="form-success__body">
-              Your inquiry for Founding Batch 1 has been securely recorded.<br />
-              Prof. Dr. Minal Pareek's team will reach out directly on WhatsApp within 24 hours.<br /><br />
+              ${isDuplicate
+                ? 'Your registration details have been updated. We already have your inquiry on file and will reach out via WhatsApp within 24 hours.<br /><br />'
+                : 'Your inquiry for Founding Batch 1 has been securely recorded.<br />Prof. Dr. Minal Pareek\'s team will reach out directly on WhatsApp within 24 hours.<br /><br />'
+              }
               <strong>Kickoff: 26 October 2026<br />Schedule: Monday to Friday · 9:00 PM to 10:00 PM IST</strong>
             </p>
           </div>
@@ -1914,9 +1926,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function isSamePhone(phoneA, phoneB) {
+    if (!phoneA || !phoneB) return false;
+    const strA = String(phoneA).trim();
+    const strB = String(phoneB).trim();
+    if (strA === 'Not Available' || strA === '—' || strB === 'Not Available' || strB === '—') return false;
+
+    const digitsA = strA.replace(/\D/g, '');
+    const digitsB = strB.replace(/\D/g, '');
+    if (digitsA.length < 7 || digitsB.length < 7) return false;
+
+    if (digitsA.length >= 10 && digitsB.length >= 10) {
+      return digitsA.slice(-10) === digitsB.slice(-10);
+    }
+    return digitsA === digitsB;
+  }
+
+  function isSameEmail(emailA, emailB) {
+    if (!emailA || !emailB) return false;
+    const strA = String(emailA).trim().toLowerCase();
+    const strB = String(emailB).trim().toLowerCase();
+    if (!strA.includes('@') || !strB.includes('@')) return false;
+    if (strA.startsWith('not available') || strB.startsWith('not available') || strA.includes('quiz-visitor') || strB.includes('quiz-visitor')) return false;
+    return strA === strB;
+  }
+
+  function findExistingLeadIndex(leadsList, target) {
+    if (!Array.isArray(leadsList) || !target) return -1;
+    return leadsList.findIndex(item => {
+      if (!item) return false;
+      if (target.id && item.id === target.id) return true;
+      if (isSamePhone(item.phone, target.phone)) return true;
+      if (isSameEmail(item.email, target.email)) return true;
+      return false;
+    });
+  }
+
   function normalizeLeads(leads) {
     if (!Array.isArray(leads)) return [];
-    return leads.map(l => {
+    const deduped = [];
+
+    leads.forEach(l => {
+      if (!l) return;
       const isQuiz = (l.name && l.name.startsWith('Quiz Lead')) || (l.id && l.id.startsWith('lead_quiz_')) || (l.source && l.source.includes('Quiz'));
       if (isQuiz) {
         if (!l.adminVerified) {
@@ -1949,8 +2000,39 @@ document.addEventListener('DOMContentLoaded', () => {
           l.phoneWa = phoneObj.wa;
         }
       }
-      return l;
+
+      // Deduplicate: merge matching phone or email into a single clean applicant record
+      const existingIdx = findExistingLeadIndex(deduped, l);
+      if (existingIdx >= 0) {
+        const existing = deduped[existingIdx];
+        if ((!existing.name || existing.name === 'Not Available' || existing.name === 'Applicant') && l.name && l.name !== 'Not Available') {
+          existing.name = l.name;
+        }
+        if ((!existing.email || existing.email === 'Not Available') && l.email && l.email !== 'Not Available') {
+          existing.email = l.email;
+        }
+        if ((!existing.institution || existing.institution === 'Not Available') && l.institution && l.institution !== 'Not Available') {
+          existing.institution = l.institution;
+        }
+        if ((!existing.gender || existing.gender === 'Not Available') && l.gender && l.gender !== 'Not Available') {
+          existing.gender = l.gender;
+        }
+        if ((!existing.role || existing.role === 'Not Available') && l.role && l.role !== 'Not Available') {
+          existing.role = l.role;
+        }
+        if ((!existing.quizResult || existing.quizResult === 'Not taken' || existing.quizResult === 'Completed') && l.quizResult && l.quizResult !== 'Not taken') {
+          existing.quizResult = l.quizResult;
+        }
+        if ((!existing.message || existing.message === 'Not Available') && l.message && l.message !== 'Not Available') {
+          existing.message = l.message;
+        }
+        existing.submissionCount = (existing.submissionCount || 1) + (l.submissionCount || 1);
+      } else {
+        deduped.push(l);
+      }
     });
+
+    return deduped;
   }
 
   function getStoredLeads() {
@@ -2010,19 +2092,69 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   window.recordLead = async function(leadData) {
-    if (leadData && leadData.phone && leadData.phone !== 'Not Available' && leadData.phone !== '—') {
+    if (!leadData) return { isDuplicate: false, lead: null };
+
+    if (leadData.phone && leadData.phone !== 'Not Available' && leadData.phone !== '—') {
       const pObj = formatInternationalPhone(leadData.phone);
       if (pObj.formatted) leadData.phone = pObj.formatted;
       if (!leadData.phoneDial && pObj.dial) leadData.phoneDial = pObj.dial;
       if (!leadData.phoneWa && pObj.wa) leadData.phoneWa = pObj.wa;
     }
+
     const current = getStoredLeads();
-    current.unshift(leadData);
+    const existingIndex = findExistingLeadIndex(current, leadData);
+
+    let finalLead = leadData;
+    let isDuplicate = false;
+
+    if (existingIndex >= 0) {
+      // Duplicate phone or email detected! Merge into existing record without duplicating entries
+      isDuplicate = true;
+      const existing = current[existingIndex];
+
+      finalLead = {
+        ...existing,
+        ...leadData,
+        id: existing.id || leadData.id,
+        submittedAt: existing.submittedAt || leadData.submittedAt,
+        submittedDisplay: existing.submittedDisplay || leadData.submittedDisplay,
+        lastUpdated: new Date().toISOString(),
+        submissionCount: (existing.submissionCount || 1) + 1
+      };
+
+      // Preserve non-empty values from existing if leadData has placeholder
+      if (existing.name && existing.name !== 'Applicant' && existing.name !== 'Not Available' && (!leadData.name || leadData.name === 'Applicant' || leadData.name === 'Not Available')) {
+        finalLead.name = existing.name;
+      }
+      if (existing.email && existing.email.includes('@') && (!leadData.email || !leadData.email.includes('@'))) {
+        finalLead.email = existing.email;
+      }
+      if (existing.phone && existing.phone !== 'Not Available' && (!leadData.phone || leadData.phone === 'Not Available')) {
+        finalLead.phone = existing.phone;
+        finalLead.phoneDial = existing.phoneDial;
+        finalLead.phoneWa = existing.phoneWa;
+      }
+      if (existing.institution && existing.institution !== '—' && existing.institution !== 'Not Available' && (!leadData.institution || leadData.institution === '—' || leadData.institution === 'Not Available')) {
+        finalLead.institution = existing.institution;
+      }
+      if (existing.quizResult && existing.quizResult !== 'Not taken' && existing.quizResult !== 'Completed' && (!leadData.quizResult || leadData.quizResult === 'Not taken')) {
+        finalLead.quizResult = existing.quizResult;
+      }
+      if (existing.source && leadData.source && existing.source !== leadData.source && !existing.source.includes(leadData.source)) {
+        finalLead.source = `${existing.source} + ${leadData.source}`;
+      }
+
+      current.splice(existingIndex, 1);
+      current.unshift(finalLead);
+    } else {
+      current.unshift(finalLead);
+    }
+
     setStoredLeads(current);
 
     if (leadsRef) {
       try {
-        await leadsRef.child(leadData.id).set(leadData);
+        await leadsRef.child(finalLead.id).set(finalLead);
       } catch (err) {
         console.warn('Firebase RTDB write notice:', err);
       }
@@ -2033,6 +2165,8 @@ document.addEventListener('DOMContentLoaded', () => {
       updateAdminStats();
       renderAdminTable();
     }
+
+    return { isDuplicate, lead: finalLead };
   };
 
   // ─── Admin Login & Panel Engine ───────────────────────────────
@@ -2868,6 +3002,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <button type="button" class="admin-applicant-link admin-view-lead-btn" data-id="${escapeHTML(lead.id)}" title="Click to view student profile card">
               ${displayName}
             </button>
+            ${(lead.submissionCount && lead.submissionCount > 1) ? `<span class="role-badge" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-size:0.68rem; margin-left:0.35rem;" title="${lead.submissionCount} submissions received"><i class="fa-solid fa-repeat"></i> ${lead.submissionCount}x</span>` : ''}
             ${(lead.message && lead.message !== 'Not Available' && !lead.message.startsWith('Completed Career Diagnostic Quiz')) ? `<div style="font-size:0.75rem; color:var(--text-muted); max-width:240px; margin-top:2px;"><em>"${escapeHTML(lead.message)}"</em></div>` : ''}
           </td>
           <td>
