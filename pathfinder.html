@@ -126,16 +126,48 @@
         </div>
 
         <div class="quiz-card" id="quizCard">
-          <!-- Progress bar -->
-          <div class="quiz-progress">
+          <!-- Start Screen (Shown by default on page load) -->
+          <div class="quiz-start-screen" id="quizStartScreen">
+            <div class="quiz-start-badge">
+              <i class="fa-solid fa-compass"></i> Career Diagnostic &bull; CMMD Pathfinder
+            </div>
+            <h2 class="quiz-start-title">Discover Your Media Career Archetype</h2>
+            <p class="quiz-start-desc">
+              Answer 6 quick visual &amp; scenario questions crafted by the Centre for Media and Mass Communication Development to reveal your personalized career archetype and ideal professional niche.
+            </p>
+            <div class="quiz-start-features">
+              <div class="quiz-start-feature-item">
+                <i class="fa-regular fa-clock"></i>
+                <span>2 Minutes</span>
+              </div>
+              <div class="quiz-start-feature-item">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>6 Visual Questions</span>
+              </div>
+              <div class="quiz-start-feature-item">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Instant Archetype</span>
+              </div>
+            </div>
+            <button type="button" class="btn btn--primary btn--lg quiz-start-btn" id="quizStartBtn">
+              Start Now <i class="fa-solid fa-arrow-right"></i>
+            </button>
+            <p class="quiz-start-note">100% Free &bull; No Prior Preparation Required</p>
+          </div>
+
+          <!-- Progress bar (hidden during start screen, shown during quiz) -->
+          <div class="quiz-progress" id="quizProgress" style="display:none;">
             <div class="quiz-progress__track">
               <div class="quiz-progress__fill" id="progressFill" style="width:16.66%"></div>
             </div>
             <span class="quiz-progress__label" id="progressLabel">1 / 6</span>
+            <button type="button" class="quiz-fs-exit" id="quizFullscreenExit" aria-label="Exit Fullscreen" title="Exit Fullscreen" style="display:none;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
           </div>
 
-          <!-- Question container -->
-          <div class="quiz-question-wrap" id="questionWrap">
+          <!-- Question container (hidden during start screen, shown during quiz) -->
+          <div class="quiz-question-wrap" id="questionWrap" style="display:none;">
             <p class="quiz-q" id="quizQuestion">Loading question...</p>
             <div class="quiz-options" id="quizOptions">
               <!-- Dynamic questions rendered by script.js -->
@@ -163,6 +195,9 @@
                   <a href="register.html" class="btn btn--primary" style="width:100%; justify-content:center;">
                     Enroll Now <i class="fa-solid fa-arrow-right"></i>
                   </a>
+                  <button type="button" class="btn btn--ghost btn--sm quiz-fs-exit-result" id="quizFsResultExitBtn" style="display:none; width:100%; justify-content:center; margin-top:0.6rem;">
+                    <i class="fa-solid fa-arrow-left"></i> Return to Site
+                  </button>
                 </div>
               </div>
             </div>

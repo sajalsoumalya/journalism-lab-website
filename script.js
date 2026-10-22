@@ -507,11 +507,104 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingVal = null;
     let pendingBtn = null;
     let disclaimerAgreed = false;
+    let isQuizFullscreen = false;
 
+    const quizStartScreen      = document.getElementById('quizStartScreen');
+    const quizStartBtn         = document.getElementById('quizStartBtn');
+    const quizProgress         = document.getElementById('quizProgress');
+    const quizFullscreenExit   = document.getElementById('quizFullscreenExit');
+    const quizFsResultExitBtn  = document.getElementById('quizFsResultExitBtn');
     const questionWrap         = document.getElementById('questionWrap');
     const quizResult           = document.getElementById('quizResult');
     const progressFill         = document.getElementById('progressFill');
     const progressLabel        = document.getElementById('progressLabel');
+
+    function isMobileDevice() {
+      return (window.innerWidth <= 768) || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    function enterMobileFullscreen() {
+      isQuizFullscreen = true;
+      document.body.classList.add('quiz-fullscreen-active');
+      quizCard.classList.add('is-fullscreen');
+      if (quizFullscreenExit) quizFullscreenExit.style.display = 'inline-flex';
+      if (quizFsResultExitBtn) quizFsResultExitBtn.style.display = 'inline-flex';
+
+      try {
+        const root = document.documentElement;
+        if (root.requestFullscreen) {
+          root.requestFullscreen().catch(() => {});
+        } else if (root.webkitRequestFullscreen) {
+          root.webkitRequestFullscreen().catch(() => {});
+        }
+      } catch (e) {}
+    }
+
+    function exitMobileFullscreen() {
+      isQuizFullscreen = false;
+      document.body.classList.remove('quiz-fullscreen-active');
+      quizCard.classList.remove('is-fullscreen');
+      if (quizFullscreenExit) quizFullscreenExit.style.display = 'none';
+      if (quizFsResultExitBtn) quizFsResultExitBtn.style.display = 'none';
+
+      try {
+        if (document.exitFullscreen && document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen && document.webkitFullscreenElement) {
+          document.webkitExitFullscreen().catch(() => {});
+        }
+      } catch (e) {}
+    }
+
+    if (quizFullscreenExit) {
+      quizFullscreenExit.addEventListener('click', () => {
+        exitMobileFullscreen();
+        currentQ = 0;
+        userAnswers = {};
+        if (quizStartScreen) quizStartScreen.style.display = 'flex';
+        if (quizProgress) quizProgress.style.display = 'none';
+        if (questionWrap) questionWrap.style.display = 'none';
+        if (quizResult) quizResult.style.display = 'none';
+      });
+    }
+
+    if (quizFsResultExitBtn) {
+      quizFsResultExitBtn.addEventListener('click', () => {
+        exitMobileFullscreen();
+        if (quizCard) {
+          quizCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    }
+
+    function startQuiz() {
+      if (isMobileDevice()) {
+        enterMobileFullscreen();
+      }
+
+      if (quizStartScreen) quizStartScreen.style.display = 'none';
+      if (quizProgress) quizProgress.style.display = 'flex';
+      if (questionWrap) questionWrap.style.display = 'block';
+      if (quizResult) quizResult.style.display = 'none';
+
+      currentQ = 0;
+      userAnswers = {};
+      renderQuestion(0);
+
+      if (!isMobileDevice() && quizCard) {
+        quizCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    if (quizStartBtn) {
+      quizStartBtn.addEventListener('click', startQuiz);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isQuizFullscreen) {
+        exitMobileFullscreen();
+      }
+    });
 
     function renderQuestion(index) {
       const data = QUESTIONS[index];
@@ -1013,15 +1106,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
+      if (isQuizFullscreen && quizFsResultExitBtn) {
+        quizFsResultExitBtn.style.display = 'inline-flex';
+      }
+
       // Scroll to quiz card so user sees result cleanly
       if (quizCard) {
         quizCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
 
-
-    // Initialize first question
-    renderQuestion(0);
+    // If no start screen is present on page, initialize first question automatically
+    if (!quizStartScreen) {
+      renderQuestion(0);
+    }
   }
 
   // ─── Captcha Engine & Form Submission ─────────────────────────
