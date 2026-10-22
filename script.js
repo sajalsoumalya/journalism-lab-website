@@ -220,109 +220,316 @@ document.addEventListener('DOMContentLoaded', () => {
   // Auto-initialize any tel inputs found in the DOM
   document.querySelectorAll('input[type="tel"]').forEach(input => initIntlPhone(input));
 
-  // ─── Quiz Engine ──────────────────────────────────────────────
+  // ─── CMMD Pathfinder Quiz Engine ────────────────────────────────
   const QUESTIONS = [
     {
-      q: "When you witness something newsworthy, what's your first instinct?",
+      id: 'q1',
+      q: "Q1. Which of these pictures can you relate to the most?",
+      type: "image-cards",
       options: [
-        { text: "Grab a mic and describe it out loud",      score: "anchor"     },
-        { text: "Reach for your camera immediately",        score: "photo"      },
-        { text: "Start mentally drafting the headline",     score: "copy"       },
-        { text: "Think about how to frame it on Instagram", score: "social"     },
+        {
+          val: "A",
+          image: "assets/images/quiz/q1-stage.png",
+          title: "Someone speaking on a stage",
+          subtitle: "Public speaking, journalism, presentation, communication and public relations."
+        },
+        {
+          val: "B",
+          image: "assets/images/quiz/q1-office.png",
+          title: "Someone working in an office",
+          subtitle: "Content, editing, graphic design, research, digital marketing and management."
+        },
+        {
+          val: "C",
+          image: "assets/images/quiz/q1-travel.png",
+          title: "Someone travelling & in the field",
+          subtitle: "Photography, wildlife photography, videography, multimedia production and sound."
+        }
       ]
     },
     {
-      q: "Which of these activities sounds most exciting to you?",
+      id: 'q2',
+      q: "Q2. What do you notice first in this image?",
+      image: "assets/images/quiz/q2-tiger-forest.png",
+      type: "image-prompt",
       options: [
-        { text: "Being live on set, reporting breaking news", score: "anchor"  },
-        { text: "Editing a cinematic short video",             score: "video"   },
-        { text: "Designing a powerful ad campaign",            score: "ad"      },
-        { text: "Writing a thread that sparks national debate", score: "copy"   },
+        { val: "A", text: "The forest.", subtitle: "You see the big-picture environment and context first." },
+        { val: "B", text: "The tiger.", subtitle: "You focus immediately on central focal subjects and key tensions." },
+        { val: "C", text: "Both simultaneously.", subtitle: "You intuitively connect environment and subjects together." }
       ]
     },
     {
-      q: "What's your natural creative superpower?",
+      id: 'q3',
+      q: "Q3. What is the first word you notice in this image?",
+      image: "assets/images/quiz/q3-word-puzzle.png",
+      type: "image-prompt",
       options: [
-        { text: "Eye for composition — I notice light and angles", score: "photo" },
-        { text: "My words flow — people feel what I write",        score: "copy"  },
-        { text: "I make things look and feel amazing visually",    score: "video" },
-        { text: "I understand what hooks audiences immediately",   score: "reels" },
+        { val: "A", text: "RESPECT", subtitle: "Driven by credibility, recognition, and professional honor." },
+        { val: "B", text: "MONEY", subtitle: "Driven by financial independence, commercial scale, and enterprise." },
+        { val: "C", text: "GAME", subtitle: "Driven by strategic challenges, competition, and dynamic stakes." },
+        { val: "D", text: "SUCCESS", subtitle: "Driven by milestone achievements, mastery, and visible excellence." }
       ]
     },
     {
-      q: "Which platform do you consume the most content on?",
+      id: 'q4',
+      q: "Q4. What do you expect from your career?",
+      type: "standard",
       options: [
-        { text: "Documentaries & long-form video platforms",       score: "video" },
-        { text: "Instagram Reels & TikTok short video formats",    score: "reels" },
-        { text: "News publications and investigative articles",    score: "web"   },
-        { text: "LinkedIn and Twitter for industry conversations", score: "ad"    },
+        {
+          val: "A",
+          text: "Risk + Reward",
+          subtitle: "High-adrenaline opportunities, entrepreneurial freedom, performance breakthroughs."
+        },
+        {
+          val: "B",
+          text: "Stability and Security",
+          subtitle: "Structured pathways, dependable organizational backing, sustainable growth."
+        }
       ]
     },
     {
-      q: "What's your dream outcome from a journalism career?",
+      id: 'q5',
+      q: "Q5. How often do you read newspapers and books?",
+      type: "standard",
       options: [
-        { text: "A face people trust — news anchor on broadcast TV",    score: "anchor"     },
-        { text: "Building an audience of millions online as a creator", score: "influencer" },
-        { text: "Behind the lens — photographing history in the making",score: "photo"      },
-        { text: "Running full-scale digital storytelling for brands",   score: "social"     },
+        { val: "A", text: "Every day", subtitle: "Voracious consumer of in-depth investigative print, literature & media." },
+        { val: "B", text: "Once or twice a week", subtitle: "Regular weekend reading and long-form analysis." },
+        { val: "C", text: "Once or twice a month", subtitle: "Periodic deep dives into select topics and authors." },
+        { val: "D", text: "The night before exams / As needed", subtitle: "Pragmatic, on-demand reader when a concrete objective arises." }
+      ]
+    },
+    {
+      id: 'q6',
+      q: "Q6. How comfortable are you with using technology and digital tools?",
+      type: "standard",
+      options: [
+        {
+          val: "A",
+          text: "I can troubleshoot even complex problems",
+          subtitle: "Fluent with technical setups, debugging, workflows & advanced tools."
+        },
+        {
+          val: "B",
+          text: "I can troubleshoot basic problems",
+          subtitle: "Confident with daily digital workflows, common software & standard devices."
+        },
+        {
+          val: "C",
+          text: "What is troubleshooting?",
+          subtitle: "I prefer spontaneous creative expression over technical troubleshooting."
+        },
+        {
+          val: "D",
+          text: "Specialized in creative studio software & cameras",
+          subtitle: "Hands-on mastery of editing suites, design canvas, or camera gear."
+        }
       ]
     }
   ];
 
   // Font Awesome icons only — NO emojis!
-  const RESULTS = {
-    anchor: {
-      icon: '<i class="fa-solid fa-microphone-lines"></i>',
-      title: "You're a Natural Anchor",
-      desc: "Your instinct to speak, command the room, and present makes you built for on-screen journalism. Anchoring, live reporting, and broadcast media are where you will shine."
+  const CAREER_PROFILES = {
+    'public-speaker': {
+      title: "Public Speaker",
+      family: "Public Speaking, Journalism & PR",
+      icon: '<i class="fa-solid fa-microphone"></i>',
+      desc: "You thrive in front of live audiences with a commanding voice, persuasive charisma, and structured articulation. Keynote talks, public forums, and event hosting are your natural stage."
     },
-    video: {
-      icon: '<i class="fa-solid fa-clapperboard"></i>',
-      title: "You're a Video Storyteller",
-      desc: "You think in frames, cuts, and emotional arcs. Video journalism, documentary filmmaking, and cinematic storytelling are your calling. Your edits tell the story."
-    },
-    photo: {
-      icon: '<i class="fa-solid fa-camera"></i>',
-      title: "You're a Visual Journalist",
-      desc: "You see the world through a lens. Photojournalism, editorial photography, and visual storytelling are where your eye for truth, human expression, and composition come alive."
-    },
-    copy: {
-      icon: '<i class="fa-solid fa-pen-nib"></i>',
-      title: "You're a Copywriting Journalist",
-      desc: "Words are your weapon. Headlines, investigative features, broadcast scripts, and editorial arguments — you craft language that makes people stop, feel, and take action."
-    },
-    ad: {
-      icon: '<i class="fa-solid fa-bullhorn"></i>',
-      title: "You're an Ad & Campaign Strategist",
-      desc: "You understand persuasion, narrative positioning, and human psychology. Commercial storytelling, media strategy, and integrated campaigns are your natural arena."
-    },
-    social: {
-      icon: '<i class="fa-solid fa-mobile-screen"></i>',
-      title: "You're a Social Media Journalist",
-      desc: "You speak modern digital platforms fluently. From real-time news distribution to community engagement, social journalism and digital distribution are your superpowers."
-    },
-    reels: {
-      icon: '<i class="fa-solid fa-video"></i>',
-      title: "You're a Reels & Content Creator",
-      desc: "Short-form, punchy, and captivating — your instincts for pacing and hook retention are razor-sharp. You know how to stop the scroll in 3 seconds flat."
-    },
-    influencer: {
+    'influencer': {
+      title: "Digital Influencer",
+      family: "Public Speaking, Journalism & PR",
       icon: '<i class="fa-solid fa-star"></i>',
-      title: "You're an Influencer Journalist",
-      desc: "You possess a magnetic on-camera presence. Building a personal media brand, cultivating a loyal audience, and delivering authentic journalism at scale is your path."
+      desc: "You possess a magnetic on-camera presence, natural digital charm, and the instinct to turn everyday experiences into compelling, highly shareable digital narratives."
     },
-    web: {
-      icon: '<i class="fa-solid fa-globe"></i>',
-      title: "You're a Web Journalist",
-      desc: "Digital-first, SEO-savvy, and research-focused — you understand how journalism thrives on the open internet. Digital publishing, newsletters, and interactive reports are your domain."
+    'news-reporter': {
+      title: "News Reporter",
+      family: "Public Speaking, Journalism & PR",
+      icon: '<i class="fa-solid fa-bullhorn"></i>',
+      desc: "You have an unshakeable instinct for truth, investigative rigor, and the technical confidence to report breaking stories from the frontlines of history."
+    },
+    'professor': {
+      title: "Media Professor",
+      family: "Public Speaking, Journalism & PR",
+      icon: '<i class="fa-solid fa-graduation-cap"></i>',
+      desc: "Your intellectual depth, love for literature, and analytical mindset make you born to teach, research, and shape the critical thinking of future media leaders."
+    },
+    'pr-manager': {
+      title: "PR Manager",
+      family: "Public Speaking, Journalism & PR",
+      icon: '<i class="fa-solid fa-handshake"></i>',
+      desc: "Strategic, diplomatic, and articulate, you excel at brand positioning, crisis communication, and building authentic relationships between institutions and the public."
+    },
+    'anchor': {
+      title: "Broadcast News Anchor",
+      family: "Public Speaking, Journalism & PR",
+      icon: '<i class="fa-solid fa-tv"></i>',
+      desc: "Poised and authoritative under live studio lights, you possess the voice, presence, and editorial composure to anchor prime-time broadcast journalism."
+    },
+    'freelance-designer-editor': {
+      title: "Freelance Graphics Designer / Video Editor",
+      family: "Content, Editing, Design & Marketing",
+      icon: '<i class="fa-solid fa-palette"></i>',
+      desc: "You value creative freedom, technical agility, and high-impact visual storytelling. Delivering standout visual assets on your own terms is your calling."
+    },
+    'marketing-agency-founder': {
+      title: "Marketing Agency Founder",
+      family: "Content, Editing, Design & Marketing",
+      icon: '<i class="fa-solid fa-rocket"></i>',
+      desc: "Entrepreneurial, visionary, and risk-tolerant, you spot market gaps and assemble creative talent to build scalable client solutions and high-growth brands."
+    },
+    'analyst': {
+      title: "Media & Data Analyst",
+      family: "Content, Editing, Design & Marketing",
+      icon: '<i class="fa-solid fa-chart-line"></i>',
+      desc: "You cut through noise with numbers and evidence. Analyzing media patterns, audience consumption data, and industry trends gives you unique strategic leverage."
+    },
+    'copywriter': {
+      title: "Copywriter",
+      family: "Content, Editing, Design & Marketing",
+      icon: '<i class="fa-solid fa-pen-nib"></i>',
+      desc: "Words are your superpower. You craft evocative headlines, broadcast copy, and viral brand narratives that capture attention and compel action."
+    },
+    'social-media-manager': {
+      title: "Social Media Manager",
+      family: "Content, Editing, Design & Marketing",
+      icon: '<i class="fa-solid fa-mobile-screen-button"></i>',
+      desc: "You live on the pulse of internet culture and platform algorithms. Building loyal online communities and orchestrating viral distribution is second nature to you."
+    },
+    'video-editor': {
+      title: "Video Editor",
+      family: "Content, Editing, Design & Marketing",
+      icon: '<i class="fa-solid fa-film"></i>',
+      desc: "You think in pacing, rhythm, and emotional arcs. In the post-production studio, you transform raw footage into captivating cinematic narratives."
+    },
+    'graphics-designer': {
+      title: "Graphics Designer",
+      family: "Content, Editing, Design & Marketing",
+      icon: '<i class="fa-solid fa-bezier-curve"></i>',
+      desc: "You master typography, visual hierarchy, color theory, and spatial balance. Editorial layouts, brand identities, and visual assets come alive in your hands."
+    },
+    'creative-director': {
+      title: "Creative Director",
+      family: "Content, Editing, Design & Marketing",
+      icon: '<i class="fa-solid fa-compass-drafting"></i>',
+      desc: "You unify copy, design, strategy, and vision. Guiding multidisciplinary teams to produce groundbreaking creative campaigns is your ultimate zone of genius."
+    },
+    'ott-producer': {
+      title: "OTT Producer",
+      family: "Photography, Video, Multimedia & Sound",
+      icon: '<i class="fa-solid fa-clapperboard"></i>',
+      desc: "You synthesize high creative ambition with commercial scale, producing binge-worthy web series, documentaries, and digital streaming experiences."
+    },
+    'event-startup-founder': {
+      title: "Event Management Startup Founder",
+      family: "Photography, Video, Multimedia & Sound",
+      icon: '<i class="fa-solid fa-lightbulb"></i>',
+      desc: "You thrive on the adrenaline of large-scale live productions, experiential summits, and building experiential enterprises from the ground up."
+    },
+    'wildlife-photographer': {
+      title: "Wildlife Photographer",
+      family: "Photography, Video, Multimedia & Sound",
+      icon: '<i class="fa-solid fa-mountain-sun"></i>',
+      desc: "Endlessly patient, adventurous, and attuned to the wilderness, you brave challenging expeditions to document rare species and urgent conservation stories."
+    },
+    'multimedia-engineer': {
+      title: "Multimedia Engineer",
+      family: "Photography, Video, Multimedia & Sound",
+      icon: '<i class="fa-solid fa-microchip"></i>',
+      desc: "You are the backbone of modern media tech. Broadcast routing, high-bandwidth streaming infrastructure, and interactive AV systems are your domain."
+    },
+    'event-manager': {
+      title: "Event Manager",
+      family: "Photography, Video, Multimedia & Sound",
+      icon: '<i class="fa-solid fa-calendar-check"></i>',
+      desc: "Methodical, calm, and hyper-organized, you orchestrate seamless stage logistics, live venue coordination, and flawless technical run-downs."
+    },
+    'sound-engineer': {
+      title: "Sound Engineer",
+      family: "Photography, Video, Multimedia & Sound",
+      icon: '<i class="fa-solid fa-headphones"></i>',
+      desc: "You give stories their sonic depth. Audio mixing, broadcast acoustics, Foley soundscapes, and podcast mastering are where your precision shines."
+    },
+    'videographer': {
+      title: "Videographer",
+      family: "Photography, Video, Multimedia & Sound",
+      icon: '<i class="fa-solid fa-video"></i>',
+      desc: "Always behind the lens on the ground, you capture fluid motion, human authenticity, and natural light to create compelling visual documentaries."
+    },
+    'photographer': {
+      title: "Photographer",
+      family: "Photography, Video, Multimedia & Sound",
+      icon: '<i class="fa-solid fa-camera-retro"></i>',
+      desc: "With an impeccable eye for framing and human expression, you freeze pivotal moments in time across editorial photojournalism and studio portraits."
     }
   };
+
+  // Deterministic Decision Tree logic according to Answer Logic - Sheet1
+  function calculateCareerPath(ans) {
+    const q1 = ans.q1 || 'A';
+    const q4 = ans.q4 || 'A';
+    const q5 = ans.q5 || 'B';
+    const q6 = ans.q6 || 'B';
+
+    const isQ5Daily = (q5 === 'A');
+    const isQ6Advanced = (q6 === 'A');
+
+    if (q1 === 'A') {
+      // Q1: Speaking on a stage
+      if (q4 === 'A') {
+        // Q4: Risk + Reward
+        return isQ5Daily ? 'public-speaker' : 'influencer';
+      } else {
+        // Q4: Stability and Security
+        if (isQ5Daily) {
+          return isQ6Advanced ? 'news-reporter' : 'professor';
+        } else {
+          return isQ6Advanced ? 'pr-manager' : 'anchor';
+        }
+      }
+    } else if (q1 === 'B') {
+      // Q1: Working in an office
+      if (q4 === 'A') {
+        // Q4: Risk + Reward
+        return isQ6Advanced ? 'freelance-designer-editor' : 'marketing-agency-founder';
+      } else {
+        // Q4: Stability and Security
+        if (isQ5Daily) {
+          return isQ6Advanced ? 'analyst' : 'copywriter';
+        } else {
+          if (q6 === 'A') return 'social-media-manager';
+          if (q6 === 'B') return 'video-editor';
+          if (q6 === 'C') return 'graphics-designer';
+          return 'creative-director';
+        }
+      }
+    } else {
+      // Q1: Travelling & in the field
+      if (q4 === 'A') {
+        // Q4: Risk + Reward
+        if (isQ5Daily) {
+          return isQ6Advanced ? 'ott-producer' : 'event-startup-founder';
+        } else {
+          return 'wildlife-photographer';
+        }
+      } else {
+        // Q4: Stability and Security
+        if (isQ5Daily) {
+          return isQ6Advanced ? 'multimedia-engineer' : 'event-manager';
+        } else {
+          if (q6 === 'A') return 'multimedia-engineer';
+          if (q6 === 'B') return 'sound-engineer';
+          if (q6 === 'C') return 'videographer';
+          return 'photographer';
+        }
+      }
+    }
+  }
 
   const quizCard = document.getElementById('quizCard');
   if (quizCard) {
     let currentQ = 0;
-    let scores = {};
-    let pendingScore = null;
+    let userAnswers = {};
+    let pendingVal = null;
     let pendingBtn = null;
     let disclaimerAgreed = false;
 
@@ -335,8 +542,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const quizDisclaimerOkBtn  = document.getElementById('quizDisclaimerOkBtn');
     const quizDisclaimerCloseBtn = document.getElementById('quizDisclaimerCloseBtn');
 
-    function openQuizDisclaimer(score, btn) {
-      pendingScore = score;
+    function openQuizDisclaimer(val, btn) {
+      pendingVal = val;
       pendingBtn = btn;
       const phoneInput = document.getElementById('quizUserPhone');
       const phoneErr = document.getElementById('quizPhoneError');
@@ -370,9 +577,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = '';
       }
 
-      if (proceed && pendingScore !== null) {
+      if (proceed && pendingVal !== null) {
         disclaimerAgreed = true;
-        scores[pendingScore] = (scores[pendingScore] || 0) + 1;
+        userAnswers[QUESTIONS[currentQ].id] = pendingVal;
         currentQ++;
         if (currentQ < QUESTIONS.length) {
           renderQuestion(currentQ);
@@ -385,7 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
           pendingBtn.classList.remove('selected');
         }
       }
-      pendingScore = null;
+      pendingVal = null;
       pendingBtn = null;
     }
 
@@ -499,16 +706,70 @@ document.addEventListener('DOMContentLoaded', () => {
       const optContainer = document.getElementById('quizOptions');
 
       if (qTitle) qTitle.textContent = data.q;
+
+      // Handle Question Image prompt (Q2, Q3)
+      let mediaContainer = document.getElementById('quizQuestionMedia');
+      if (!mediaContainer && qTitle && optContainer) {
+        mediaContainer = document.createElement('div');
+        mediaContainer.id = 'quizQuestionMedia';
+        optContainer.parentNode.insertBefore(mediaContainer, optContainer);
+      }
+      if (mediaContainer) {
+        if (data.image) {
+          mediaContainer.innerHTML = `
+            <div class="quiz-q-image-wrap">
+              <img src="${data.image}" alt="${data.q}" class="quiz-q-image" loading="lazy" />
+            </div>
+          `;
+          mediaContainer.style.display = 'block';
+        } else {
+          mediaContainer.innerHTML = '';
+          mediaContainer.style.display = 'none';
+        }
+      }
+
       if (optContainer) {
         optContainer.innerHTML = '';
-        data.options.forEach(opt => {
-          const btn = document.createElement('button');
-          btn.className = 'quiz-opt';
-          btn.innerHTML = `<span>${opt.text}</span> <i class="fa-solid fa-arrow-right" style="opacity:0.4; font-size:0.8rem"></i>`;
-          btn.dataset.score = opt.score;
-          btn.addEventListener('click', () => selectAnswer(opt.score, btn));
-          optContainer.appendChild(btn);
-        });
+
+        if (data.type === 'image-cards') {
+          optContainer.className = 'quiz-options quiz-options--cards';
+          data.options.forEach(opt => {
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'quiz-opt-card';
+            card.dataset.val = opt.val;
+            card.innerHTML = `
+              <div class="quiz-opt-card__img-wrap">
+                <img src="${opt.image}" alt="${opt.title}" class="quiz-opt-card__img" loading="lazy" />
+              </div>
+              <span class="quiz-opt-card__badge">Option ${opt.val}</span>
+              <h4 class="quiz-opt-card__title">${opt.title}</h4>
+              <p class="quiz-opt-card__desc">${opt.subtitle}</p>
+            `;
+            card.addEventListener('click', () => selectAnswer(opt.val, card));
+            optContainer.appendChild(card);
+          });
+        } else {
+          optContainer.className = 'quiz-options';
+          data.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'quiz-opt';
+            btn.dataset.val = opt.val;
+            btn.innerHTML = `
+              <div class="quiz-opt-content">
+                <span class="quiz-opt-letter">${opt.val}</span>
+                <div class="quiz-opt-text-wrap">
+                  <span class="quiz-opt-title">${opt.text}</span>
+                  ${opt.subtitle ? `<span class="quiz-opt-sub">${opt.subtitle}</span>` : ''}
+                </div>
+              </div>
+              <i class="fa-solid fa-arrow-right" style="opacity:0.4; font-size:0.8rem; flex-shrink:0; margin-left:0.5rem;"></i>
+            `;
+            btn.addEventListener('click', () => selectAnswer(opt.val, btn));
+            optContainer.appendChild(btn);
+          });
+        }
       }
 
       const pct = ((index + 1) / QUESTIONS.length) * 100;
@@ -516,23 +777,23 @@ document.addEventListener('DOMContentLoaded', () => {
       if (progressLabel) progressLabel.textContent = `${index + 1} / ${QUESTIONS.length}`;
     }
 
-    function selectAnswer(score, btn) {
+    function selectAnswer(val, btn) {
       // First question check: clicking any answer triggers Disclaimer Popup
       if (currentQ === 0 && !disclaimerAgreed) {
         const optContainer = document.getElementById('quizOptions');
         if (optContainer) {
-          optContainer.querySelectorAll('.quiz-opt').forEach(b => b.classList.remove('selected'));
+          optContainer.querySelectorAll('.quiz-opt, .quiz-opt-card').forEach(b => b.classList.remove('selected'));
         }
         btn.classList.add('selected');
 
         setTimeout(() => {
-          openQuizDisclaimer(score, btn);
+          openQuizDisclaimer(val, btn);
         }, 120);
         return;
       }
 
       btn.classList.add('selected');
-      scores[score] = (scores[score] || 0) + 1;
+      userAnswers[QUESTIONS[currentQ].id] = val;
 
       setTimeout(() => {
         currentQ++;
@@ -550,15 +811,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (progressFill) progressFill.style.width = '100%';
       if (progressLabel) progressLabel.innerHTML = '<i class="fa-solid fa-check"></i> Completed';
 
-      // Find top score
-      const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-      const topKey = sorted.length > 0 ? sorted[0][0] : 'copy';
-      const res = RESULTS[topKey] || RESULTS.copy;
+      // Evaluate result using deterministic CMMD Answer Logic
+      const profileKey = calculateCareerPath(userAnswers);
+      const res = CAREER_PROFILES[profileKey] || CAREER_PROFILES['news-reporter'];
 
       const resIcon = document.getElementById('resultIcon');
       const resTitle = document.getElementById('resultTitle');
       const resDesc = document.getElementById('resultDesc');
+      const resFamily = document.getElementById('resultFamily');
 
+      if (resFamily) {
+        resFamily.textContent = res.family;
+        resFamily.style.display = 'inline-block';
+      }
       if (resIcon) resIcon.innerHTML = res.icon;
       if (resTitle) resTitle.textContent = res.title;
       if (resDesc) resDesc.textContent = res.desc;
@@ -604,9 +869,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (retakeBtn) {
       retakeBtn.addEventListener('click', () => {
         currentQ = 0;
-        scores = {};
+        userAnswers = {};
         disclaimerAgreed = false;
-        pendingScore = null;
+        pendingVal = null;
         pendingBtn = null;
         window.quizLeadCaptured = false;
         if (quizResult) quizResult.style.display = 'none';

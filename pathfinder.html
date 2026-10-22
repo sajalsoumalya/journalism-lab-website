@@ -116,24 +116,27 @@
     <div class="container">
       <div class="quiz-section__inner">
         <div class="quiz-section__header">
-          <div class="section-label">Career Diagnostic · Still Deciding?</div>
+          <div class="section-label">Career Diagnostic · CMMD Pathfinder</div>
           <h1 class="quiz-section__headline">
-            Can't decide your journalism niche?<br /><em>Let us help you find your true path.</em>
+            Confused about your media career path?<br /><em>Discover your true professional niche.</em>
           </h1>
+          <p class="quiz-section__sub" style="margin-top:1rem; font-size:0.95rem; color:var(--text-secondary); line-height:1.6;">
+            Take our 5-minute diagnostic quiz developed by the Centre for Media and Mass Communication Development to find the exact career path tailored to your instincts.
+          </p>
         </div>
 
         <div class="quiz-card" id="quizCard">
           <!-- Progress bar -->
           <div class="quiz-progress">
             <div class="quiz-progress__track">
-              <div class="quiz-progress__fill" id="progressFill" style="width:20%"></div>
+              <div class="quiz-progress__fill" id="progressFill" style="width:16.66%"></div>
             </div>
-            <span class="quiz-progress__label" id="progressLabel">1 / 5</span>
+            <span class="quiz-progress__label" id="progressLabel">1 / 6</span>
           </div>
 
           <!-- Question container -->
           <div class="quiz-question-wrap" id="questionWrap">
-            <p class="quiz-q" id="quizQuestion">When you witness something newsworthy, what's your first instinct?</p>
+            <p class="quiz-q" id="quizQuestion">Loading question...</p>
             <div class="quiz-options" id="quizOptions">
               <!-- Dynamic questions rendered by script.js -->
             </div>
@@ -141,27 +144,31 @@
 
           <!-- Result container -->
           <div class="quiz-result" id="quizResult" style="display:none">
+            <div class="quiz-result__family" id="resultFamily" style="display:none"></div>
             <div class="quiz-result__icon" id="resultIcon">
-              <i class="fa-solid fa-microphone-lines"></i>
+              <i class="fa-solid fa-compass"></i>
             </div>
-            <h3 class="quiz-result__title" id="resultTitle">You're a Natural Anchor</h3>
+            <h3 class="quiz-result__title" id="resultTitle">Career Match</h3>
             <p class="quiz-result__desc" id="resultDesc">
-              Your instinct to speak, command the room, and present makes you built for on-screen journalism. Anchoring, live reporting, and broadcast media are where you will shine.
+              Your personalized career path recommendation.
             </p>
 
             <div class="quiz-result__cta">
               <p class="quiz-result__nudge">Recommended Next Step:</p>
               <div class="quiz-result__course-card">
-                <div class="quiz-result__course-badge">Live Workshop</div>
+                <div class="quiz-result__course-badge">Live Workshop · Batch 01</div>
                 <p class="quiz-result__course-name">15-Day Industry-Ready Journalism Workshop</p>
                 <p class="quiz-result__course-meta">Prof. Dr. Minal Pareek · Mon to Fri, 9 PM – 10 PM IST · Starts Oct 26 · ₹3,000</p>
-                <a href="register.html" class="btn btn--primary" style="margin-top:1rem; width:100%">
-                  Enroll Now <i class="fa-solid fa-arrow-right"></i>
-                </a>
+                <div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:1rem;">
+                  <a href="register.html" class="btn btn--primary" style="width:100%; justify-content:center;">
+                    Enroll Now <i class="fa-solid fa-arrow-right"></i>
+                  </a>
+                  <button type="button" class="btn btn--ghost btn--sm" id="retakeBtn" style="width:100%; justify-content:center;">
+                    <i class="fa-solid fa-rotate-left"></i> Retake Career Diagnostic Quiz
+                  </button>
+                </div>
               </div>
             </div>
-
-
           </div>
         </div>
       </div>
