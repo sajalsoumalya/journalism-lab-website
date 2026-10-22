@@ -231,19 +231,19 @@ document.addEventListener('DOMContentLoaded', () => {
           val: "A",
           image: "assets/images/quiz/q1-stage.png",
           title: "Someone speaking on a stage",
-          subtitle: "Public speaking, journalism, presentation, communication and public relations."
+          subtitle: "Career family: Public speaking, journalism, presentation, communication and public relations."
         },
         {
           val: "B",
           image: "assets/images/quiz/q1-office.png",
           title: "Someone working in an office",
-          subtitle: "Content, editing, graphic design, research, digital marketing and management."
+          subtitle: "Career family: Content, editing, graphic design, research, digital marketing and management."
         },
         {
           val: "C",
           image: "assets/images/quiz/q1-travel.png",
-          title: "Someone travelling & in the field",
-          subtitle: "Photography, wildlife photography, videography, multimedia production and sound."
+          title: "Someone travelling",
+          subtitle: "Career family: Photography, wildlife photography, videography, multimedia production and sound."
         }
       ]
     },
@@ -253,38 +253,24 @@ document.addEventListener('DOMContentLoaded', () => {
       image: "assets/images/quiz/q2-tiger-forest.png",
       type: "image-prompt",
       options: [
-        { val: "A", text: "The forest.", subtitle: "You see the big-picture environment and context first." },
-        { val: "B", text: "The tiger.", subtitle: "You focus immediately on central focal subjects and key tensions." },
-        { val: "C", text: "Both simultaneously.", subtitle: "You intuitively connect environment and subjects together." }
+        { val: "A", text: "The forest." },
+        { val: "B", text: "The tiger." },
+        { val: "C", text: "Both." }
       ]
     },
     {
       id: 'q3',
       q: "Q3. What is the first word you notice in this image?",
       image: "assets/images/quiz/q3-word-puzzle.png",
-      type: "image-prompt",
-      options: [
-        { val: "A", text: "RESPECT", subtitle: "Driven by credibility, recognition, and professional honor." },
-        { val: "B", text: "MONEY", subtitle: "Driven by financial independence, commercial scale, and enterprise." },
-        { val: "C", text: "GAME", subtitle: "Driven by strategic challenges, competition, and dynamic stakes." },
-        { val: "D", text: "SUCCESS", subtitle: "Driven by milestone achievements, mastery, and visible excellence." }
-      ]
+      type: "text-letter"
     },
     {
       id: 'q4',
       q: "Q4. What do you expect from your career?",
       type: "standard",
       options: [
-        {
-          val: "A",
-          text: "Risk + Reward",
-          subtitle: "High-adrenaline opportunities, entrepreneurial freedom, performance breakthroughs."
-        },
-        {
-          val: "B",
-          text: "Stability and Security",
-          subtitle: "Structured pathways, dependable organizational backing, sustainable growth."
-        }
+        { val: "A", text: "Risk + Reward" },
+        { val: "B", text: "Stability and Security" }
       ]
     },
     {
@@ -292,10 +278,10 @@ document.addEventListener('DOMContentLoaded', () => {
       q: "Q5. How often do you read newspapers and books?",
       type: "standard",
       options: [
-        { val: "A", text: "Every day", subtitle: "Voracious consumer of in-depth investigative print, literature & media." },
-        { val: "B", text: "Once or twice a week", subtitle: "Regular weekend reading and long-form analysis." },
-        { val: "C", text: "Once or twice a month", subtitle: "Periodic deep dives into select topics and authors." },
-        { val: "D", text: "The night before exams / As needed", subtitle: "Pragmatic, on-demand reader when a concrete objective arises." }
+        { val: "A", text: "Every day" },
+        { val: "B", text: "Once or twice a week" },
+        { val: "C", text: "Once or twice a month" },
+        { val: "D", text: "The night before exams" }
       ]
     },
     {
@@ -303,26 +289,9 @@ document.addEventListener('DOMContentLoaded', () => {
       q: "Q6. How comfortable are you with using technology and digital tools?",
       type: "standard",
       options: [
-        {
-          val: "A",
-          text: "I can troubleshoot even complex problems",
-          subtitle: "Fluent with technical setups, debugging, workflows & advanced tools."
-        },
-        {
-          val: "B",
-          text: "I can troubleshoot basic problems",
-          subtitle: "Confident with daily digital workflows, common software & standard devices."
-        },
-        {
-          val: "C",
-          text: "What is troubleshooting?",
-          subtitle: "I prefer spontaneous creative expression over technical troubleshooting."
-        },
-        {
-          val: "D",
-          text: "Specialized in creative studio software & cameras",
-          subtitle: "Hands-on mastery of editing suites, design canvas, or camera gear."
-        }
+        { val: "A", text: "I can troubleshoot even complex problems" },
+        { val: "B", text: "I can troubleshoot basic problems" },
+        { val: "C", text: "What is troubleshooting?" }
       ]
     },
     {
@@ -578,8 +547,102 @@ document.addEventListener('DOMContentLoaded', () => {
             card.addEventListener('click', () => selectAnswer(opt.val, card));
             optContainer.appendChild(card);
           });
+        } else if (data.type === 'text-letter') {
+          // Type 2b: Text-input based answer with 1 uppercase letter (Q3)
+          optContainer.className = 'quiz-options quiz-options--split';
+
+          const mediaCol = document.createElement('div');
+          mediaCol.className = 'quiz-split-media';
+          mediaCol.innerHTML = `
+            <div class="quiz-split-img-box">
+              <img src="${data.image}" alt="${data.q}" class="quiz-split-img" loading="eager" />
+            </div>
+          `;
+
+          const letterCol = document.createElement('div');
+          letterCol.className = 'quiz-split-letter-box';
+          letterCol.innerHTML = `
+            <div class="quiz-letter-prompt">
+              <span class="quiz-letter-badge">Word Puzzle</span>
+              <h4 class="quiz-letter-heading">Type the First Letter</h4>
+              <p class="quiz-letter-sub">Look at the word puzzle on the left. Type the single first letter of the word that caught your attention.</p>
+            </div>
+
+            <div class="quiz-letter-input-container">
+              <input 
+                type="text" 
+                id="quizQ3Input" 
+                class="quiz-single-letter-input" 
+                maxlength="1" 
+                placeholder="—"
+                autocomplete="off" 
+                autocapitalize="characters"
+                spellcheck="false"
+                inputmode="text"
+              />
+              <p class="quiz-letter-hint">Only 1 letter allowed &bull; Automatically uppercase</p>
+            </div>
+
+            <button type="button" class="btn btn--primary btn--full" id="quizQ3NextBtn" disabled style="justify-content:center; padding:0.85rem 1.5rem; font-size:0.98rem;">
+              Next Question &nbsp;<i class="fa-solid fa-arrow-right"></i>
+            </button>
+          `;
+
+          optContainer.appendChild(mediaCol);
+          optContainer.appendChild(letterCol);
+
+          const q3Input = document.getElementById('quizQ3Input');
+          const q3NextBtn = document.getElementById('quizQ3NextBtn');
+
+          if (q3Input) {
+            setTimeout(() => q3Input.focus(), 150);
+
+            if (userAnswers['q3']) {
+              q3Input.value = userAnswers['q3'];
+              if (q3NextBtn) q3NextBtn.disabled = false;
+            }
+
+            q3Input.addEventListener('input', () => {
+              // Only 1 letter allowed, automatically converted to UPPERCASE
+              let clean = q3Input.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
+              if (clean.length > 1) {
+                clean = clean.charAt(clean.length - 1);
+              }
+              q3Input.value = clean;
+
+              if (clean.length === 1) {
+                if (q3NextBtn) q3NextBtn.disabled = false;
+              } else {
+                if (q3NextBtn) q3NextBtn.disabled = true;
+              }
+            });
+
+            q3Input.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                if (q3NextBtn && !q3NextBtn.disabled) {
+                  q3NextBtn.click();
+                }
+              }
+            });
+          }
+
+          if (q3NextBtn) {
+            q3NextBtn.addEventListener('click', () => {
+              const letter = q3Input ? q3Input.value.trim().toUpperCase() : '';
+              if (letter.length === 1) {
+                userAnswers['q3'] = letter;
+                currentQ++;
+                if (currentQ < QUESTIONS.length) {
+                  renderQuestion(currentQ);
+                } else {
+                  showResult();
+                }
+              }
+            });
+          }
         } else if (data.image) {
-          // Type 2: 1 image prompt with options in a balanced split 2-column layout (Q2, Q3)
+          // Type 2: 1 image prompt with options in a balanced split 2-column layout (Q2)
           optContainer.className = 'quiz-options quiz-options--split';
 
           const mediaCol = document.createElement('div');

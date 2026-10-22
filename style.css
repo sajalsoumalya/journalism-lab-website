@@ -1094,6 +1094,94 @@ body {
   padding: 0.75rem 1rem;
 }
 
+/* ── Type 2b: Single Letter Puzzle Box (Q3) ── */
+.quiz-split-letter-box {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  padding: 1.75rem 1.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius);
+  box-sizing: border-box;
+}
+.quiz-letter-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+.quiz-letter-badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--crimson);
+  background: #fdf2f2;
+  border: 1px solid #fecaca;
+  padding: 0.2rem 0.65rem;
+  border-radius: 100px;
+}
+.quiz-letter-heading {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+.quiz-letter-sub {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0;
+  max-width: 280px;
+}
+.quiz-letter-input-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.5rem 0;
+}
+.quiz-single-letter-input {
+  width: 76px;
+  height: 76px;
+  box-sizing: border-box;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--brand-black);
+  background: #ffffff;
+  border: 2px solid var(--border-medium);
+  border-radius: 12px;
+  text-transform: uppercase;
+  caret-color: var(--brand-black);
+  transition: var(--transition);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+.quiz-single-letter-input:focus {
+  outline: none;
+  border-color: var(--brand-black);
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.08), 0 6px 18px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+.quiz-single-letter-input::placeholder {
+  color: var(--text-light);
+  opacity: 0.4;
+}
+.quiz-letter-hint {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-light);
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
 /* ── Type 3: No-Image Questions (Q4, Q5, Q6) ── */
 .quiz-options--text {
   display: flex;
@@ -3397,6 +3485,16 @@ body {
     flex: none;
     min-height: 50px;
     padding: 0.85rem 1rem;
+  }
+  .quiz-split-letter-box {
+    padding: 1.25rem 1rem;
+    gap: 0.9rem;
+    height: auto;
+  }
+  .quiz-single-letter-input {
+    width: 64px;
+    height: 64px;
+    font-size: 2.2rem;
   }
   .quiz-options--text {
     height: auto;
