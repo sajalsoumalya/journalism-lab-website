@@ -526,6 +526,7 @@
                 <th>#</th>
                 <th>Applicant</th>
                 <th>Role</th>
+                <th>Gender</th>
                 <th>Phone / WhatsApp</th>
                 <th>Email</th>
                 <th>Institution</th>
@@ -538,7 +539,7 @@
             </thead>
             <tbody id="dashTableBody">
               <tr>
-                <td colspan="11" style="text-align:center; padding:3rem; color:var(--text-muted);">
+                <td colspan="12" style="text-align:center; padding:3rem; color:var(--text-muted);">
                   Loading applicant records…
                 </td>
               </tr>
@@ -1059,6 +1060,7 @@
               lead.phoneDial,
               lead.phoneWa,
               lead.email,
+              lead.gender,
               lead.institution,
               isRoleNA ? 'not available' : lead.role,
               lead.quizResult,
@@ -1110,6 +1112,8 @@
           const waName = !isQuizLead ? lead.name : 'there';
           const waText = encodeURIComponent(`Hi ${waName}, this is Prof. Dr. Minal Pareek's team regarding your JournalismLab enrollment!`);
 
+          const genderVal = (lead.gender && lead.gender !== '—' && lead.gender !== 'Not Available') ? lead.gender : '';
+
           const isIncomplete = isQuizLead || isRoleNA || (!lead.institution || lead.institution === '—' || lead.institution === 'Not Available');
 
           if (!isEditing) {
@@ -1133,6 +1137,11 @@
                       </div>
                       <div class="profile-card-badges">
                         ${roleBadge}
+                        ${genderVal ? `
+                          <span class="role-badge" style="background:#f8fafc; color:#334155; border:1px solid #cbd5e1;">
+                            <i class="fa-solid fa-venus-mars"></i> <span>${escapeHTML(genderVal)}</span>
+                          </span>
+                        ` : ''}
                         <span class="role-badge status-${lead.status || 'new'}">
                           <i class="fa-solid fa-circle-dot"></i> <span style="text-transform:capitalize;">${escapeHTML(lead.status || 'new')}</span>
                         </span>
@@ -1188,6 +1197,20 @@
                           ${escapeHTML(lead.email)}
                         </a>
                       ` : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
+                    </div>
+                  </div>
+
+                  <div class="profile-field-item">
+                    <div class="profile-field-label">Applicant Role</div>
+                    <div class="profile-field-value">
+                      ${isRoleNA ? '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>' : escapeHTML(lead.role)}
+                    </div>
+                  </div>
+
+                  <div class="profile-field-item">
+                    <div class="profile-field-label">Gender</div>
+                    <div class="profile-field-value">
+                      ${genderVal ? escapeHTML(genderVal) : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
                     </div>
                   </div>
 
@@ -1329,6 +1352,17 @@
                     </div>
 
                     <div class="profile-edit-group">
+                      <label class="profile-field-label" for="editLeadGender">Gender</label>
+                      <select id="editLeadGender" class="profile-edit-input">
+                        <option value="Not Available" ${(!genderVal || genderVal === 'Not Available') ? 'selected' : ''}>Not Available</option>
+                        <option value="Female" ${genderVal === 'Female' ? 'selected' : ''}>Female</option>
+                        <option value="Male" ${genderVal === 'Male' ? 'selected' : ''}>Male</option>
+                        <option value="Non-binary / Other" ${genderVal === 'Non-binary / Other' ? 'selected' : ''}>Non-binary / Other</option>
+                        <option value="Prefer not to say" ${genderVal === 'Prefer not to say' ? 'selected' : ''}>Prefer not to say</option>
+                      </select>
+                    </div>
+
+                    <div class="profile-edit-group">
                       <label class="profile-field-label" for="editLeadPhone">Mobile / WhatsApp Number *</label>
                       <input type="tel" id="editLeadPhone" class="profile-edit-input" value="${escapeHTML(displayPhone === 'Not Available' ? '' : displayPhone)}" placeholder="+91 00000 00000" required />
                     </div>
@@ -1382,6 +1416,7 @@
 
               const enteredName = overlay.querySelector('#editLeadName').value.trim();
               const enteredRole = overlay.querySelector('#editLeadRole').value;
+              const enteredGender = overlay.querySelector('#editLeadGender').value;
               const enteredPhone = overlay.querySelector('#editLeadPhone').value.trim();
               const enteredEmail = overlay.querySelector('#editLeadEmail').value.trim();
               const enteredInst = overlay.querySelector('#editLeadInstitution').value.trim();
@@ -1392,6 +1427,7 @@
 
               lead.name = enteredName || 'Not Available';
               lead.role = enteredRole || 'Not Available';
+              lead.gender = enteredGender || 'Not Available';
               lead.phone = pObj.formatted || enteredPhone || 'Not Available';
               lead.phoneDial = pObj.dial || lead.phoneDial || '';
               lead.phoneWa = pObj.wa || lead.phoneWa || '';
@@ -1412,6 +1448,7 @@
                   await leadsRef.child(lead.id).update({
                     name: lead.name,
                     role: lead.role,
+                    gender: lead.gender,
                     phone: lead.phone,
                     phoneDial: lead.phoneDial,
                     phoneWa: lead.phoneWa,
@@ -1481,6 +1518,11 @@
             roleBadge = `<span class="role-badge role-badge--student"><i class="fa-solid fa-user-graduate"></i> <span>Student</span></span>`;
           }
 
+          const genderVal = (lead.gender && lead.gender !== '—' && lead.gender !== 'Not Available') ? lead.gender : '';
+          const genderDisplay = genderVal
+            ? `<span class="role-badge" style="background:#f8fafc; color:#334155; border:1px solid #cbd5e1;"><i class="fa-solid fa-venus-mars"></i> <span>${escapeHTML(genderVal)}</span></span>`
+            : `<span style="color:var(--text-muted); font-size:0.82rem; font-style:italic;">Not Available</span>`;
+
           const currentStatus = lead.status || 'new';
 
           return `
@@ -1494,6 +1536,9 @@
               </td>
               <td>
                 ${roleBadge}
+              </td>
+              <td>
+                ${genderDisplay}
               </td>
               <td>
                 <a href="tel:${escapeHTML(dialNumber || lead.phone || '')}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-size:0.82rem;">
@@ -1610,6 +1655,7 @@
           '#',
           'Full Name',
           'Role',
+          'Gender',
           'Phone / WhatsApp',
           'Email Address',
           'Institution',
@@ -1628,6 +1674,7 @@
 
           const expName = isQuizLead ? 'Not Available' : (l.name || 'Not Available');
           const expRole = isRoleNA ? 'Not Available' : (l.role || 'Not Available');
+          const expGender = (!l.gender || l.gender === '—' || l.gender === 'Not Available') ? 'Not Available' : l.gender;
           const expEmail = (!l.email || l.email === '—' || l.email.includes('quiz-visitor') || l.email === 'Not Available') ? 'Not Available' : l.email;
           const expInst = (!l.institution || l.institution === '—' || l.institution === 'Not Available') ? 'Not Available' : l.institution;
           const expMsg = (!l.message || l.message === 'Not Available' || l.message.startsWith('Completed Career Diagnostic Quiz')) ? 'Not Available' : l.message;
@@ -1636,6 +1683,7 @@
             i + 1,
             expName,
             expRole,
+            expGender,
             l.phone || '',
             expEmail,
             expInst,
@@ -1718,11 +1766,13 @@
         const names = ['Tanvi Mukherjee', 'Rohan Bose', 'Meera Kapoor', 'Aditya Verma', 'Siddharth Rao'];
         const colleges = ['Jadavpur University', 'St. Xavier\'s College', 'Amity Media School', 'Symbiosis Media', 'Christ University'];
         const roles = ['Student', 'Professional'];
+        const genders = ['Female', 'Male', 'Non-binary / Other', 'Prefer not to say'];
         const results = ['You\'re a Natural Anchor', 'You\'re a Video Storyteller', 'You\'re a Visual Journalist', 'You\'re an Investigative Writer'];
 
         const randomName = names[Math.floor(Math.random() * names.length)];
         const randomCollege = colleges[Math.floor(Math.random() * colleges.length)];
         const randomRole = roles[Math.floor(Math.random() * roles.length)];
+        const randomGender = genders[Math.floor(Math.random() * genders.length)];
         const randomDigits = String(Math.floor(9000000000 + Math.random() * 999999999));
         const phoneObj = formatInternationalPhone(randomDigits);
 
@@ -1735,6 +1785,7 @@
           email: randomName.toLowerCase().replace(' ', '.') + '@gmail.com',
           institution: randomCollege,
           role: randomRole,
+          gender: randomGender,
           message: 'Excited for the founding cohort with Dr. Minal Pareek.',
           quizResult: randomResult,
           status: 'new',

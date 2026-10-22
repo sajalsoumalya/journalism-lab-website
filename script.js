@@ -217,8 +217,68 @@ document.addEventListener('DOMContentLoaded', () => {
     return { formatted, dial, wa };
   }
 
+  // Helper to populate registration form fields across the page
+  function populateAllRegistrationForms(data) {
+    if (!data) return;
+
+    const regForms = document.querySelectorAll('form.register-form');
+    regForms.forEach(form => {
+      // Full Name
+      const nameInput = form.querySelector('input[name="name"], #name');
+      if (nameInput && data.name && data.name !== 'Not Available' && !data.name.startsWith('Quiz Lead')) {
+        nameInput.value = data.name;
+      }
+
+      // Phone (WhatsApp Number)
+      const phoneInput = form.querySelector('input[type="tel"][name="phone"], #phone');
+      if (phoneInput && data.phone && data.phone !== 'Not Available') {
+        const formIti = itiMap.get(phoneInput) || initIntlPhone(phoneInput);
+        if (formIti) {
+          formIti.setNumber(data.phone);
+          cleanDuplicateDialCode(phoneInput, formIti);
+        } else {
+          phoneInput.value = data.phone;
+        }
+      }
+
+      // Email
+      const emailInput = form.querySelector('input[name="email"], #email');
+      if (emailInput && data.email && data.email !== 'Not Available' && !data.email.includes('quiz-visitor')) {
+        emailInput.value = data.email;
+      }
+
+      // Institution
+      const instInput = form.querySelector('input[name="institution"], #institution');
+      if (instInput && data.institution && data.institution !== 'Not Available' && data.institution !== '—') {
+        instInput.value = data.institution;
+      }
+
+      // Role (Student or Professional)
+      if (data.role && data.role !== 'Not Available') {
+        const roleRadio = form.querySelector(`input[name="role"][value="${data.role}"]`);
+        if (roleRadio) {
+          roleRadio.checked = true;
+        }
+      }
+
+      // Gender
+      const genderSelect = form.querySelector('select[name="gender"], #gender');
+      if (genderSelect && data.gender && data.gender !== 'Not Available') {
+        genderSelect.value = data.gender;
+      }
+    });
+  }
+
   // Auto-initialize any tel inputs found in the DOM
   document.querySelectorAll('input[type="tel"]').forEach(input => initIntlPhone(input));
+
+  // Auto-populate registration forms from previously recorded quiz lead session
+  try {
+    const savedLeadProfile = JSON.parse(sessionStorage.getItem('journalismLab_leadProfile') || localStorage.getItem('journalismLab_leadProfile') || 'null');
+    if (savedLeadProfile) {
+      populateAllRegistrationForms(savedLeadProfile);
+    }
+  } catch (e) {}
 
   // ─── CMMD Pathfinder Quiz Engine ────────────────────────────────
   const QUESTIONS = [
@@ -989,17 +1049,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.recordLead(quizLead);
               }
 
-              // Auto-fill phone field in any registration forms on page
-              const regPhoneInputs = document.querySelectorAll('input[type="tel"][name="phone"], #phone');
-              regPhoneInputs.forEach(input => {
-                const regIti = itiMap.get(input) || initIntlPhone(input);
-                if (regIti) {
-                  regIti.setNumber(phoneObj.formatted);
-                  cleanDuplicateDialCode(input, regIti);
-                } else {
-                  input.value = phoneObj.formatted;
-                }
-              });
+              // Save profile to storage for pre-filling registration form on landing page or register.html
+              const leadProfile = {
+                name: nameVal,
+                phone: phoneObj.formatted || rawPhone,
+                phoneDial: phoneObj.dial || '',
+                phoneWa: phoneObj.wa || '',
+                email: emailVal,
+                institution: (instInput && instInput.value.trim()) || '',
+                role: (roleRadio ? roleRadio.value : 'Student'),
+                gender: (genderSelect && genderSelect.value) || ''
+              };
+
+              try {
+                sessionStorage.setItem('journalismLab_leadProfile', JSON.stringify(leadProfile));
+                localStorage.setItem('journalismLab_leadProfile', JSON.stringify(leadProfile));
+              } catch (e) {}
+
+              // Auto-fill all fields in any registration forms on page
+              populateAllRegistrationForms(leadProfile);
 
               showResult();
             });
@@ -1301,6 +1369,7 @@ document.addEventListener('DOMContentLoaded', () => {
         email: (pendingFormData ? pendingFormData.get('email') : '') || '',
         institution: (pendingFormData ? pendingFormData.get('institution') : '') || '—',
         role: (pendingFormData ? pendingFormData.get('role') : '') || 'Student',
+        gender: (pendingFormData ? pendingFormData.get('gender') : '') || 'Not Available',
         message: (pendingFormData ? pendingFormData.get('msg') : '') || '',
         quizResult: window.lastQuizResultTitle || 'Not taken',
         status: 'new',
@@ -1859,6 +1928,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <th>#</th>
                     <th>Applicant Name</th>
                     <th>Role</th>
+                    <th>Gender</th>
                     <th>WhatsApp & Phone</th>
                     <th>Email</th>
                     <th>Current Institution</th>
@@ -1869,7 +1939,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </tr>
                 </thead>
                 <tbody id="adminTableBody">
-                  <tr><td colspan="10" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Loading registrations…</td></tr>
+                  <tr><td colspan="11" style="text-align:center; padding:2.5rem; color:var(--text-muted);">Loading registrations…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1937,6 +2007,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const randomName = testNames[Math.floor(Math.random() * testNames.length)];
       const randomCollege = colleges[Math.floor(Math.random() * colleges.length)];
       const randomRole = roles[Math.floor(Math.random() * roles.length)];
+      const genders = ['Female', 'Male', 'Non-binary / Other', 'Prefer not to say'];
+      const randomGender = genders[Math.floor(Math.random() * genders.length)];
       const randomResult = results[Math.floor(Math.random() * results.length)];
       const randomDigits = String(Math.floor(9000000000 + Math.random() * 999999999));
       const phoneObj = formatInternationalPhone(randomDigits);
@@ -1950,6 +2022,7 @@ document.addEventListener('DOMContentLoaded', () => {
         email: randomName.toLowerCase().replace(' ', '.') + '@gmail.com',
         institution: randomCollege,
         role: randomRole,
+        gender: randomGender,
         message: 'Interested in learning from Prof. Dr. Minal Pareek in Batch 01.',
         quizResult: randomResult,
         status: 'new',
@@ -2028,6 +2101,7 @@ document.addEventListener('DOMContentLoaded', () => {
           lead.phoneDial,
           lead.phoneWa,
           lead.email,
+          lead.gender,
           lead.institution,
           isRoleNA ? 'not available' : lead.role,
           lead.quizResult,
@@ -2088,6 +2162,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const waName = !isQuizLead ? lead.name : 'there';
       const waText = encodeURIComponent(`Hi ${waName}, this is Prof. Dr. Minal Pareek's team regarding your JournalismLab application!`);
 
+      const genderVal = (lead.gender && lead.gender !== '—' && lead.gender !== 'Not Available') ? lead.gender : '';
+
       const isIncomplete = isQuizLead || isRoleNA || (!lead.institution || lead.institution === '—' || lead.institution === 'Not Available');
 
       if (!isEditing) {
@@ -2111,6 +2187,11 @@ document.addEventListener('DOMContentLoaded', () => {
                   </div>
                   <div class="profile-card-badges">
                     ${roleBadge}
+                    ${genderVal ? `
+                      <span class="role-badge" style="background:#f8fafc; color:#334155; border:1px solid #cbd5e1;">
+                        <i class="fa-solid fa-venus-mars"></i> <span>${escapeHTML(genderVal)}</span>
+                      </span>
+                    ` : ''}
                     <span class="role-badge status-${lead.status || 'new'}">
                       <i class="fa-solid fa-circle-dot"></i> <span style="text-transform:capitalize;">${escapeHTML(lead.status || 'new')}</span>
                     </span>
@@ -2166,6 +2247,20 @@ document.addEventListener('DOMContentLoaded', () => {
                       ${escapeHTML(lead.email)}
                     </a>
                   ` : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
+                </div>
+              </div>
+
+              <div class="profile-field-item">
+                <div class="profile-field-label">Applicant Role</div>
+                <div class="profile-field-value">
+                  ${isRoleNA ? '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>' : escapeHTML(lead.role)}
+                </div>
+              </div>
+
+              <div class="profile-field-item">
+                <div class="profile-field-label">Gender</div>
+                <div class="profile-field-value">
+                  ${genderVal ? escapeHTML(genderVal) : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
                 </div>
               </div>
 
@@ -2307,6 +2402,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div class="profile-edit-group">
+                  <label class="profile-field-label" for="editLeadGender">Gender</label>
+                  <select id="editLeadGender" class="profile-edit-input">
+                    <option value="Not Available" ${(!genderVal || genderVal === 'Not Available') ? 'selected' : ''}>Not Available</option>
+                    <option value="Female" ${genderVal === 'Female' ? 'selected' : ''}>Female</option>
+                    <option value="Male" ${genderVal === 'Male' ? 'selected' : ''}>Male</option>
+                    <option value="Non-binary / Other" ${genderVal === 'Non-binary / Other' ? 'selected' : ''}>Non-binary / Other</option>
+                    <option value="Prefer not to say" ${genderVal === 'Prefer not to say' ? 'selected' : ''}>Prefer not to say</option>
+                  </select>
+                </div>
+
+                <div class="profile-edit-group">
                   <label class="profile-field-label" for="editLeadPhone">Mobile / WhatsApp Number *</label>
                   <input type="tel" id="editLeadPhone" class="profile-edit-input" value="${escapeHTML(displayPhone === 'Not Available' ? '' : displayPhone)}" placeholder="+91 00000 00000" required />
                 </div>
@@ -2360,6 +2466,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           const enteredName = overlay.querySelector('#editLeadName').value.trim();
           const enteredRole = overlay.querySelector('#editLeadRole').value;
+          const enteredGender = overlay.querySelector('#editLeadGender').value;
           const enteredPhone = overlay.querySelector('#editLeadPhone').value.trim();
           const enteredEmail = overlay.querySelector('#editLeadEmail').value.trim();
           const enteredInst = overlay.querySelector('#editLeadInstitution').value.trim();
@@ -2370,6 +2477,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           lead.name = enteredName || 'Not Available';
           lead.role = enteredRole || 'Not Available';
+          lead.gender = enteredGender || 'Not Available';
           lead.phone = pObj.formatted || enteredPhone || 'Not Available';
           lead.phoneDial = pObj.dial || lead.phoneDial || '';
           lead.phoneWa = pObj.wa || lead.phoneWa || '';
@@ -2390,6 +2498,7 @@ document.addEventListener('DOMContentLoaded', () => {
               await leadsRef.child(lead.id).update({
                 name: lead.name,
                 role: lead.role,
+                gender: lead.gender,
                 phone: lead.phone,
                 phoneDial: lead.phoneDial,
                 phoneWa: lead.phoneWa,
@@ -2432,7 +2541,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (filtered.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="10" style="text-align:center; padding:3rem; color:var(--text-muted); font-style:italic;">
+          <td colspan="11" style="text-align:center; padding:3rem; color:var(--text-muted); font-style:italic;">
             No registrations found matching the current search or filter.
           </td>
         </tr>
@@ -2463,6 +2572,11 @@ document.addEventListener('DOMContentLoaded', () => {
         roleBadge = `<span class="role-badge role-badge--student"><i class="fa-solid fa-user-graduate"></i> <span>Student</span></span>`;
       }
 
+      const genderVal = (lead.gender && lead.gender !== '—' && lead.gender !== 'Not Available') ? lead.gender : '';
+      const genderDisplay = genderVal
+        ? `<span class="role-badge" style="background:#f8fafc; color:#334155; border:1px solid #cbd5e1;"><i class="fa-solid fa-venus-mars"></i> <span>${escapeHTML(genderVal)}</span></span>`
+        : `<span style="color:var(--text-muted); font-size:0.82rem; font-style:italic;">Not Available</span>`;
+
       const statusClass = `status-${lead.status || 'new'}`;
 
       return `
@@ -2476,6 +2590,9 @@ document.addEventListener('DOMContentLoaded', () => {
           </td>
           <td>
             ${roleBadge}
+          </td>
+          <td>
+            ${genderDisplay}
           </td>
           <td>
             <a href="tel:${escapeHTML(dialNumber || lead.phone || '')}" style="color:var(--text-primary); text-decoration:none; font-family:var(--font-mono); font-size:0.8rem;">
@@ -2587,6 +2704,7 @@ document.addEventListener('DOMContentLoaded', () => {
       '#',
       'Full Name',
       'Role',
+      'Gender',
       'WhatsApp Number',
       'Email Address',
       'Current Institution',
@@ -2604,6 +2722,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const expName = isQuizLead ? 'Not Available' : (l.name || 'Not Available');
       const expRole = isRoleNA ? 'Not Available' : (l.role || 'Not Available');
+      const expGender = (!l.gender || l.gender === '—' || l.gender === 'Not Available') ? 'Not Available' : l.gender;
       const expEmail = (!l.email || l.email === '—' || l.email.includes('quiz-visitor') || l.email === 'Not Available') ? 'Not Available' : l.email;
       const expInst = (!l.institution || l.institution === '—' || l.institution === 'Not Available') ? 'Not Available' : l.institution;
       const expMsg = (!l.message || l.message === 'Not Available' || l.message.startsWith('Completed Career Diagnostic Quiz')) ? 'Not Available' : l.message;
@@ -2612,6 +2731,7 @@ document.addEventListener('DOMContentLoaded', () => {
         idx + 1,
         expName,
         expRole,
+        expGender,
         l.phone || '',
         expEmail,
         expInst,
