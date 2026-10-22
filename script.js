@@ -512,7 +512,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const quizResult           = document.getElementById('quizResult');
     const progressFill         = document.getElementById('progressFill');
     const progressLabel        = document.getElementById('progressLabel');
-    const retakeBtn            = document.getElementById('retakeBtn');
 
     function renderQuestion(index) {
       const data = QUESTIONS[index];
@@ -1020,19 +1019,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    if (retakeBtn) {
-      retakeBtn.addEventListener('click', () => {
-        currentQ = 0;
-        userAnswers = {};
-        disclaimerAgreed = false;
-        pendingVal = null;
-        pendingBtn = null;
-        window.quizLeadCaptured = false;
-        if (quizResult) quizResult.style.display = 'none';
-        if (questionWrap) questionWrap.style.display = 'block';
-        renderQuestion(0);
-      });
-    }
 
     // Initialize first question
     renderQuestion(0);
