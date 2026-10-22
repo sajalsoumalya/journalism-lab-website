@@ -290,20 +290,17 @@ document.addEventListener('DOMContentLoaded', () => {
         {
           val: "A",
           image: "assets/images/quiz/q1-stage.png",
-          title: "Someone speaking on a stage",
-          subtitle: "Career family: Public speaking, journalism, presentation, communication and public relations."
+          title: "Someone speaking on a stage"
         },
         {
           val: "B",
           image: "assets/images/quiz/q1-office.png",
-          title: "Someone working in an office",
-          subtitle: "Career family: Content, editing, graphic design, research, digital marketing and management."
+          title: "Someone working in an office"
         },
         {
           val: "C",
           image: "assets/images/quiz/q1-travel.png",
-          title: "Someone travelling",
-          subtitle: "Career family: Photography, wildlife photography, videography, multimedia production and sound."
+          title: "Someone travelling"
         }
       ]
     },
@@ -692,16 +689,20 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="quiz-opt-card__img-wrap">
                 <img src="${opt.image}" alt="${opt.title}" class="quiz-opt-card__img" loading="eager" />
               </div>
-              <span class="quiz-opt-card__badge">Option ${opt.val}</span>
-              <h4 class="quiz-opt-card__title">${opt.title}</h4>
-              <p class="quiz-opt-card__desc">${opt.subtitle}</p>
+              <div class="quiz-opt-card__body">
+                <span class="quiz-opt-card__badge">Option ${opt.val}</span>
+                <h4 class="quiz-opt-card__title">${opt.title}</h4>
+              </div>
+              <div class="quiz-opt-card__action">
+                <i class="fa-solid fa-arrow-right"></i>
+              </div>
             `;
             card.addEventListener('click', () => selectAnswer(opt.val, card));
             optContainer.appendChild(card);
           });
         } else if (data.type === 'text-letter') {
           // Type 2b: Text-input based answer with 1 uppercase letter (Q3)
-          optContainer.className = 'quiz-options quiz-options--split';
+          optContainer.className = 'quiz-options quiz-options--split quiz-options--letter';
 
           const mediaCol = document.createElement('div');
           mediaCol.className = 'quiz-split-media';
@@ -715,9 +716,9 @@ document.addEventListener('DOMContentLoaded', () => {
           letterCol.className = 'quiz-split-letter-box';
           letterCol.innerHTML = `
             <div class="quiz-letter-prompt">
-              <span class="quiz-letter-badge">Word Puzzle</span>
+              <span class="quiz-letter-badge"><i class="fa-solid fa-font"></i> Word Puzzle</span>
               <h4 class="quiz-letter-heading">Type the First Letter</h4>
-              <p class="quiz-letter-sub">Look at the word puzzle on the left. Type the single first letter of the word that caught your attention.</p>
+              <p class="quiz-letter-sub">Look at the word puzzle above. Type the single first letter of the word that caught your attention.</p>
             </div>
 
             <div class="quiz-letter-input-container">
@@ -735,7 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <p class="quiz-letter-hint">Only 1 letter allowed &bull; Automatically uppercase</p>
             </div>
 
-            <button type="button" class="btn btn--primary btn--full" id="quizQ3NextBtn" disabled style="justify-content:center; padding:0.85rem 1.5rem; font-size:0.98rem;">
+            <button type="button" class="btn btn--primary btn--full" id="quizQ3NextBtn" disabled style="justify-content:center; padding:0.9rem 1.5rem; font-size:1rem; border-radius:10px; font-weight:600;">
               Next Question &nbsp;<i class="fa-solid fa-arrow-right"></i>
             </button>
           `;
