@@ -96,9 +96,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function updateItiInputPadding(input) {
+    if (!input) return;
+    const itiContainer = input.closest('.iti');
+    if (!itiContainer) return;
+    const selectedCountry = itiContainer.querySelector('.iti__selected-country');
+    if (selectedCountry) {
+      const w = selectedCountry.offsetWidth || 82;
+      const targetPadding = Math.max(92, w + 12);
+      input.style.setProperty('padding-left', `${targetPadding}px`, 'important');
+    }
+  }
+
   function initIntlPhone(input) {
     if (!input) return null;
-    if (itiMap.has(input)) return itiMap.get(input);
+    if (itiMap.has(input)) {
+      const existingIti = itiMap.get(input);
+      updateItiInputPadding(input);
+      return existingIti;
+    }
 
     if (typeof window.intlTelInput !== 'function') {
       return null;
@@ -116,15 +132,24 @@ document.addEventListener('DOMContentLoaded', () => {
       itiMap.set(input, iti);
 
       // Clean duplicate country codes on input, autofill, paste, and country change
-      const cleanHandler = () => cleanDuplicateDialCode(input, iti);
+      const cleanHandler = () => {
+        cleanDuplicateDialCode(input, iti);
+        updateItiInputPadding(input);
+      };
       input.addEventListener('input', cleanHandler);
       input.addEventListener('change', cleanHandler);
       input.addEventListener('paste', () => setTimeout(cleanHandler, 10));
       input.addEventListener('blur', cleanHandler);
-      input.addEventListener('countrychange', cleanHandler);
+      input.addEventListener('countrychange', () => {
+        cleanHandler();
+        setTimeout(() => updateItiInputPadding(input), 20);
+      });
 
       // Check on initial render & autofill delays
       if (input.value) cleanHandler();
+      updateItiInputPadding(input);
+      requestAnimationFrame(() => updateItiInputPadding(input));
+      setTimeout(() => updateItiInputPadding(input), 60);
       setTimeout(cleanHandler, 300);
       setTimeout(cleanHandler, 1000);
 
@@ -1058,10 +1083,14 @@ document.addEventListener('DOMContentLoaded', () => {
           const phoneInput = document.getElementById('quizLeadPhone');
           if (phoneInput) {
             const iti = initIntlPhone(phoneInput);
+            updateItiInputPadding(phoneInput);
+            requestAnimationFrame(() => updateItiInputPadding(phoneInput));
+            setTimeout(() => updateItiInputPadding(phoneInput), 60);
             if (window.userQuizPhone) {
               if (iti) {
                 iti.setNumber(window.userQuizPhone);
                 cleanDuplicateDialCode(phoneInput, iti);
+                updateItiInputPadding(phoneInput);
               } else {
                 phoneInput.value = window.userQuizPhone;
               }

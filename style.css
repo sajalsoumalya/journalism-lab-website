@@ -1408,15 +1408,28 @@ body {
 .quiz-lead-select {
   width: 100%;
   box-sizing: border-box;
-  padding: 0.6rem 0.85rem;
+  padding: 0.65rem 0.85rem;
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
+  line-height: 1.4;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius);
   background: var(--bg-surface);
   color: var(--text-primary);
   transition: var(--transition);
-  height: 38px;
+  min-height: 42px;
+  height: 42px;
+}
+.quiz-lead-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 1rem;
+  padding-right: 2.25rem;
+  cursor: pointer;
 }
 .quiz-lead-input:focus,
 .quiz-lead-select:focus {
@@ -1435,7 +1448,8 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.4rem;
-  height: 38px;
+  min-height: 42px;
+  height: 42px;
 }
 .quiz-role-pill {
   display: flex;
@@ -4263,19 +4277,65 @@ body {
     -webkit-overflow-scrolling: touch !important;
     padding-right: 2px !important;
   }
+  .quiz-lead-form {
+    height: auto !important;
+    min-height: 100% !important;
+    justify-content: flex-start !important;
+    gap: 0.85rem !important;
+  }
   .quiz-lead-grid {
     grid-template-columns: 1fr !important;
-    gap: 0.65rem !important;
+    gap: 0.75rem !important;
   }
-  .quiz-lead-form input,
+  .quiz-lead-form input:not([type="tel"]),
   .quiz-lead-form select {
     font-size: 16px !important; /* Prevents auto-zoom on iOS */
-    padding: 0.65rem 0.85rem !important;
+    padding: 0.7rem 0.85rem !important;
     border-radius: 10px !important;
+    min-height: 46px !important;
+    height: 46px !important;
+    line-height: 1.4 !important;
+    box-sizing: border-box !important;
+  }
+  .quiz-lead-select {
+    padding-right: 2.25rem !important;
+    background-position: right 0.85rem center !important;
+  }
+  .quiz-lead-form .iti {
+    width: 100% !important;
+    display: block !important;
+  }
+  .quiz-lead-form .iti input[type="tel"] {
+    font-size: 16px !important;
+    padding-top: 0.7rem !important;
+    padding-bottom: 0.7rem !important;
+    padding-right: 0.85rem !important;
+    padding-left: 92px !important; /* Prevents overlap with flag and +91 dial code */
+    border-radius: 10px !important;
+    min-height: 46px !important;
+    height: 46px !important;
+    line-height: 1.4 !important;
+    box-sizing: border-box !important;
+  }
+  .quiz-lead-form .iti__selected-country {
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    border-top-left-radius: 10px !important;
+    border-bottom-left-radius: 10px !important;
+  }
+  .quiz-role-toggle {
+    min-height: 46px !important;
+    height: 46px !important;
+  }
+  .quiz-role-pill {
+    border-radius: 10px !important;
+    font-size: 0.9rem !important;
   }
   .quiz-disclaimer-card {
     padding: 0.75rem 0.85rem !important;
     border-radius: 10px !important;
+    margin-top: 0.25rem !important;
   }
   #quizLeadSubmitBtn {
     min-height: 52px !important;
