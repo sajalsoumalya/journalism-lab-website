@@ -179,63 +179,6 @@
     </div>
   </main>
 
-  <!-- ═══════════════════════════════ MODALS ════════════════════════════════ -->
-
-  <!-- Quiz Disclaimer Modal (Shown upon answering Question 1) -->
-  <div class="modal-overlay" id="quizDisclaimerModal" aria-hidden="true" role="dialog" aria-labelledby="quizDisclaimerTitle">
-    <div class="modal-box modal-box--disclaimer">
-      <button type="button" class="modal-close" id="quizDisclaimerCloseBtn" aria-label="Close disclaimer dialog">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <div class="modal-header" style="text-align:left; margin-bottom:1rem;">
-        <div class="modal-icon-badge" style="color:var(--crimson); background:#fdf2f2; border-color:#fecaca; margin:0 0 1rem 0;">
-          <i class="fa-solid fa-shield-halved"></i>
-        </div>
-        <h3 class="modal-title" id="quizDisclaimerTitle">Disclaimer</h3>
-        <p class="modal-sub">Terms &amp; Guidance</p>
-      </div>
-
-      <div class="disclaimer-modal-body">
-        <p>The Career Path Quiz provides general career guidance based on the responses submitted by participants. The results are indicative only and may not be completely accurate. They should not be treated as professional career advice or the sole basis for making career decisions.</p>
-        <p>All personal information collected through this quiz will be stored securely and will never be sold to third parties.</p>
-        <p>JournalismLab shall not be held responsible for any errors, inaccuracies or misleading recommendations in the quiz results, or for any decisions or consequences arising from reliance on them, to the extent permitted by applicable law.</p>
-
-        <div class="disclaimer-phone-group">
-          <label for="quizUserPhone" class="disclaimer-phone-label">
-            <span>Mobile / WhatsApp Number <span style="color:var(--crimson);">*</span></span>
-            <span class="disclaimer-phone-badge">Required to view results</span>
-          </label>
-          <div class="quiz-phone-input-wrap" id="quizPhoneInputWrap">
-            <input 
-              type="tel" 
-              id="quizUserPhone" 
-              class="quiz-phone-input" 
-              placeholder="00000 00000" 
-              autocomplete="tel"
-              inputmode="tel"
-              required
-            />
-          </div>
-          <p id="quizPhoneError" class="quiz-phone-error">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span>Please enter a valid 10-digit mobile number to proceed.</span>
-          </p>
-        </div>
-
-        <div class="disclaimer-modal-consent">
-          <i class="fa-solid fa-circle-check"></i>
-          <span>By proceeding, you acknowledge and agree to these terms.</span>
-        </div>
-      </div>
-
-      <div class="disclaimer-modal-actions">
-        <button type="button" class="btn btn--primary btn--full" id="quizDisclaimerOkBtn" style="justify-content:center; padding:0.9rem 1.5rem; font-size:1rem;">
-          OK &nbsp;—&nbsp; Proceed to Next Question <i class="fa-solid fa-arrow-right"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- ═══════════════════════════════ WHATSAPP FAB ═════════════════════════ -->
   <a href="https://wa.me/918100462957?text=Hi%20Prof.%20Dr.%20Minal%20Pareek,%20I%20just%20took%20the%20Path%20Finder%20Quiz%20and%20have%20a%20question!" target="_blank" rel="noopener noreferrer" class="whatsapp-fab" aria-label="Chat with us on WhatsApp at 8100462957">
     <span class="whatsapp-fab__label">Have questions? Chat on WhatsApp</span>

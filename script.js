@@ -324,6 +324,12 @@ document.addEventListener('DOMContentLoaded', () => {
           subtitle: "Hands-on mastery of editing suites, design canvas, or camera gear."
         }
       ]
+    },
+    {
+      id: 'q7',
+      q: "Q7. Personal Details",
+      sub: "Enter your contact details to reveal your personalized career diagnostic report.",
+      type: "lead-capture"
     }
   ];
 
@@ -538,167 +544,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressFill         = document.getElementById('progressFill');
     const progressLabel        = document.getElementById('progressLabel');
     const retakeBtn            = document.getElementById('retakeBtn');
-    const quizDisclaimerModal  = document.getElementById('quizDisclaimerModal');
-    const quizDisclaimerOkBtn  = document.getElementById('quizDisclaimerOkBtn');
-    const quizDisclaimerCloseBtn = document.getElementById('quizDisclaimerCloseBtn');
-
-    function openQuizDisclaimer(val, btn) {
-      pendingVal = val;
-      pendingBtn = btn;
-      const phoneInput = document.getElementById('quizUserPhone');
-      const phoneErr = document.getElementById('quizPhoneError');
-      if (phoneErr) phoneErr.style.display = 'none';
-      if (phoneInput) {
-        phoneInput.classList.remove('error');
-        const iti = initIntlPhone(phoneInput);
-        if (window.userQuizPhone && !phoneInput.value) {
-          if (iti) {
-            iti.setNumber(window.userQuizPhone);
-            cleanDuplicateDialCode(phoneInput, iti);
-          } else {
-            phoneInput.value = window.userQuizPhone;
-          }
-        }
-      }
-      if (quizDisclaimerModal) {
-        quizDisclaimerModal.classList.add('active');
-        quizDisclaimerModal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-      }
-      setTimeout(() => {
-        if (phoneInput) phoneInput.focus();
-      }, 150);
-    }
-
-    function closeQuizDisclaimer(proceed = false) {
-      if (quizDisclaimerModal) {
-        quizDisclaimerModal.classList.remove('active');
-        quizDisclaimerModal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
-      }
-
-      if (proceed && pendingVal !== null) {
-        disclaimerAgreed = true;
-        userAnswers[QUESTIONS[currentQ].id] = pendingVal;
-        currentQ++;
-        if (currentQ < QUESTIONS.length) {
-          renderQuestion(currentQ);
-        } else {
-          showResult();
-        }
-      } else {
-        // Dismissed without clicking OK: reset selection so user can reselect
-        if (pendingBtn) {
-          pendingBtn.classList.remove('selected');
-        }
-      }
-      pendingVal = null;
-      pendingBtn = null;
-    }
-
-    const quizUserPhone = document.getElementById('quizUserPhone');
-    const quizPhoneError = document.getElementById('quizPhoneError');
-
-    if (quizUserPhone) {
-      initIntlPhone(quizUserPhone);
-
-      quizUserPhone.addEventListener('input', () => {
-        const iti = itiMap.get(quizUserPhone);
-        const digits = quizUserPhone.value.replace(/\D/g, '');
-        const isValid = iti ? (iti.isValidNumber() || digits.length >= 7) : digits.length >= 10;
-        if (isValid) {
-          if (quizPhoneError) quizPhoneError.style.display = 'none';
-          quizUserPhone.classList.remove('error');
-        }
-      });
-
-      quizUserPhone.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          if (quizDisclaimerOkBtn) quizDisclaimerOkBtn.click();
-        }
-      });
-    }
-
-    if (quizDisclaimerOkBtn) {
-      quizDisclaimerOkBtn.addEventListener('click', () => {
-        const phoneInput = document.getElementById('quizUserPhone');
-        const phoneErr = document.getElementById('quizPhoneError');
-        const iti = phoneInput ? (itiMap.get(phoneInput) || initIntlPhone(phoneInput)) : null;
-        const rawValue = phoneInput ? phoneInput.value.trim() : '';
-        const digits = rawValue.replace(/\D/g, '');
-
-        const phoneObj = formatInternationalPhone(rawValue, iti);
-        const fullNumber = phoneObj.formatted || rawValue;
-
-        if (iti) {
-          const countryData = iti.getSelectedCountryData();
-          const isIndia = (countryData && countryData.iso2 === 'in');
-          isValid = iti.isValidNumber() || digits.length >= (isIndia ? 10 : 7);
-        } else {
-          isValid = digits.length >= 10;
-        }
-
-        if (!rawValue || !isValid || digits.length < 7) {
-          if (phoneErr) {
-            phoneErr.style.display = 'flex';
-            const errSpan = phoneErr.querySelector('span');
-            if (errSpan) {
-              const countryIso = iti ? iti.getSelectedCountryData()?.iso2 : 'in';
-              errSpan.textContent = countryIso === 'in'
-                ? 'Please enter a valid 10-digit mobile number to proceed.'
-                : 'Please enter a valid mobile number to proceed.';
-            }
-          }
-          if (phoneInput) {
-            phoneInput.classList.add('error');
-            phoneInput.focus();
-          }
-          return;
-        }
-
-        if (phoneErr) phoneErr.style.display = 'none';
-        if (phoneInput) phoneInput.classList.remove('error');
-
-        window.userQuizPhone = fullNumber;
-        window.userQuizPhoneDial = phoneObj.dial;
-        window.userQuizPhoneWa = phoneObj.wa;
-
-        // Auto-fill phone field in any registration forms on page
-        const regPhoneInputs = document.querySelectorAll('input[type="tel"][name="phone"], #phone');
-        regPhoneInputs.forEach(input => {
-          const regIti = itiMap.get(input) || initIntlPhone(input);
-          if (regIti) {
-            regIti.setNumber(fullNumber);
-            cleanDuplicateDialCode(input, regIti);
-          } else {
-            input.value = fullNumber;
-          }
-        });
-
-        closeQuizDisclaimer(true);
-      });
-    }
-
-    if (quizDisclaimerCloseBtn) {
-      quizDisclaimerCloseBtn.addEventListener('click', () => {
-        closeQuizDisclaimer(false);
-      });
-    }
-
-    if (quizDisclaimerModal) {
-      quizDisclaimerModal.addEventListener('click', (e) => {
-        if (e.target === quizDisclaimerModal) {
-          closeQuizDisclaimer(false);
-        }
-      });
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && quizDisclaimerModal && quizDisclaimerModal.classList.contains('active')) {
-        closeQuizDisclaimer(false);
-      }
-    });
 
     function renderQuestion(index) {
       const data = QUESTIONS[index];
@@ -768,6 +613,242 @@ document.addEventListener('DOMContentLoaded', () => {
 
           optContainer.appendChild(mediaCol);
           optContainer.appendChild(optionsCol);
+        } else if (data.type === 'lead-capture') {
+          // Type 4: Lead Capture Question (Q7) & Disclaimer Section
+          optContainer.className = 'quiz-options quiz-options--lead';
+          optContainer.innerHTML = `
+            <form class="quiz-lead-form" id="quizLeadForm" novalidate>
+              <div class="quiz-lead-grid">
+                <div class="quiz-lead-field">
+                  <label class="quiz-lead-label" for="quizLeadName">
+                    <span>Full Name <span class="req">*</span></span>
+                  </label>
+                  <input type="text" id="quizLeadName" class="quiz-lead-input" placeholder="e.g. Rahul Sharma" autocomplete="name" required />
+                </div>
+
+                <div class="quiz-lead-field">
+                  <label class="quiz-lead-label" for="quizLeadPhone">
+                    <span>Mobile / WhatsApp <span class="req">*</span></span>
+                  </label>
+                  <div class="quiz-phone-input-wrap">
+                    <input type="tel" id="quizLeadPhone" class="quiz-phone-input" placeholder="00000 00000" autocomplete="tel" inputmode="tel" required />
+                  </div>
+                  <p id="quizLeadPhoneError" class="quiz-field-error" style="display:none;">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>Please enter a valid 10-digit mobile number.</span>
+                  </p>
+                </div>
+
+                <div class="quiz-lead-field">
+                  <label class="quiz-lead-label" for="quizLeadEmail">
+                    <span>Email Address <span class="req">*</span></span>
+                  </label>
+                  <input type="email" id="quizLeadEmail" class="quiz-lead-input" placeholder="name@example.com" autocomplete="email" required />
+                </div>
+
+                <div class="quiz-lead-field">
+                  <label class="quiz-lead-label">
+                    <span>Current Role <span class="req">*</span></span>
+                  </label>
+                  <div class="quiz-role-toggle">
+                    <label class="quiz-role-pill">
+                      <input type="radio" name="quizRole" value="Student" checked />
+                      <span>Student</span>
+                    </label>
+                    <label class="quiz-role-pill">
+                      <input type="radio" name="quizRole" value="Professional" />
+                      <span>Professional</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="quiz-lead-field">
+                  <label class="quiz-lead-label" for="quizLeadInst">
+                    <span>Institution / Organisation</span>
+                  </label>
+                  <input type="text" id="quizLeadInst" class="quiz-lead-input" placeholder="College or Company name" />
+                </div>
+
+                <div class="quiz-lead-field">
+                  <label class="quiz-lead-label" for="quizLeadGender">
+                    <span>Gender</span>
+                  </label>
+                  <select id="quizLeadGender" class="quiz-lead-select">
+                    <option value="" selected disabled>Select Gender</option>
+                    <option value="Female">Female</option>
+                    <option value="Male">Male</option>
+                    <option value="Non-binary">Non-binary</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Disclaimer Section -->
+              <div class="quiz-disclaimer-card">
+                <div class="quiz-disclaimer-card__header">
+                  <i class="fa-solid fa-shield-halved"></i>
+                  <span>Disclaimer &amp; Terms</span>
+                </div>
+                <div class="quiz-disclaimer-card__text">
+                  The CMMD Career Path Quiz provides general career guidance based on responses submitted by participants. Results are indicative only and should not be treated as professional career advice. All personal information collected will be stored securely and will never be sold to third parties. JournalismLab &amp; CMMD shall not be held responsible for decisions or consequences arising from reliance on quiz results.
+                </div>
+                <label class="quiz-disclaimer-card__consent">
+                  <input type="checkbox" id="quizDisclaimerConsent" checked required />
+                  <span>By proceeding, you acknowledge and agree to these terms.</span>
+                </label>
+              </div>
+
+              <div class="quiz-lead-actions">
+                <button type="submit" class="btn btn--primary btn--full" id="quizLeadSubmitBtn" style="justify-content:center; padding:0.85rem 1.5rem; font-size:0.98rem;">
+                  Unlock My Career Diagnosis &nbsp;<i class="fa-solid fa-arrow-right"></i>
+                </button>
+              </div>
+            </form>
+          `;
+
+          // Initialize intl-tel-input for the phone input
+          const phoneInput = document.getElementById('quizLeadPhone');
+          if (phoneInput) {
+            const iti = initIntlPhone(phoneInput);
+            if (window.userQuizPhone) {
+              if (iti) {
+                iti.setNumber(window.userQuizPhone);
+                cleanDuplicateDialCode(phoneInput, iti);
+              } else {
+                phoneInput.value = window.userQuizPhone;
+              }
+            }
+          }
+
+          // Handle lead capture form submission
+          const leadForm = document.getElementById('quizLeadForm');
+          if (leadForm) {
+            leadForm.addEventListener('submit', (e) => {
+              e.preventDefault();
+
+              const nameInput = document.getElementById('quizLeadName');
+              const phoneInput = document.getElementById('quizLeadPhone');
+              const emailInput = document.getElementById('quizLeadEmail');
+              const instInput = document.getElementById('quizLeadInst');
+              const genderSelect = document.getElementById('quizLeadGender');
+              const roleRadio = leadForm.querySelector('input[name="quizRole"]:checked');
+              const consentBox = document.getElementById('quizDisclaimerConsent');
+              const phoneErr = document.getElementById('quizLeadPhoneError');
+
+              const nameVal = nameInput ? nameInput.value.trim() : '';
+              const emailVal = emailInput ? emailInput.value.trim() : '';
+              const rawPhone = phoneInput ? phoneInput.value.trim() : '';
+              const digits = rawPhone.replace(/\D/g, '');
+              const iti = phoneInput ? (itiMap.get(phoneInput) || initIntlPhone(phoneInput)) : null;
+
+              let phoneValid = false;
+              if (iti) {
+                const countryData = iti.getSelectedCountryData();
+                const isIndia = (countryData && countryData.iso2 === 'in');
+                phoneValid = iti.isValidNumber() || digits.length >= (isIndia ? 10 : 7);
+              } else {
+                phoneValid = digits.length >= 10;
+              }
+
+              if (!nameVal) {
+                if (nameInput) {
+                  nameInput.classList.add('error');
+                  nameInput.focus();
+                }
+                return;
+              } else if (nameInput) {
+                nameInput.classList.remove('error');
+              }
+
+              if (!rawPhone || !phoneValid || digits.length < 7) {
+                if (phoneErr) {
+                  phoneErr.style.display = 'flex';
+                  const errSpan = phoneErr.querySelector('span');
+                  if (errSpan) {
+                    const countryIso = iti ? iti.getSelectedCountryData()?.iso2 : 'in';
+                    errSpan.textContent = countryIso === 'in'
+                      ? 'Please enter a valid 10-digit mobile number.'
+                      : 'Please enter a valid mobile number.';
+                  }
+                }
+                if (phoneInput) {
+                  phoneInput.classList.add('error');
+                  phoneInput.focus();
+                }
+                return;
+              } else {
+                if (phoneErr) phoneErr.style.display = 'none';
+                if (phoneInput) phoneInput.classList.remove('error');
+              }
+
+              if (!emailVal || !emailVal.includes('@')) {
+                if (emailInput) {
+                  emailInput.classList.add('error');
+                  emailInput.focus();
+                }
+                return;
+              } else if (emailInput) {
+                emailInput.classList.remove('error');
+              }
+
+              if (consentBox && !consentBox.checked) {
+                consentBox.focus();
+                return;
+              }
+
+              const phoneObj = formatInternationalPhone(rawPhone, iti);
+              window.userQuizPhone = phoneObj.formatted || rawPhone;
+              window.userQuizPhoneDial = phoneObj.dial;
+              window.userQuizPhoneWa = phoneObj.wa;
+
+              // Calculate result profile using deterministic CMMD decision logic
+              const profileKey = calculateCareerPath(userAnswers);
+              const res = CAREER_PROFILES[profileKey] || CAREER_PROFILES['news-reporter'];
+
+              // Capture complete lead with actual user details
+              const quizLead = {
+                id: 'lead_quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+                name: nameVal,
+                phone: phoneObj.formatted || rawPhone,
+                phoneDial: phoneObj.dial || '',
+                phoneWa: phoneObj.wa || '',
+                email: emailVal,
+                institution: (instInput && instInput.value.trim()) || 'Not Available',
+                role: (roleRadio ? roleRadio.value : 'Student'),
+                gender: (genderSelect && genderSelect.value) || 'Not Available',
+                message: 'Not Available',
+                quizResult: res.title || 'Completed',
+                status: 'new',
+                captchaVerified: true,
+                captchaSecured: Boolean(captchaApiKey),
+                submittedAt: new Date().toISOString(),
+                submittedDisplay: new Date().toLocaleDateString('en-IN', {
+                  day: '2-digit', month: 'short', year: 'numeric',
+                  hour: '2-digit', minute: '2-digit'
+                }),
+                source: window.location.pathname.includes('pathfinder') ? 'Pathfinder Quiz' : 'Diagnostic Quiz'
+              };
+
+              window.quizLeadCaptured = true;
+              if (typeof window.recordLead === 'function') {
+                window.recordLead(quizLead);
+              }
+
+              // Auto-fill phone field in any registration forms on page
+              const regPhoneInputs = document.querySelectorAll('input[type="tel"][name="phone"], #phone');
+              regPhoneInputs.forEach(input => {
+                const regIti = itiMap.get(input) || initIntlPhone(input);
+                if (regIti) {
+                  regIti.setNumber(phoneObj.formatted);
+                  cleanDuplicateDialCode(input, regIti);
+                } else {
+                  input.value = phoneObj.formatted;
+                }
+              });
+
+              showResult();
+            });
+          }
         } else {
           // Type 3: No image (Q4: 2 options, Q5/Q6: 4 options) centered vertically
           optContainer.className = 'quiz-options quiz-options--text' + (data.options.length <= 2 ? ' quiz-options--duo' : '');
@@ -798,20 +879,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function selectAnswer(val, btn) {
-      // First question check: clicking any answer triggers Disclaimer Popup
-      if (currentQ === 0 && !disclaimerAgreed) {
-        const optContainer = document.getElementById('quizOptions');
-        if (optContainer) {
-          optContainer.querySelectorAll('.quiz-opt, .quiz-opt-card').forEach(b => b.classList.remove('selected'));
-        }
-        btn.classList.add('selected');
-
-        setTimeout(() => {
-          openQuizDisclaimer(val, btn);
-        }, 120);
-        return;
+      const optContainer = document.getElementById('quizOptions');
+      if (optContainer) {
+        optContainer.querySelectorAll('.quiz-opt, .quiz-opt-card').forEach(b => b.classList.remove('selected'));
       }
-
       btn.classList.add('selected');
       userAnswers[QUESTIONS[currentQ].id] = val;
 

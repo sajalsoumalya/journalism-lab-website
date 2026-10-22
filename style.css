@@ -1112,6 +1112,158 @@ body {
   padding: 1.35rem 1.6rem;
 }
 
+/* ── Type 4: Lead Capture Question (Q7) & Disclaimer Section ── */
+.quiz-options--lead {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.quiz-lead-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100%;
+  justify-content: space-between;
+}
+.quiz-lead-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem 1.15rem;
+}
+.quiz-lead-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: left;
+}
+.quiz-lead-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.quiz-lead-label .req {
+  color: var(--crimson);
+  margin-left: 2px;
+}
+.quiz-lead-input,
+.quiz-lead-select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 0.85rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  transition: var(--transition);
+  height: 38px;
+}
+.quiz-lead-input:focus,
+.quiz-lead-select:focus {
+  outline: none;
+  border-color: var(--brand-black);
+  background: #ffffff;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+}
+.quiz-lead-input.error {
+  border-color: var(--crimson);
+  background: #fff8f8;
+}
+
+/* Role Radio Pills */
+.quiz-role-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  height: 38px;
+}
+.quiz-role-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  user-select: none;
+}
+.quiz-role-pill input {
+  display: none;
+}
+.quiz-role-pill:has(input:checked) {
+  background: var(--brand-black);
+  color: var(--brand-white);
+  border-color: var(--brand-black);
+}
+
+/* Disclaimer Section inside Q7 */
+.quiz-disclaimer-card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.95rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.quiz-disclaimer-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--crimson);
+}
+.quiz-disclaimer-card__text {
+  font-size: 0.71rem;
+  line-height: 1.42;
+  color: var(--text-secondary);
+}
+.quiz-disclaimer-card__consent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  cursor: pointer;
+  margin-top: 0.15rem;
+}
+.quiz-disclaimer-card__consent input[type="checkbox"] {
+  accent-color: var(--brand-black);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+/* Error message */
+.quiz-field-error {
+  font-size: 0.72rem;
+  color: var(--crimson);
+  margin-top: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 /* ── Option Button Component ── */
 .quiz-opt {
   background: var(--bg-surface);
@@ -3255,6 +3407,16 @@ body {
   }
   .quiz-options--duo .quiz-opt {
     padding: 1rem 1.15rem;
+  }
+  .quiz-options--lead {
+    height: auto;
+  }
+  .quiz-lead-grid {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+  .quiz-disclaimer-card {
+    padding: 0.65rem 0.8rem;
   }
   .quiz-opt {
     padding: 0.85rem 1.1rem;
