@@ -580,6 +580,114 @@ document.addEventListener('DOMContentLoaded', () => {
       return (window.innerWidth <= 768) || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
 
+    function setQuizVisibility(el, visible, displayType = 'block') {
+      if (!el) return;
+      if (visible) {
+        el.classList.remove('is-hidden');
+        el.style.setProperty('display', displayType, 'important');
+      } else {
+        el.classList.add('is-hidden');
+        el.style.setProperty('display', 'none', 'important');
+      }
+    }
+
+    function saveQuizProgress() {
+      try {
+        sessionStorage.setItem('cmmd_quiz_progress', JSON.stringify({
+          currentQ: currentQ,
+          userAnswers: userAnswers,
+          timestamp: Date.now()
+        }));
+      } catch (e) {}
+    }
+
+    function clearQuizProgress() {
+      try {
+        sessionStorage.removeItem('cmmd_quiz_progress');
+      } catch (e) {}
+    }
+
+    function loadSavedProgress() {
+      try {
+        const raw = sessionStorage.getItem('cmmd_quiz_progress');
+        if (raw) {
+          const data = JSON.parse(raw);
+          if (typeof data.currentQ === 'number' && data.currentQ >= 0 && data.currentQ < QUESTIONS.length) {
+            currentQ = data.currentQ;
+            userAnswers = data.userAnswers || {};
+            return true;
+          }
+        }
+      } catch (e) {}
+      return false;
+    }
+
+    function updateStartScreenUI() {
+      if (!quizStartBtn) return;
+      const hasProgress = (typeof currentQ === 'number' && currentQ > 0) || (userAnswers && Object.keys(userAnswers).length > 0);
+      let restartWrap = document.getElementById('quizRestartWrap');
+      const startNote = quizStartScreen ? quizStartScreen.querySelector('.quiz-start-note') : null;
+
+      if (hasProgress && currentQ < QUESTIONS.length) {
+        const qNum = Math.min(currentQ + 1, QUESTIONS.length);
+        quizStartBtn.innerHTML = `Resume Quiz &bull; Question ${qNum} of ${QUESTIONS.length} <i class="fa-solid fa-arrow-right"></i>`;
+        quizStartBtn.setAttribute('title', `Resume quiz at Question ${qNum}`);
+        quizStartBtn.setAttribute('aria-label', `Resume quiz at Question ${qNum}`);
+
+        if (startNote) {
+          startNote.innerHTML = `Quiz paused &bull; Answers saved &bull; Question ${qNum} of ${QUESTIONS.length}`;
+        }
+
+        if (!restartWrap && quizStartScreen) {
+          restartWrap = document.createElement('div');
+          restartWrap.id = 'quizRestartWrap';
+          restartWrap.style.marginTop = '0.75rem';
+          restartWrap.style.display = 'flex';
+          restartWrap.style.justifyContent = 'center';
+          restartWrap.innerHTML = `
+            <button type="button" id="quizRestartBtn" class="quiz-restart-btn">
+              <i class="fa-solid fa-rotate-left"></i> Restart Quiz from Beginning
+            </button>
+          `;
+          if (startNote) {
+            quizStartScreen.insertBefore(restartWrap, startNote);
+          } else {
+            quizStartScreen.appendChild(restartWrap);
+          }
+
+          const restartBtn = document.getElementById('quizRestartBtn');
+          if (restartBtn) {
+            restartBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              currentQ = 0;
+              userAnswers = {};
+              clearQuizProgress();
+              updateStartScreenUI();
+              startQuiz(0);
+            });
+          }
+        } else if (restartWrap) {
+          restartWrap.style.display = 'flex';
+        }
+      } else {
+        const isPathfinder = window.location.pathname.includes('pathfinder');
+        const defaultText = isPathfinder ? 'Start Career Diagnostic' : 'Start Now';
+        quizStartBtn.innerHTML = `${defaultText} <i class="fa-solid fa-arrow-right"></i>`;
+        quizStartBtn.removeAttribute('title');
+        quizStartBtn.removeAttribute('aria-label');
+
+        if (startNote) {
+          startNote.innerHTML = isPathfinder
+            ? 'Free 5-minute diagnostic &bull; No registration required to begin'
+            : 'Free &bull; No Signup Required';
+        }
+
+        if (restartWrap) {
+          restartWrap.style.display = 'none';
+        }
+      }
+    }
+
     function enterMobileFullscreen() {
       isQuizFullscreen = true;
       document.body.classList.add('quiz-fullscreen-active');
@@ -613,15 +721,25 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) {}
     }
 
+    function handleQuizClose() {
+      exitMobileFullscreen();
+      // Ensure question and progress are completely hidden so no partial question/form ever shows
+      setQuizVisibility(questionWrap, false);
+      setQuizVisibility(quizProgress, false);
+      setQuizVisibility(quizResult, false);
+      // Show start screen with Resume button if incomplete
+      setQuizVisibility(quizStartScreen, true, 'flex');
+      saveQuizProgress();
+      updateStartScreenUI();
+      if (quizCard) {
+        quizCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
     if (quizFullscreenExit) {
-      quizFullscreenExit.addEventListener('click', () => {
-        exitMobileFullscreen();
-        currentQ = 0;
-        userAnswers = {};
-        if (quizStartScreen) quizStartScreen.style.display = 'flex';
-        if (quizProgress) quizProgress.style.display = 'none';
-        if (questionWrap) questionWrap.style.display = 'none';
-        if (quizResult) quizResult.style.display = 'none';
+      quizFullscreenExit.addEventListener('click', (e) => {
+        e.preventDefault();
+        handleQuizClose();
       });
     }
 
@@ -634,19 +752,25 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    function startQuiz() {
+    function startQuiz(forceIndex) {
+      if (typeof forceIndex === 'number') {
+        currentQ = forceIndex;
+      }
+      if (typeof currentQ !== 'number' || currentQ < 0 || currentQ >= QUESTIONS.length) {
+        currentQ = 0;
+        userAnswers = {};
+      }
+
       if (isMobileDevice()) {
         enterMobileFullscreen();
       }
 
-      if (quizStartScreen) quizStartScreen.style.display = 'none';
-      if (quizProgress) quizProgress.style.display = 'flex';
-      if (questionWrap) questionWrap.style.display = 'block';
-      if (quizResult) quizResult.style.display = 'none';
+      setQuizVisibility(quizStartScreen, false);
+      setQuizVisibility(quizProgress, true, 'flex');
+      setQuizVisibility(questionWrap, true, 'flex');
+      setQuizVisibility(quizResult, false);
 
-      currentQ = 0;
-      userAnswers = {};
-      renderQuestion(0);
+      renderQuestion(currentQ);
 
       if (!isMobileDevice() && quizCard) {
         quizCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -654,12 +778,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (quizStartBtn) {
-      quizStartBtn.addEventListener('click', startQuiz);
+      quizStartBtn.addEventListener('click', () => startQuiz());
     }
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && isQuizFullscreen) {
-        exitMobileFullscreen();
+        handleQuizClose();
+      }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && isQuizFullscreen) {
+        handleQuizClose();
+      }
+    });
+    document.addEventListener('webkitfullscreenchange', () => {
+      if (!document.webkitFullscreenElement && isQuizFullscreen) {
+        handleQuizClose();
       }
     });
 
@@ -786,6 +921,7 @@ document.addEventListener('DOMContentLoaded', () => {
               if (letter.length === 1) {
                 userAnswers['q3'] = letter;
                 currentQ++;
+                saveQuizProgress();
                 if (currentQ < QUESTIONS.length) {
                   renderQuestion(currentQ);
                 } else {
@@ -939,6 +1075,45 @@ document.addEventListener('DOMContentLoaded', () => {
           // Handle lead capture form submission
           const leadForm = document.getElementById('quizLeadForm');
           if (leadForm) {
+            try {
+              const cachedProfile = JSON.parse(sessionStorage.getItem('journalismLab_leadProfile') || '{}');
+              if (cachedProfile.name && document.getElementById('quizLeadName')) {
+                document.getElementById('quizLeadName').value = cachedProfile.name;
+              }
+              if (cachedProfile.email && document.getElementById('quizLeadEmail')) {
+                document.getElementById('quizLeadEmail').value = cachedProfile.email;
+              }
+              if (cachedProfile.institution && document.getElementById('quizLeadInst')) {
+                document.getElementById('quizLeadInst').value = cachedProfile.institution;
+              }
+              if (cachedProfile.gender && document.getElementById('quizLeadGender')) {
+                document.getElementById('quizLeadGender').value = cachedProfile.gender;
+              }
+              if (cachedProfile.role) {
+                const roleRadio = leadForm.querySelector(`input[name="quizRole"][value="${cachedProfile.role}"]`);
+                if (roleRadio) roleRadio.checked = true;
+              }
+            } catch (e) {}
+
+            leadForm.querySelectorAll('input, select').forEach(input => {
+              input.addEventListener('input', () => {
+                try {
+                  const draft = JSON.parse(sessionStorage.getItem('journalismLab_leadProfile') || '{}');
+                  const n = document.getElementById('quizLeadName');
+                  const em = document.getElementById('quizLeadEmail');
+                  const inst = document.getElementById('quizLeadInst');
+                  const g = document.getElementById('quizLeadGender');
+                  const r = leadForm.querySelector('input[name="quizRole"]:checked');
+                  if (n) draft.name = n.value.trim();
+                  if (em) draft.email = em.value.trim();
+                  if (inst) draft.institution = inst.value.trim();
+                  if (g) draft.gender = g.value;
+                  if (r) draft.role = r.value;
+                  sessionStorage.setItem('journalismLab_leadProfile', JSON.stringify(draft));
+                } catch (e) {}
+              });
+            });
+
             leadForm.addEventListener('submit', (e) => {
               e.preventDefault();
 
@@ -1109,9 +1284,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       btn.classList.add('selected');
       userAnswers[QUESTIONS[currentQ].id] = val;
+      saveQuizProgress();
 
       setTimeout(() => {
         currentQ++;
+        saveQuizProgress();
         if (currentQ < QUESTIONS.length) {
           renderQuestion(currentQ);
         } else {
@@ -1121,8 +1298,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showResult() {
-      if (questionWrap) questionWrap.style.display = 'none';
-      if (quizResult) quizResult.style.display = 'block';
+      clearQuizProgress();
+      setQuizVisibility(questionWrap, false);
+      setQuizVisibility(quizProgress, false);
+      setQuizVisibility(quizStartScreen, false);
+      setQuizVisibility(quizResult, true, 'block');
       if (progressFill) progressFill.style.width = '100%';
       if (progressLabel) progressLabel.innerHTML = '<i class="fa-solid fa-check"></i> Completed';
 
@@ -1185,8 +1365,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // If no start screen is present on page, initialize first question automatically
-    if (!quizStartScreen) {
+    // If start screen is present on page, initialize Start / Resume state
+    if (quizStartScreen) {
+      setQuizVisibility(quizStartScreen, true, 'flex');
+      setQuizVisibility(quizProgress, false);
+      setQuizVisibility(questionWrap, false);
+      setQuizVisibility(quizResult, false);
+      loadSavedProgress();
+      updateStartScreenUI();
+    } else {
       renderQuestion(0);
     }
   }
