@@ -1474,7 +1474,49 @@ body {
   border-color: var(--brand-black);
 }
 
-/* Disclaimer Section inside Q7 */
+/* Quiz Terms Consent Line (Q7) */
+.quiz-terms-consent {
+  margin: 0.35rem 0 0.15rem;
+  text-align: left;
+}
+.quiz-terms-consent__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  cursor: pointer;
+  user-select: none;
+}
+.quiz-terms-consent__label input[type="checkbox"] {
+  accent-color: var(--brand-black);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  margin: 0;
+  flex-shrink: 0;
+}
+.quiz-terms-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--crimson);
+  text-decoration: underline;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline;
+}
+.quiz-terms-link:hover {
+  color: var(--brand-black);
+}
+
+.modal-overlay--terms {
+  z-index: 100001 !important;
+}
+
+/* Disclaimer Section inside Q7 (Legacy fallback) */
 .quiz-disclaimer-card {
   background: var(--bg-subtle);
   border: 1px solid var(--border-medium);
@@ -4331,6 +4373,18 @@ body {
   .quiz-role-pill {
     border-radius: 10px !important;
     font-size: 0.9rem !important;
+  }
+  .quiz-terms-consent {
+    margin: 0.25rem 0 0.1rem !important;
+  }
+  .quiz-terms-consent__label {
+    font-size: 0.85rem !important;
+    gap: 0.6rem !important;
+    line-height: 1.45 !important;
+  }
+  .quiz-terms-consent__label input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
   }
   .quiz-disclaimer-card {
     padding: 0.75rem 0.85rem !important;

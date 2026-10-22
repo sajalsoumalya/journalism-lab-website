@@ -764,6 +764,72 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    function openQuizTermsModal() {
+      let modal = document.getElementById('quizTermsModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'modal-overlay modal-overlay--terms';
+        modal.id = 'quizTermsModal';
+        modal.setAttribute('aria-hidden', 'true');
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-labelledby', 'quizTermsModalTitle');
+        modal.style.zIndex = '100001';
+        modal.innerHTML = `
+          <div class="modal-box modal-box--disclaimer">
+            <button type="button" class="modal-close" id="quizTermsModalClose" aria-label="Close terms dialog">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="modal-header">
+              <div class="modal-icon-badge">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <h3 class="modal-title" id="quizTermsModalTitle">Disclaimer &amp; Terms</h3>
+              <p class="modal-sub">CMMD Career Diagnostic &bull; JournalismLab</p>
+            </div>
+            <div class="disclaimer-modal-body">
+              <p>The CMMD Career Path Quiz provides general career guidance based on responses submitted by participants. Results are indicative only and should not be treated as professional career advice.</p>
+              <p>All personal information collected will be stored securely in accordance with our privacy practices and will never be sold or rented to third parties.</p>
+              <p>JournalismLab and CMMD shall not be held responsible for decisions or consequences arising from reliance on quiz results.</p>
+            </div>
+            <div class="disclaimer-modal-actions" style="margin-top:1.25rem;">
+              <button type="button" class="btn btn--primary" id="quizTermsModalAccept" style="width:100%; justify-content:center;">
+                I Understand &amp; Agree
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        const closeModal = () => {
+          modal.classList.remove('active');
+          modal.setAttribute('aria-hidden', 'true');
+        };
+
+        const closeBtn = modal.querySelector('#quizTermsModalClose');
+        const acceptBtn = modal.querySelector('#quizTermsModalAccept');
+
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        if (acceptBtn) {
+          acceptBtn.addEventListener('click', () => {
+            const consentCheckbox = document.getElementById('quizDisclaimerConsent');
+            if (consentCheckbox) consentCheckbox.checked = true;
+            closeModal();
+          });
+        }
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal();
+        });
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
+          }
+        });
+      }
+
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
     if (quizFsResultExitBtn) {
       quizFsResultExitBtn.addEventListener('click', () => {
         exitMobileFullscreen();
@@ -987,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', () => {
           optContainer.appendChild(mediaCol);
           optContainer.appendChild(optionsCol);
         } else if (data.type === 'lead-capture') {
-          // Type 4: Lead Capture Question (Q7) & Disclaimer Section
+          // Type 4: Lead Capture Question (Q7)
           optContainer.className = 'quiz-options quiz-options--lead';
           optContainer.innerHTML = `
             <form class="quiz-lead-form" id="quizLeadForm" novalidate>
@@ -997,6 +1063,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span>Full Name <span class="req">*</span></span>
                   </label>
                   <input type="text" id="quizLeadName" class="quiz-lead-input" placeholder="e.g. Rahul Sharma" autocomplete="name" required />
+                </div>
+
+                <div class="quiz-lead-field">
+                  <label class="quiz-lead-label" for="quizLeadGender">
+                    <span>Gender</span>
+                  </label>
+                  <select id="quizLeadGender" class="quiz-lead-select">
+                    <option value="" selected disabled>Select Gender</option>
+                    <option value="Female">Female</option>
+                    <option value="Male">Male</option>
+                    <option value="Non-binary">Non-binary</option>
+                    <option value="Prefer not to say">Prefer not to say</option>
+                  </select>
                 </div>
 
                 <div class="quiz-lead-field">
@@ -1041,39 +1120,19 @@ document.addEventListener('DOMContentLoaded', () => {
                   </label>
                   <input type="text" id="quizLeadInst" class="quiz-lead-input" placeholder="College or Company name" />
                 </div>
-
-                <div class="quiz-lead-field">
-                  <label class="quiz-lead-label" for="quizLeadGender">
-                    <span>Gender</span>
-                  </label>
-                  <select id="quizLeadGender" class="quiz-lead-select">
-                    <option value="" selected disabled>Select Gender</option>
-                    <option value="Female">Female</option>
-                    <option value="Male">Male</option>
-                    <option value="Non-binary">Non-binary</option>
-                    <option value="Prefer not to say">Prefer not to say</option>
-                  </select>
-                </div>
               </div>
 
-              <!-- Disclaimer Section -->
-              <div class="quiz-disclaimer-card">
-                <div class="quiz-disclaimer-card__header">
-                  <i class="fa-solid fa-shield-halved"></i>
-                  <span>Disclaimer &amp; Terms</span>
-                </div>
-                <div class="quiz-disclaimer-card__text">
-                  The CMMD Career Path Quiz provides general career guidance based on responses submitted by participants. Results are indicative only and should not be treated as professional career advice. All personal information collected will be stored securely and will never be sold to third parties. JournalismLab &amp; CMMD shall not be held responsible for decisions or consequences arising from reliance on quiz results.
-                </div>
-                <label class="quiz-disclaimer-card__consent">
+              <!-- Terms Consent Checkbox -->
+              <div class="quiz-terms-consent">
+                <label class="quiz-terms-consent__label" for="quizDisclaimerConsent">
                   <input type="checkbox" id="quizDisclaimerConsent" checked required />
-                  <span>By proceeding, you acknowledge and agree to these terms.</span>
+                  <span>By proceeding, you acknowledge and agree to these <button type="button" class="quiz-terms-link" id="quizTermsLink">terms</button>.</span>
                 </label>
               </div>
 
               <div class="quiz-lead-actions">
-                <button type="submit" class="btn btn--primary btn--full" id="quizLeadSubmitBtn" style="justify-content:center; padding:0.85rem 1.5rem; font-size:0.98rem;">
-                  Unlock My Career Diagnosis &nbsp;<i class="fa-solid fa-arrow-right"></i>
+                <button type="submit" class="btn btn--primary btn--full" id="quizLeadSubmitBtn" style="justify-content:center; padding:0.85rem 1.5rem; font-size:1.02rem; font-weight:700;">
+                  Unlock Result &nbsp;<i class="fa-solid fa-arrow-right"></i>
                 </button>
               </div>
             </form>
@@ -1095,6 +1154,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 phoneInput.value = window.userQuizPhone;
               }
             }
+          }
+
+          // Connect terms link click to disclaimer popup modal
+          const termsLink = document.getElementById('quizTermsLink');
+          if (termsLink) {
+            termsLink.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              openQuizTermsModal();
+            });
           }
 
           // Handle lead capture form submission
