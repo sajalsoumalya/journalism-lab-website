@@ -305,6 +305,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   } catch (e) {}
 
+  try {
+    const rawAnswers = sessionStorage.getItem('cmmd_user_quiz_answers');
+    if (rawAnswers) {
+      window.userQuizAnswers = JSON.parse(rawAnswers);
+    }
+    const savedTitle = sessionStorage.getItem('cmmd_last_quiz_result_title');
+    if (savedTitle) {
+      window.lastQuizResultTitle = savedTitle;
+    }
+  } catch (e) {}
+
   // ─── CMMD Pathfinder Quiz Engine ────────────────────────────────
   const QUESTIONS = [
     {
@@ -582,6 +593,88 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function getQuizAnswersDetail(answers) {
+    if (!answers || typeof answers !== 'object' || Object.keys(answers).length === 0) {
+      return null;
+    }
+
+    const qLookup = {
+      q1: {
+        num: 'Q1',
+        question: 'Which of these pictures can you relate to the most?',
+        options: {
+          A: 'Someone speaking on a stage',
+          B: 'Someone working in an office',
+          C: 'Someone travelling'
+        }
+      },
+      q2: {
+        num: 'Q2',
+        question: 'What do you notice first in this image? (Tiger / Forest)',
+        options: {
+          A: 'The forest',
+          B: 'The tiger',
+          C: 'Both'
+        }
+      },
+      q3: {
+        num: 'Q3',
+        question: 'First word / letter noticed in word puzzle',
+        custom: true
+      },
+      q4: {
+        num: 'Q4',
+        question: 'What do you expect from your career?',
+        options: {
+          A: 'Risk + Reward',
+          B: 'Stability and Security'
+        }
+      },
+      q5: {
+        num: 'Q5',
+        question: 'How often do you read newspapers and books?',
+        options: {
+          A: 'Every day',
+          B: 'Once or twice a week',
+          C: 'Once or twice a month',
+          D: 'The night before exams'
+        }
+      },
+      q6: {
+        num: 'Q6',
+        question: 'Comfort with technology and digital tools',
+        options: {
+          A: 'I can troubleshoot even complex problems',
+          B: 'I can troubleshoot basic problems',
+          C: 'What is troubleshooting?'
+        }
+      }
+    };
+
+    const list = [];
+    ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'].forEach(key => {
+      if (answers[key] !== undefined && answers[key] !== null && String(answers[key]).trim() !== '') {
+        const meta = qLookup[key];
+        const val = String(answers[key]).trim();
+        let displayVal = val;
+        if (meta.options && meta.options[val]) {
+          displayVal = `Option ${val}: ${meta.options[val]}`;
+        } else if (meta.custom) {
+          displayVal = val.length === 1 ? `Letter "${val}"` : `Word "${val}"`;
+        }
+        list.push({
+          key: key,
+          num: meta.num,
+          question: meta.question,
+          value: val,
+          label: displayVal
+        });
+      }
+    });
+
+    return list.length > 0 ? list : null;
+  }
+
   const quizCard = document.getElementById('quizCard');
   if (quizCard) {
     let currentQ = 0;
@@ -623,6 +716,10 @@ document.addEventListener('DOMContentLoaded', () => {
           userAnswers: userAnswers,
           timestamp: Date.now()
         }));
+        if (userAnswers && Object.keys(userAnswers).length > 0) {
+          window.userQuizAnswers = { ...userAnswers };
+          sessionStorage.setItem('cmmd_user_quiz_answers', JSON.stringify(userAnswers));
+        }
       } catch (e) {}
     }
 
@@ -640,6 +737,9 @@ document.addEventListener('DOMContentLoaded', () => {
           if (typeof data.currentQ === 'number' && data.currentQ >= 0 && data.currentQ < QUESTIONS.length) {
             currentQ = data.currentQ;
             userAnswers = data.userAnswers || {};
+            if (userAnswers && Object.keys(userAnswers).length > 0) {
+              window.userQuizAnswers = { ...userAnswers };
+            }
             return true;
           }
         }
@@ -1290,6 +1390,15 @@ document.addEventListener('DOMContentLoaded', () => {
               const profileKey = calculateCareerPath(userAnswers);
               const res = CAREER_PROFILES[profileKey] || CAREER_PROFILES['news-reporter'];
 
+              const quizAnswersCopy = { ...userAnswers };
+              const answersDetail = getQuizAnswersDetail(quizAnswersCopy);
+              window.userQuizAnswers = quizAnswersCopy;
+              window.lastQuizResultTitle = res.title || 'Completed';
+              try {
+                sessionStorage.setItem('cmmd_user_quiz_answers', JSON.stringify(quizAnswersCopy));
+                sessionStorage.setItem('cmmd_last_quiz_result_title', window.lastQuizResultTitle);
+              } catch (e) {}
+
               // Capture complete lead with actual user details
               const quizLead = {
                 id: 'lead_quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
@@ -1303,6 +1412,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 gender: (genderSelect && genderSelect.value) || 'Not Available',
                 message: 'Not Available',
                 quizResult: res.title || 'Completed',
+                quizAnswers: quizAnswersCopy,
+                quizAnswersDetail: answersDetail,
                 status: 'new',
                 captchaVerified: true,
                 captchaSecured: Boolean(captchaApiKey),
@@ -1417,11 +1528,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (resTitle) resTitle.textContent = res.title;
       if (resDesc) resDesc.textContent = res.desc;
       window.lastQuizResultTitle = res.title;
+      window.userQuizAnswers = { ...userAnswers };
+      try {
+        sessionStorage.setItem('cmmd_user_quiz_answers', JSON.stringify(userAnswers));
+        sessionStorage.setItem('cmmd_last_quiz_result_title', res.title);
+      } catch (e) {}
 
       // Automatically capture quiz lead if mobile phone was entered
       if (window.userQuizPhone && !window.quizLeadCaptured) {
         window.quizLeadCaptured = true;
         const phoneObj = formatInternationalPhone(window.userQuizPhone);
+        const quizAnswersCopy = { ...userAnswers };
+        const answersDetail = getQuizAnswersDetail(quizAnswersCopy);
+
         const quizLead = {
           id: 'lead_quiz_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
           name: 'Not Available',
@@ -1431,8 +1550,11 @@ document.addEventListener('DOMContentLoaded', () => {
           email: 'Not Available',
           institution: 'Not Available',
           role: 'Not Available',
+          gender: 'Not Available',
           message: 'Not Available',
           quizResult: res.title || 'Completed',
+          quizAnswers: quizAnswersCopy,
+          quizAnswersDetail: answersDetail,
           status: 'new',
           captchaVerified: true,
           captchaSecured: (typeof captchaApiKey !== 'undefined' && Boolean(captchaApiKey)),
@@ -1651,6 +1773,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const isDuplicate = findExistingLeadIndex(getStoredLeads(), { phone: phoneObj.formatted || rawInputVal, email: emailVal }) >= 0;
       openSuccessModal(applicantName, isDuplicate);
 
+      // Check if user has attended the quiz
+      let attendedQuizAnswers = window.userQuizAnswers;
+      if (!attendedQuizAnswers) {
+        try {
+          const raw = sessionStorage.getItem('cmmd_user_quiz_answers');
+          if (raw) attendedQuizAnswers = JSON.parse(raw);
+        } catch (e) {}
+      }
+
+      const hasAttendedQuiz = attendedQuizAnswers && typeof attendedQuizAnswers === 'object' && Object.keys(attendedQuizAnswers).length > 0;
+      const quizAnswersDetail = hasAttendedQuiz ? getQuizAnswersDetail(attendedQuizAnswers) : null;
+      const finalQuizResult = hasAttendedQuiz
+        ? (window.lastQuizResultTitle || 'Completed Career Diagnostic Quiz')
+        : 'Direct Registration (Quiz not taken)';
+
       // Record lead in Firebase Realtime Database and LocalStorage (deduplicates automatically)
       const leadData = {
         id: 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
@@ -1663,7 +1800,9 @@ document.addEventListener('DOMContentLoaded', () => {
         role: (pendingFormData ? pendingFormData.get('role') : '') || 'Student',
         gender: (pendingFormData ? pendingFormData.get('gender') : '') || 'Not Available',
         message: (pendingFormData ? pendingFormData.get('msg') : '') || '',
-        quizResult: window.lastQuizResultTitle || 'Not taken',
+        quizResult: finalQuizResult,
+        quizAnswers: hasAttendedQuiz ? attendedQuizAnswers : null,
+        quizAnswersDetail: quizAnswersDetail,
         status: 'new',
         captchaVerified: true,
         captchaSecured: Boolean(captchaApiKey),
@@ -2020,14 +2159,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if ((!existing.role || existing.role === 'Not Available') && l.role && l.role !== 'Not Available') {
           existing.role = l.role;
         }
-        if ((!existing.quizResult || existing.quizResult === 'Not taken' || existing.quizResult === 'Completed') && l.quizResult && l.quizResult !== 'Not taken') {
+        if ((!existing.quizAnswers || Object.keys(existing.quizAnswers).length === 0) && l.quizAnswers && Object.keys(l.quizAnswers).length > 0) {
+          existing.quizAnswers = l.quizAnswers;
+          existing.quizAnswersDetail = l.quizAnswersDetail || (typeof getQuizAnswersDetail === 'function' ? getQuizAnswersDetail(l.quizAnswers) : null);
+        }
+        if (existing.quizAnswers && !existing.quizAnswersDetail && typeof getQuizAnswersDetail === 'function') {
+          existing.quizAnswersDetail = getQuizAnswersDetail(existing.quizAnswers);
+        }
+        if ((!existing.quizResult || existing.quizResult === 'Not taken' || existing.quizResult === 'Completed' || existing.quizResult.includes('Quiz not taken')) && l.quizResult && !l.quizResult.includes('Quiz not taken') && l.quizResult !== 'Not taken') {
           existing.quizResult = l.quizResult;
+        }
+        if (!existing.quizResult || existing.quizResult === 'Not taken') {
+          if (existing.quizAnswers && Object.keys(existing.quizAnswers).length > 0) {
+            existing.quizResult = 'Completed Career Diagnostic Quiz';
+          } else {
+            existing.quizResult = 'Direct Registration (Quiz not taken)';
+          }
         }
         if ((!existing.message || existing.message === 'Not Available') && l.message && l.message !== 'Not Available') {
           existing.message = l.message;
         }
         existing.submissionCount = (existing.submissionCount || 1) + (l.submissionCount || 1);
       } else {
+        if (!l.quizAnswers || Object.keys(l.quizAnswers).length === 0) {
+          l.quizAnswers = null;
+          l.quizAnswersDetail = null;
+          if (!l.quizResult || l.quizResult === 'Not taken') {
+            l.quizResult = 'Direct Registration (Quiz not taken)';
+          }
+        } else {
+          if (!l.quizAnswersDetail && typeof getQuizAnswersDetail === 'function') {
+            l.quizAnswersDetail = getQuizAnswersDetail(l.quizAnswers);
+          }
+        }
         deduped.push(l);
       }
     });
@@ -2065,12 +2229,14 @@ document.addEventListener('DOMContentLoaded', () => {
         email: 'aarav.sharma@example.com',
         institution: 'Delhi University',
         role: 'Student',
+        gender: 'Male',
         message: 'Passionate about live broadcast anchoring and ground investigative reporting.',
-        quizResult: "You're a Natural Anchor",
+        quizResult: 'Broadcast News Anchor',
+        quizAnswers: { q1: 'A', q2: 'C', q3: 'LEADER', q4: 'B', q5: 'B', q6: 'C' },
         status: 'new',
         submittedAt: new Date(Date.now() - 7200000).toISOString(),
         submittedDisplay: 'Today · 2 hrs ago',
-        source: 'Landing Page'
+        source: 'Pathfinder Quiz'
       },
       {
         id: 'lead_seed_2',
@@ -2081,8 +2247,10 @@ document.addEventListener('DOMContentLoaded', () => {
         email: 'priyanka.sen@media.in',
         institution: 'Freelance Media Strategist',
         role: 'Professional',
+        gender: 'Female',
         message: 'Looking to transition from print copy to investigative video journalism.',
-        quizResult: "You're a Video Storyteller",
+        quizResult: 'Direct Registration (Quiz not taken)',
+        quizAnswers: null,
         status: 'contacted',
         submittedAt: new Date(Date.now() - 86400000).toISOString(),
         submittedDisplay: 'Yesterday · 4:15 PM',
@@ -2137,9 +2305,34 @@ document.addEventListener('DOMContentLoaded', () => {
       if (existing.institution && existing.institution !== '—' && existing.institution !== 'Not Available' && (!leadData.institution || leadData.institution === '—' || leadData.institution === 'Not Available')) {
         finalLead.institution = existing.institution;
       }
-      if (existing.quizResult && existing.quizResult !== 'Not taken' && existing.quizResult !== 'Completed' && (!leadData.quizResult || leadData.quizResult === 'Not taken')) {
-        finalLead.quizResult = existing.quizResult;
+      if (existing.gender && existing.gender !== '—' && existing.gender !== 'Not Available' && (!leadData.gender || leadData.gender === '—' || leadData.gender === 'Not Available')) {
+        finalLead.gender = existing.gender;
       }
+      if (existing.role && existing.role !== '—' && existing.role !== 'Not Available' && (!leadData.role || leadData.role === '—' || leadData.role === 'Not Available')) {
+        finalLead.role = existing.role;
+      }
+
+      // Merge quiz answers and result
+      if (leadData.quizAnswers && Object.keys(leadData.quizAnswers).length > 0) {
+        finalLead.quizAnswers = leadData.quizAnswers;
+        finalLead.quizAnswersDetail = leadData.quizAnswersDetail || (typeof getQuizAnswersDetail === 'function' ? getQuizAnswersDetail(leadData.quizAnswers) : null);
+        if (leadData.quizResult && !leadData.quizResult.includes('Quiz not taken') && leadData.quizResult !== 'Not taken') {
+          finalLead.quizResult = leadData.quizResult;
+        }
+      } else if (existing.quizAnswers && Object.keys(existing.quizAnswers).length > 0) {
+        finalLead.quizAnswers = existing.quizAnswers;
+        finalLead.quizAnswersDetail = existing.quizAnswersDetail || (typeof getQuizAnswersDetail === 'function' ? getQuizAnswersDetail(existing.quizAnswers) : null);
+        if (existing.quizResult && !existing.quizResult.includes('Quiz not taken') && existing.quizResult !== 'Not taken') {
+          finalLead.quizResult = existing.quizResult;
+        }
+      } else {
+        finalLead.quizAnswers = null;
+        finalLead.quizAnswersDetail = null;
+        if (!finalLead.quizResult || finalLead.quizResult === 'Not taken') {
+          finalLead.quizResult = 'Direct Registration (Quiz not taken)';
+        }
+      }
+
       if (existing.source && leadData.source && existing.source !== leadData.source && !existing.source.includes(leadData.source)) {
         finalLead.source = `${existing.source} + ${leadData.source}`;
       }
@@ -2147,6 +2340,20 @@ document.addEventListener('DOMContentLoaded', () => {
       current.splice(existingIndex, 1);
       current.unshift(finalLead);
     } else {
+      if (!finalLead.quizAnswers || Object.keys(finalLead.quizAnswers).length === 0) {
+        finalLead.quizAnswers = null;
+        finalLead.quizAnswersDetail = null;
+        if (!finalLead.quizResult || finalLead.quizResult === 'Not taken') {
+          finalLead.quizResult = 'Direct Registration (Quiz not taken)';
+        }
+      } else {
+        if (!finalLead.quizAnswersDetail && typeof getQuizAnswersDetail === 'function') {
+          finalLead.quizAnswersDetail = getQuizAnswersDetail(finalLead.quizAnswers);
+        }
+        if (!finalLead.quizResult || finalLead.quizResult === 'Not taken') {
+          finalLead.quizResult = window.lastQuizResultTitle || 'Completed Career Diagnostic Quiz';
+        }
+      }
       current.unshift(finalLead);
     }
 
@@ -2418,16 +2625,29 @@ document.addEventListener('DOMContentLoaded', () => {
       const testNames = ['Tanvi Mukherjee', 'Rohan Bose', 'Meera Kapoor', 'Aditya Verma'];
       const colleges = ['Jadavpur University', 'St. Xavier\'s College', 'Amity Media School', 'Symbiosis Media'];
       const roles = ['Student', 'Professional'];
-      const results = ['You\'re a Natural Anchor', 'You\'re a Video Storyteller', 'You\'re a Visual Journalist', 'You\'re a Copywriting Journalist'];
+      const mockArchetypes = ['Public Speaker', 'Broadcast News Anchor', 'News Reporter', 'PR Manager', 'Digital Influencer'];
 
       const randomName = testNames[Math.floor(Math.random() * testNames.length)];
       const randomCollege = colleges[Math.floor(Math.random() * colleges.length)];
       const randomRole = roles[Math.floor(Math.random() * roles.length)];
       const genders = ['Female', 'Male', 'Non-binary / Other', 'Prefer not to say'];
       const randomGender = genders[Math.floor(Math.random() * genders.length)];
-      const randomResult = results[Math.floor(Math.random() * results.length)];
       const randomDigits = String(Math.floor(9000000000 + Math.random() * 999999999));
       const phoneObj = formatInternationalPhone(randomDigits);
+
+      const isQuizMock = Math.random() > 0.5;
+      const mockAnswers = isQuizMock ? {
+        q1: ['A', 'B', 'C'][Math.floor(Math.random() * 3)],
+        q2: ['A', 'B', 'C'][Math.floor(Math.random() * 3)],
+        q3: ['LEADER', 'FOCUS', 'STORY', 'TRUTH'][Math.floor(Math.random() * 4)],
+        q4: ['A', 'B'][Math.floor(Math.random() * 2)],
+        q5: ['A', 'B', 'C', 'D'][Math.floor(Math.random() * 4)],
+        q6: ['A', 'B', 'C'][Math.floor(Math.random() * 3)]
+      } : null;
+
+      const randomResult = isQuizMock
+        ? mockArchetypes[Math.floor(Math.random() * mockArchetypes.length)]
+        : 'Direct Registration (Quiz not taken)';
 
       const mockLead = {
         id: 'lead_' + Date.now(),
@@ -2441,10 +2661,12 @@ document.addEventListener('DOMContentLoaded', () => {
         gender: randomGender,
         message: 'Interested in learning from Prof. Dr. Minal Pareek in Batch 01.',
         quizResult: randomResult,
+        quizAnswers: mockAnswers,
+        quizAnswersDetail: isQuizMock ? getQuizAnswersDetail(mockAnswers) : null,
         status: 'new',
         submittedAt: new Date().toISOString(),
         submittedDisplay: 'Just now',
-        source: 'Admin Direct Test'
+        source: isQuizMock ? 'Pathfinder Quiz (Test)' : 'Register Page (Test)'
       };
 
       window.recordLead(mockLead);
@@ -2561,6 +2783,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const roleLower = (lead.role || '').toLowerCase();
       const isRoleNA = !lead.role || lead.role === 'Not Available' || lead.role === 'Quiz Lead' || (isQuizLead && roleLower === 'student');
 
+      const answersDetail = lead.quizAnswersDetail || (lead.quizAnswers ? getQuizAnswersDetail(lead.quizAnswers) : null);
+      const hasQuiz = Boolean(lead.quizAnswers && Object.keys(lead.quizAnswers).length > 0) &&
+                      !(lead.quizResult && lead.quizResult.includes('Quiz not taken'));
+
       let roleBadge = '';
       if (isRoleNA) {
         roleBadge = `<span class="role-badge role-badge--na"><i class="fa-solid fa-circle-question"></i> <span>Not Available</span></span>`;
@@ -2611,6 +2837,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="role-badge status-${lead.status || 'new'}">
                       <i class="fa-solid fa-circle-dot"></i> <span style="text-transform:capitalize;">${escapeHTML(lead.status || 'new')}</span>
                     </span>
+                    ${hasQuiz ? `
+                      <span class="role-badge" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">
+                        <i class="fa-solid fa-compass"></i> <span>${escapeHTML(lead.quizResult || 'Quiz Completed')}</span>
+                      </span>
+                    ` : `
+                      <span class="role-badge" style="background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;">
+                        <i class="fa-solid fa-file-pen"></i> <span>Direct Registration</span>
+                      </span>
+                    `}
                     <span class="role-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">
                       <i class="fa-solid fa-route"></i> <span>${escapeHTML(lead.source || 'Website')}</span>
                     </span>
@@ -2688,10 +2923,12 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
 
               <div class="profile-field-item">
-                <div class="profile-field-label">Diagnosed Career Archetype</div>
+                <div class="profile-field-label">Diagnosed Career Archetype / Mode</div>
                 <div class="profile-field-value" style="font-weight:700; color:var(--text-primary);">
-                  <i class="fa-solid fa-compass" style="color:var(--crimson); margin-right:0.3rem;"></i>
-                  ${escapeHTML(lead.quizResult || 'Not taken')}
+                  ${hasQuiz
+                    ? `<i class="fa-solid fa-compass" style="color:var(--crimson); margin-right:0.3rem;"></i> ${escapeHTML(lead.quizResult || 'Quiz Completed')}`
+                    : `<span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;"><i class="fa-solid fa-file-pen" style="margin-right:0.3rem;"></i> Direct Registration (Quiz not taken)</span>`
+                  }
                 </div>
               </div>
 
@@ -2709,6 +2946,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
               </div>
             </div>
+
+            ${hasQuiz && answersDetail && answersDetail.length > 0 ? `
+              <div class="profile-quiz-answers-box">
+                <div class="profile-quiz-answers-header">
+                  <h4>
+                    <i class="fa-solid fa-list-check" style="color:var(--crimson);"></i>
+                    Career Diagnostic Responses (${answersDetail.length} Questions Answered)
+                  </h4>
+                  <span class="role-badge" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; font-size:0.72rem;">
+                    <i class="fa-solid fa-check"></i> Diagnostic Completed
+                  </span>
+                </div>
+                <div class="profile-quiz-answers-grid">
+                  ${answersDetail.map(item => `
+                    <div class="profile-quiz-q-item">
+                      <div class="profile-quiz-q-num">
+                        <span>${escapeHTML(item.num)}</span>
+                        <span style="font-size:0.65rem; color:var(--text-muted); font-weight:500;">Answered</span>
+                      </div>
+                      <div class="profile-quiz-q-text">${escapeHTML(item.question)}</div>
+                      <div class="profile-quiz-q-ans">${escapeHTML(item.label)}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : `
+              <div class="profile-quiz-answers-box" style="background:var(--bg-subtle); border:1px dashed var(--border-medium); display:flex; align-items:center; gap:0.85rem; padding:1rem 1.15rem;">
+                <div style="width:38px; height:38px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:1rem; flex-shrink:0;">
+                  <i class="fa-solid fa-file-pen"></i>
+                </div>
+                <div style="font-size:0.83rem; color:var(--text-secondary); line-height:1.45;">
+                  <strong style="color:var(--text-primary); font-size:0.88rem;">Direct Registration (Quiz not taken)</strong><br />
+                  This applicant registered directly via the registration form without attending the career diagnostic quiz.
+                </div>
+              </div>
+            `}
 
             <div class="profile-message-box">
               <div class="profile-field-label" style="margin-bottom:0.35rem;">
@@ -2993,6 +3266,23 @@ document.addEventListener('DOMContentLoaded', () => {
         ? `<span class="role-badge" style="background:#f8fafc; color:#334155; border:1px solid #cbd5e1;"><i class="fa-solid fa-venus-mars"></i> <span>${escapeHTML(genderVal)}</span></span>`
         : `<span style="color:var(--text-muted); font-size:0.82rem; font-style:italic;">Not Available</span>`;
 
+      const hasQuiz = Boolean(lead.quizAnswers && Object.keys(lead.quizAnswers).length > 0) &&
+                      !(lead.quizResult && lead.quizResult.includes('Quiz not taken'));
+      let quizResultCell = '';
+      if (hasQuiz) {
+        quizResultCell = `
+          <span class="role-badge" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;" title="Diagnosed archetype from quiz responses">
+            <i class="fa-solid fa-compass"></i> <span>${escapeHTML(lead.quizResult || 'Quiz Completed')}</span>
+          </span>
+        `;
+      } else {
+        quizResultCell = `
+          <span class="role-badge" style="background:#f8fafc; color:#64748b; border:1px solid #cbd5e1; font-size:0.75rem; text-align:left;" title="Direct application without taking career quiz">
+            <i class="fa-solid fa-file-pen"></i> <span>Direct Registration<br><small style="font-size:0.68rem; font-weight:500; opacity:0.85;">(Quiz not taken)</small></span>
+          </span>
+        `;
+      }
+
       const statusClass = `status-${lead.status || 'new'}`;
 
       return `
@@ -3026,8 +3316,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <td style="font-size:0.82rem; color:var(--text-secondary); max-width:180px;">
             ${(lead.institution && lead.institution !== '—' && lead.institution !== 'Not Available') ? escapeHTML(lead.institution) : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
           </td>
-          <td style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">
-            ${escapeHTML(lead.quizResult || 'Not taken')}
+          <td>
+            ${quizResultCell}
           </td>
           <td>
             <select class="admin-status-select ${statusClass}" data-id="${escapeHTML(lead.id)}">
@@ -3125,7 +3415,8 @@ document.addEventListener('DOMContentLoaded', () => {
       'WhatsApp Number',
       'Email Address',
       'Current Institution',
-      'Quiz Career Match',
+      'Quiz Career Match / Direct Status',
+      'Quiz Answers (Q1 to Q6)',
       'Status',
       'Submission Timestamp',
       'Source Page',
@@ -3144,6 +3435,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const expInst = (!l.institution || l.institution === '—' || l.institution === 'Not Available') ? 'Not Available' : l.institution;
       const expMsg = (!l.message || l.message === 'Not Available' || l.message.startsWith('Completed Career Diagnostic Quiz')) ? 'Not Available' : l.message;
 
+      const hasQuiz = Boolean(l.quizAnswers && Object.keys(l.quizAnswers).length > 0) &&
+                      !(l.quizResult && l.quizResult.includes('Quiz not taken'));
+      const ansDetail = l.quizAnswersDetail || (l.quizAnswers ? getQuizAnswersDetail(l.quizAnswers) : null);
+      const expAnswers = (hasQuiz && ansDetail && ansDetail.length)
+        ? ansDetail.map(d => `${d.num}: ${d.label}`).join(' | ')
+        : (hasQuiz && l.quizAnswers
+          ? Object.entries(l.quizAnswers).map(([k, v]) => `${k.toUpperCase()}: ${v}`).join(' | ')
+          : 'Quiz not taken (Direct registration)');
+
+      const expResult = hasQuiz
+        ? (l.quizResult || 'Quiz Completed')
+        : 'Direct Registration (Quiz not taken)';
+
       return [
         idx + 1,
         expName,
@@ -3152,7 +3456,8 @@ document.addEventListener('DOMContentLoaded', () => {
         l.phone || '',
         expEmail,
         expInst,
-        l.quizResult || 'Not taken',
+        expResult,
+        expAnswers,
         l.status || 'new',
         l.submittedAt || '',
         l.source || 'Website',
