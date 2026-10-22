@@ -705,33 +705,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const qTitle = document.getElementById('quizQuestion');
       const optContainer = document.getElementById('quizOptions');
 
-      if (qTitle) qTitle.textContent = data.q;
+      // Remove any previously inserted media container so layout is cleanly handled inside optContainer
+      const oldMedia = document.getElementById('quizQuestionMedia');
+      if (oldMedia) oldMedia.remove();
 
-      // Handle Question Image prompt (Q2, Q3)
-      let mediaContainer = document.getElementById('quizQuestionMedia');
-      if (!mediaContainer && qTitle && optContainer) {
-        mediaContainer = document.createElement('div');
-        mediaContainer.id = 'quizQuestionMedia';
-        optContainer.parentNode.insertBefore(mediaContainer, optContainer);
-      }
-      if (mediaContainer) {
-        if (data.image) {
-          mediaContainer.innerHTML = `
-            <div class="quiz-q-image-wrap">
-              <img src="${data.image}" alt="${data.q}" class="quiz-q-image" loading="lazy" />
-            </div>
-          `;
-          mediaContainer.style.display = 'block';
-        } else {
-          mediaContainer.innerHTML = '';
-          mediaContainer.style.display = 'none';
-        }
-      }
+      if (qTitle) qTitle.textContent = data.q;
 
       if (optContainer) {
         optContainer.innerHTML = '';
 
         if (data.type === 'image-cards') {
+          // Type 1: 3-4 images in equal-height cards grid (Q1)
           optContainer.className = 'quiz-options quiz-options--cards';
           data.options.forEach(opt => {
             const card = document.createElement('button');
@@ -740,7 +724,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.dataset.val = opt.val;
             card.innerHTML = `
               <div class="quiz-opt-card__img-wrap">
-                <img src="${opt.image}" alt="${opt.title}" class="quiz-opt-card__img" loading="lazy" />
+                <img src="${opt.image}" alt="${opt.title}" class="quiz-opt-card__img" loading="eager" />
               </div>
               <span class="quiz-opt-card__badge">Option ${opt.val}</span>
               <h4 class="quiz-opt-card__title">${opt.title}</h4>
@@ -749,8 +733,20 @@ document.addEventListener('DOMContentLoaded', () => {
             card.addEventListener('click', () => selectAnswer(opt.val, card));
             optContainer.appendChild(card);
           });
-        } else {
-          optContainer.className = 'quiz-options';
+        } else if (data.image) {
+          // Type 2: 1 image prompt with options in a balanced split 2-column layout (Q2, Q3)
+          optContainer.className = 'quiz-options quiz-options--split';
+
+          const mediaCol = document.createElement('div');
+          mediaCol.className = 'quiz-split-media';
+          mediaCol.innerHTML = `
+            <div class="quiz-split-img-box">
+              <img src="${data.image}" alt="${data.q}" class="quiz-split-img" loading="eager" />
+            </div>
+          `;
+
+          const optionsCol = document.createElement('div');
+          optionsCol.className = 'quiz-split-options';
           data.options.forEach(opt => {
             const btn = document.createElement('button');
             btn.type = 'button';
@@ -764,7 +760,31 @@ document.addEventListener('DOMContentLoaded', () => {
                   ${opt.subtitle ? `<span class="quiz-opt-sub">${opt.subtitle}</span>` : ''}
                 </div>
               </div>
-              <i class="fa-solid fa-arrow-right" style="opacity:0.4; font-size:0.8rem; flex-shrink:0; margin-left:0.5rem;"></i>
+              <i class="fa-solid fa-arrow-right quiz-opt-arrow"></i>
+            `;
+            btn.addEventListener('click', () => selectAnswer(opt.val, btn));
+            optionsCol.appendChild(btn);
+          });
+
+          optContainer.appendChild(mediaCol);
+          optContainer.appendChild(optionsCol);
+        } else {
+          // Type 3: No image (Q4: 2 options, Q5/Q6: 4 options) centered vertically
+          optContainer.className = 'quiz-options quiz-options--text' + (data.options.length <= 2 ? ' quiz-options--duo' : '');
+          data.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'quiz-opt';
+            btn.dataset.val = opt.val;
+            btn.innerHTML = `
+              <div class="quiz-opt-content">
+                <span class="quiz-opt-letter">${opt.val}</span>
+                <div class="quiz-opt-text-wrap">
+                  <span class="quiz-opt-title">${opt.text}</span>
+                  ${opt.subtitle ? `<span class="quiz-opt-sub">${opt.subtitle}</span>` : ''}
+                </div>
+              </div>
+              <i class="fa-solid fa-arrow-right quiz-opt-arrow"></i>
             `;
             btn.addEventListener('click', () => selectAnswer(opt.val, btn));
             optContainer.appendChild(btn);
