@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
       id: 'q3',
       q: "Q3. What is the first word you notice in this image?",
       image: "assets/images/quiz/q3-word-puzzle.png",
-      type: "text-letter"
+      type: "text-word"
     },
     {
       id: 'q4',
@@ -619,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       q3: {
         num: 'Q3',
-        question: 'First word / letter noticed in word puzzle',
+        question: 'First word noticed in word puzzle',
         custom: true
       },
       q4: {
@@ -1022,8 +1022,8 @@ document.addEventListener('DOMContentLoaded', () => {
             card.addEventListener('click', () => selectAnswer(opt.val, card));
             optContainer.appendChild(card);
           });
-        } else if (data.type === 'text-letter') {
-          // Type 2b: Text-input based answer with 1 uppercase letter (Q3)
+        } else if (data.type === 'text-word' || data.type === 'text-letter') {
+          // Type 2b: Text-input based answer with full uppercase word (Q3)
           optContainer.className = 'quiz-options quiz-options--split quiz-options--letter';
 
           const mediaCol = document.createElement('div');
@@ -1039,23 +1039,23 @@ document.addEventListener('DOMContentLoaded', () => {
           letterCol.innerHTML = `
             <div class="quiz-letter-prompt">
               <span class="quiz-letter-badge"><i class="fa-solid fa-font"></i> Word Puzzle</span>
-              <h4 class="quiz-letter-heading">Type the First Letter</h4>
-              <p class="quiz-letter-sub">Look at the word puzzle above. Type the single first letter of the word that caught your attention.</p>
+              <h4 class="quiz-letter-heading">Type the First Word</h4>
+              <p class="quiz-letter-sub">Look at the word puzzle on the left. Type the first word that caught your attention.</p>
             </div>
 
             <div class="quiz-letter-input-container">
               <input 
                 type="text" 
                 id="quizQ3Input" 
-                class="quiz-single-letter-input" 
-                maxlength="1" 
-                placeholder="—"
+                class="quiz-word-input quiz-single-letter-input" 
+                maxlength="30" 
+                placeholder="e.g. LEADER"
                 autocomplete="off" 
                 autocapitalize="characters"
                 spellcheck="false"
                 inputmode="text"
               />
-              <p class="quiz-letter-hint">Only 1 letter allowed &bull; Automatically uppercase</p>
+              <p class="quiz-letter-hint">Type the word you spotted &bull; Automatically uppercase</p>
             </div>
 
             <button type="button" class="btn btn--primary btn--full" id="quizQ3NextBtn" disabled style="justify-content:center; padding:0.9rem 1.5rem; font-size:1rem; border-radius:10px; font-weight:600;">
@@ -1078,14 +1078,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             q3Input.addEventListener('input', () => {
-              // Only 1 letter allowed, automatically converted to UPPERCASE
+              // Convert to UPPERCASE letters only, allow full words up to 30 characters
               let clean = q3Input.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
-              if (clean.length > 1) {
-                clean = clean.charAt(clean.length - 1);
+              if (clean.length > 30) {
+                clean = clean.slice(0, 30);
               }
               q3Input.value = clean;
 
-              if (clean.length === 1) {
+              if (clean.length >= 1) {
                 if (q3NextBtn) q3NextBtn.disabled = false;
               } else {
                 if (q3NextBtn) q3NextBtn.disabled = true;
@@ -1104,9 +1104,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if (q3NextBtn) {
             q3NextBtn.addEventListener('click', () => {
-              const letter = q3Input ? q3Input.value.trim().toUpperCase() : '';
-              if (letter.length === 1) {
-                userAnswers['q3'] = letter;
+              const word = q3Input ? q3Input.value.trim().toUpperCase() : '';
+              if (word.length >= 1) {
+                userAnswers['q3'] = word;
                 currentQ++;
                 saveQuizProgress();
                 if (currentQ < QUESTIONS.length) {
