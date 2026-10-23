@@ -2763,6 +2763,127 @@ document.addEventListener('DOMContentLoaded', () => {
       .replace(/'/g, '&#39;');
   }
 
+  function openLeadQuizResultModal(lead) {
+    if (!lead) return;
+
+    // Remove existing quiz result overlay if open
+    const existing = document.getElementById('adminQuizResultOverlay');
+    if (existing) existing.remove();
+
+    let profile = null;
+    if (lead.quizAnswers && Object.keys(lead.quizAnswers).length > 0) {
+      const key = calculateCareerPath(lead.quizAnswers);
+      profile = CAREER_PROFILES[key];
+    }
+    if (!profile && lead.quizResult) {
+      profile = Object.values(CAREER_PROFILES).find(p => p.title.toLowerCase() === lead.quizResult.toLowerCase());
+    }
+    if (!profile) {
+      profile = {
+        title: lead.quizResult || 'Career Diagnosis',
+        family: 'Public Speaking, Journalism & PR',
+        icon: '<i class="fa-solid fa-compass"></i>',
+        desc: 'Personalized career path recommendation based on diagnostic responses.'
+      };
+    }
+
+    const answersDetail = lead.quizAnswersDetail || (lead.quizAnswers ? getQuizAnswersDetail(lead.quizAnswers) : null);
+    const applicantName = (!lead.name || lead.name === 'Not Available' || lead.name === 'Applicant') ? 'Applicant' : lead.name;
+    const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
+    const phoneObj = formatInternationalPhone(lead.phone);
+    const waNumber = lead.phoneWa || phoneObj.wa || (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone);
+    const waText = encodeURIComponent(`Hi ${applicantName}, this is Prof. Dr. Minal Pareek's team regarding your Pathfinder Career Diagnosis (${profile.title}) for JournalismLab Batch 1!`);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay active';
+    overlay.id = 'adminQuizResultOverlay';
+    overlay.style.zIndex = '10020';
+
+    overlay.innerHTML = `
+      <div class="modal-box modal-box--quiz-result" role="dialog" aria-labelledby="adminResultCardTitle">
+        <button type="button" class="modal-close" id="adminQuizResultCloseBtn" aria-label="Close career diagnosis modal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="admin-result-header">
+          <div class="admin-result-header__badge">
+            <i class="fa-solid fa-compass"></i> Pathfinder Career Diagnosis
+          </div>
+          <h3 class="admin-result-header__title" id="adminResultCardTitle">
+            ${escapeHTML(applicantName)}'s Career Match
+          </h3>
+          <p class="admin-result-header__sub">
+            Evaluated using CMMD Diagnostic Decision Tree &bull; Batch 1 Applicant
+          </p>
+        </div>
+
+        <div class="admin-result-card">
+          <div class="quiz-result__family" style="display:inline-block; margin-bottom:0.75rem;">
+            ${escapeHTML(profile.family)}
+          </div>
+
+          <div class="admin-result-main">
+            <div class="admin-result-icon">
+              ${profile.icon}
+            </div>
+            <div style="flex:1;">
+              <h2 class="admin-result-archetype">${escapeHTML(profile.title)}</h2>
+              <p class="admin-result-desc">${escapeHTML(profile.desc)}</p>
+            </div>
+          </div>
+
+          ${answersDetail && answersDetail.length > 0 ? `
+            <div class="admin-result-responses">
+              <div class="admin-result-responses__title">
+                <i class="fa-solid fa-list-check"></i>
+                Diagnostic Responses Summary (${answersDetail.length} Questions)
+              </div>
+              <div class="admin-result-responses__grid">
+                ${answersDetail.map(d => `
+                  <div class="admin-result-response-pill" title="${escapeHTML(d.label)}">
+                    <strong>${escapeHTML(d.num)}:</strong> ${escapeHTML(d.label)}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="admin-result-meta-bar">
+            <div>
+              <span class="admin-result-meta-label">Applicant:</span>
+              <strong>${escapeHTML(applicantName)}</strong>
+              ${lead.institution && lead.institution !== '—' && lead.institution !== 'Not Available' ? ` (${escapeHTML(lead.institution)})` : ''}
+            </div>
+            <div>
+              <span class="admin-result-meta-label">Status:</span>
+              <span style="text-transform:capitalize;">${escapeHTML(lead.status || 'new')}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-result-actions">
+          ${waNumber ? `
+            <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="btn btn--sm" style="background:#25d366; color:#ffffff; border-color:#25d366;">
+              <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+            </a>
+          ` : ''}
+          <button type="button" class="btn btn--sm btn--primary" id="adminQuizResultDoneBtn">
+            Back to Profile
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const closeResult = () => overlay.remove();
+    overlay.querySelector('#adminQuizResultCloseBtn').addEventListener('click', closeResult);
+    overlay.querySelector('#adminQuizResultDoneBtn').addEventListener('click', closeResult);
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.remove();
+    });
+  }
+
   function openLeadProfileModal(id) {
     const lead = allAdminLeads.find(l => l.id === id);
     if (!lead) return;
@@ -2823,9 +2944,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="flex:1;">
                   <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
                     <h3 class="profile-card-name" id="profileCardTitle">${displayName}</h3>
-                    <button type="button" class="btn btn--xs btn--ghost" id="adminProfileHeaderEditBtn" title="Edit student details while connected on call">
-                      <i class="fa-solid fa-pen-to-square"></i> Edit Details
-                    </button>
+                    <div style="display:flex; align-items:center; gap:0.4rem;">
+                      ${hasQuiz ? `
+                        <button type="button" class="btn btn--xs btn--secondary admin-profile-show-result-btn" title="View Career Diagnosis Card">
+                          <i class="fa-solid fa-compass"></i> Show Result
+                        </button>
+                      ` : ''}
+                      <button type="button" class="btn btn--xs btn--ghost" id="adminProfileHeaderEditBtn" title="Edit student details while connected on call">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Details
+                      </button>
+                    </div>
                   </div>
                   <div class="profile-card-badges">
                     ${roleBadge}
@@ -2924,11 +3052,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
               <div class="profile-field-item">
                 <div class="profile-field-label">Diagnosed Career Archetype / Mode</div>
-                <div class="profile-field-value" style="font-weight:700; color:var(--text-primary);">
-                  ${hasQuiz
-                    ? `<i class="fa-solid fa-compass" style="color:var(--crimson); margin-right:0.3rem;"></i> ${escapeHTML(lead.quizResult || 'Quiz Completed')}`
-                    : `<span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;"><i class="fa-solid fa-file-pen" style="margin-right:0.3rem;"></i> Direct Registration (Quiz not taken)</span>`
-                  }
+                <div class="profile-field-value" style="font-weight:700; color:var(--text-primary); display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
+                  <span>
+                    ${hasQuiz
+                      ? `<i class="fa-solid fa-compass" style="color:var(--crimson); margin-right:0.3rem;"></i> ${escapeHTML(lead.quizResult || 'Quiz Completed')}`
+                      : `<span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;"><i class="fa-solid fa-file-pen" style="margin-right:0.3rem;"></i> Direct Registration (Quiz not taken)</span>`
+                    }
+                  </span>
+                  ${hasQuiz ? `
+                    <button type="button" class="btn btn--xs btn--ghost admin-profile-show-result-btn" title="View Career Diagnosis Card">
+                      <i class="fa-solid fa-arrow-up-right-from-square"></i> Show Result
+                    </button>
+                  ` : ''}
                 </div>
               </div>
 
@@ -2954,9 +3089,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <i class="fa-solid fa-list-check" style="color:var(--crimson);"></i>
                     Career Diagnostic Responses (${answersDetail.length} Questions Answered)
                   </h4>
-                  <span class="role-badge" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; font-size:0.72rem;">
-                    <i class="fa-solid fa-check"></i> Diagnostic Completed
-                  </span>
+                  <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                    <button type="button" class="btn btn--xs btn--secondary admin-profile-show-result-btn" title="View Career Diagnosis Card">
+                      <i class="fa-solid fa-compass"></i> Show Result
+                    </button>
+                    <span class="role-badge" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; font-size:0.72rem;">
+                      <i class="fa-solid fa-check"></i> Diagnostic Completed
+                    </span>
+                  </div>
                 </div>
                 <div class="profile-quiz-answers-grid">
                   ${answersDetail.map(item => `
@@ -3003,7 +3143,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 </select>
               </div>
 
-              <div style="display:flex; align-items:center; gap:0.5rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                ${hasQuiz ? `
+                  <button type="button" class="btn btn--sm btn--secondary admin-profile-show-result-btn" title="View Career Diagnosis Card">
+                    <i class="fa-solid fa-compass"></i> Show Result
+                  </button>
+                ` : ''}
                 ${cleanPhone ? `
                   <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="btn btn--sm" style="background:#25d366; color:#ffffff; border-color:#25d366;">
                     <i class="fa-brands fa-whatsapp"></i> WhatsApp
@@ -3024,6 +3169,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const closeProfile = () => overlay.remove();
         overlay.querySelector('#adminProfileCloseBtn').addEventListener('click', closeProfile);
         overlay.querySelector('#adminProfileDoneBtn').addEventListener('click', closeProfile);
+
+        overlay.querySelectorAll('.admin-profile-show-result-btn').forEach(btn => {
+          btn.addEventListener('click', () => openLeadQuizResultModal(lead));
+        });
 
         const hEdit = overlay.querySelector('#adminProfileHeaderEditBtn');
         if (hEdit) hEdit.addEventListener('click', () => renderModal(true));
@@ -3271,9 +3420,14 @@ document.addEventListener('DOMContentLoaded', () => {
       let quizResultCell = '';
       if (hasQuiz) {
         quizResultCell = `
-          <span class="role-badge" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;" title="Diagnosed archetype from quiz responses">
-            <i class="fa-solid fa-compass"></i> <span>${escapeHTML(lead.quizResult || 'Quiz Completed')}</span>
-          </span>
+          <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+            <span class="role-badge" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;" title="Diagnosed archetype from quiz responses">
+              <i class="fa-solid fa-compass"></i> <span>${escapeHTML(lead.quizResult || 'Quiz Completed')}</span>
+            </span>
+            <button type="button" class="btn btn--xs btn--ghost admin-row-show-result-btn" data-id="${escapeHTML(lead.id)}" style="padding:0.2rem 0.5rem; font-size:0.72rem;" title="View Career Diagnosis Card">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Show Result
+            </button>
+          </div>
         `;
       } else {
         quizResultCell = `
@@ -3353,6 +3507,16 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', () => {
         const id = btn.dataset.id;
         openLeadProfileModal(id);
+      });
+    });
+
+    // Row Show Result button listeners
+    tbody.querySelectorAll('.admin-row-show-result-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const lead = allAdminLeads.find(l => l.id === id);
+        if (lead) openLeadQuizResultModal(lead);
       });
     });
 
