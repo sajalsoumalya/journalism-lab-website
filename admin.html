@@ -1066,6 +1066,395 @@
         });
       }
 
+      // ─── Career Profiles & Diagnostic Logic ───────────────────────
+      const CAREER_PROFILES = {
+        'public-speaker': {
+          title: "Public Speaker",
+          family: "Public Speaking, Journalism & PR",
+          icon: '<i class="fa-solid fa-microphone"></i>',
+          desc: "You thrive in front of live audiences with a commanding voice, persuasive charisma, and structured articulation. Keynote talks, public forums, and event hosting are your natural stage."
+        },
+        'influencer': {
+          title: "Digital Influencer",
+          family: "Public Speaking, Journalism & PR",
+          icon: '<i class="fa-solid fa-star"></i>',
+          desc: "You possess a magnetic on-camera presence, natural digital charm, and the instinct to turn everyday experiences into compelling, highly shareable digital narratives."
+        },
+        'news-reporter': {
+          title: "News Reporter",
+          family: "Public Speaking, Journalism & PR",
+          icon: '<i class="fa-solid fa-bullhorn"></i>',
+          desc: "You have an unshakeable instinct for truth, investigative rigor, and the technical confidence to report breaking stories from the frontlines of history."
+        },
+        'professor': {
+          title: "Media Professor",
+          family: "Public Speaking, Journalism & PR",
+          icon: '<i class="fa-solid fa-graduation-cap"></i>',
+          desc: "Your intellectual depth, love for literature, and analytical mindset make you born to teach, research, and shape the critical thinking of future media leaders."
+        },
+        'pr-manager': {
+          title: "PR Manager",
+          family: "Public Speaking, Journalism & PR",
+          icon: '<i class="fa-solid fa-handshake"></i>',
+          desc: "Strategic, diplomatic, and articulate, you excel at brand positioning, crisis communication, and building authentic relationships between institutions and the public."
+        },
+        'anchor': {
+          title: "Broadcast News Anchor",
+          family: "Public Speaking, Journalism & PR",
+          icon: '<i class="fa-solid fa-tv"></i>',
+          desc: "Poised and authoritative under live studio lights, you possess the voice, presence, and editorial composure to anchor prime-time broadcast journalism."
+        },
+        'freelance-designer-editor': {
+          title: "Freelance Graphics Designer / Video Editor",
+          family: "Content, Editing, Design & Marketing",
+          icon: '<i class="fa-solid fa-palette"></i>',
+          desc: "You value creative freedom, technical agility, and high-impact visual storytelling. Delivering standout visual assets on your own terms is your calling."
+        },
+        'marketing-agency-founder': {
+          title: "Marketing Agency Founder",
+          family: "Content, Editing, Design & Marketing",
+          icon: '<i class="fa-solid fa-rocket"></i>',
+          desc: "Entrepreneurial, visionary, and risk-tolerant, you spot market gaps and assemble creative talent to build scalable client solutions and high-growth brands."
+        },
+        'analyst': {
+          title: "Media & Data Analyst",
+          family: "Content, Editing, Design & Marketing",
+          icon: '<i class="fa-solid fa-chart-line"></i>',
+          desc: "You cut through noise with numbers and evidence. Analyzing media patterns, audience consumption data, and industry trends gives you unique strategic leverage."
+        },
+        'copywriter': {
+          title: "Copywriter",
+          family: "Content, Editing, Design & Marketing",
+          icon: '<i class="fa-solid fa-pen-nib"></i>',
+          desc: "Words are your superpower. You craft evocative headlines, broadcast copy, and viral brand narratives that capture attention and compel action."
+        },
+        'social-media-manager': {
+          title: "Social Media Manager",
+          family: "Content, Editing, Design & Marketing",
+          icon: '<i class="fa-solid fa-mobile-screen-button"></i>',
+          desc: "You live on the pulse of internet culture and platform algorithms. Building loyal online communities and orchestrating viral distribution is second nature to you."
+        },
+        'video-editor': {
+          title: "Video Editor",
+          family: "Content, Editing, Design & Marketing",
+          icon: '<i class="fa-solid fa-film"></i>',
+          desc: "You think in pacing, rhythm, and emotional arcs. In the post-production studio, you transform raw footage into captivating cinematic narratives."
+        },
+        'graphics-designer': {
+          title: "Graphics Designer",
+          family: "Content, Editing, Design & Marketing",
+          icon: '<i class="fa-solid fa-bezier-curve"></i>',
+          desc: "You master typography, visual hierarchy, color theory, and spatial balance. Editorial layouts, brand identities, and visual assets come alive in your hands."
+        },
+        'creative-director': {
+          title: "Creative Director",
+          family: "Content, Editing, Design & Marketing",
+          icon: '<i class="fa-solid fa-compass-drafting"></i>',
+          desc: "You unify copy, design, strategy, and vision. Guiding multidisciplinary teams to produce groundbreaking creative campaigns is your ultimate zone of genius."
+        },
+        'ott-producer': {
+          title: "OTT Producer",
+          family: "Photography, Video, Multimedia & Sound",
+          icon: '<i class="fa-solid fa-clapperboard"></i>',
+          desc: "You synthesize high creative ambition with commercial scale, producing binge-worthy web series, documentaries, and digital streaming experiences."
+        },
+        'event-startup-founder': {
+          title: "Event Management Startup Founder",
+          family: "Photography, Video, Multimedia & Sound",
+          icon: '<i class="fa-solid fa-lightbulb"></i>',
+          desc: "You thrive on the adrenaline of large-scale live productions, experiential summits, and building experiential enterprises from the ground up."
+        },
+        'wildlife-photographer': {
+          title: "Wildlife Photographer",
+          family: "Photography, Video, Multimedia & Sound",
+          icon: '<i class="fa-solid fa-mountain-sun"></i>',
+          desc: "Endlessly patient, adventurous, and attuned to the wilderness, you brave challenging expeditions to document rare species and urgent conservation stories."
+        },
+        'multimedia-engineer': {
+          title: "Multimedia Engineer",
+          family: "Photography, Video, Multimedia & Sound",
+          icon: '<i class="fa-solid fa-microchip"></i>',
+          desc: "You are the backbone of modern media tech. Broadcast routing, high-bandwidth streaming infrastructure, and interactive AV systems are your domain."
+        },
+        'event-manager': {
+          title: "Event Manager",
+          family: "Photography, Video, Multimedia & Sound",
+          icon: '<i class="fa-solid fa-calendar-check"></i>',
+          desc: "Methodical, calm, and hyper-organized, you orchestrate seamless stage logistics, live venue coordination, and flawless technical run-downs."
+        },
+        'sound-engineer': {
+          title: "Sound Engineer",
+          family: "Photography, Video, Multimedia & Sound",
+          icon: '<i class="fa-solid fa-headphones"></i>',
+          desc: "You give stories their sonic depth. Audio mixing, broadcast acoustics, Foley soundscapes, and podcast mastering are where your precision shines."
+        },
+        'videographer': {
+          title: "Videographer",
+          family: "Photography, Video, Multimedia & Sound",
+          icon: '<i class="fa-solid fa-video"></i>',
+          desc: "Always behind the lens on the ground, you capture fluid motion, human authenticity, and natural light to create compelling visual documentaries."
+        },
+        'photographer': {
+          title: "Photographer",
+          family: "Photography, Video, Multimedia & Sound",
+          icon: '<i class="fa-solid fa-camera-retro"></i>',
+          desc: "With an impeccable eye for framing and human expression, you freeze pivotal moments in time across editorial photojournalism and studio portraits."
+        }
+      };
+
+      function calculateCareerPath(ans) {
+        const q1 = ans.q1 || 'A';
+        const q4 = ans.q4 || 'A';
+        const q5 = ans.q5 || 'B';
+        const q6 = ans.q6 || 'B';
+
+        const isQ5Daily = (q5 === 'A');
+        const isQ6Advanced = (q6 === 'A');
+
+        if (q1 === 'A') {
+          if (q4 === 'A') {
+            return isQ5Daily ? 'public-speaker' : 'influencer';
+          } else {
+            if (isQ5Daily) {
+              return isQ6Advanced ? 'news-reporter' : 'professor';
+            } else {
+              return isQ6Advanced ? 'pr-manager' : 'anchor';
+            }
+          }
+        } else if (q1 === 'B') {
+          if (q4 === 'A') {
+            return isQ6Advanced ? 'freelance-designer-editor' : 'marketing-agency-founder';
+          } else {
+            if (isQ5Daily) {
+              return isQ6Advanced ? 'analyst' : 'copywriter';
+            } else {
+              if (q6 === 'A') return 'social-media-manager';
+              if (q6 === 'B') return 'video-editor';
+              if (q6 === 'C') return 'graphics-designer';
+              return 'creative-director';
+            }
+          }
+        } else {
+          if (q4 === 'A') {
+            if (isQ5Daily) {
+              return isQ6Advanced ? 'ott-producer' : 'event-startup-founder';
+            } else {
+              return 'wildlife-photographer';
+            }
+          } else {
+            if (isQ5Daily) {
+              return isQ6Advanced ? 'multimedia-engineer' : 'event-manager';
+            } else {
+              if (q6 === 'A') return 'multimedia-engineer';
+              if (q6 === 'B') return 'sound-engineer';
+              if (q6 === 'C') return 'videographer';
+              return 'photographer';
+            }
+          }
+        }
+      }
+
+      function getQuizAnswersDetail(answers) {
+        if (!answers || typeof answers !== 'object' || Object.keys(answers).length === 0) {
+          return null;
+        }
+
+        const qLookup = {
+          q1: {
+            num: 'Q1',
+            question: 'Which of these pictures can you relate to the most?',
+            options: {
+              A: 'Someone speaking on a stage',
+              B: 'Someone working in an office',
+              C: 'Someone travelling'
+            }
+          },
+          q2: {
+            num: 'Q2',
+            question: 'What do you notice first in this image? (Tiger / Forest)',
+            options: {
+              A: 'The forest',
+              B: 'The tiger',
+              C: 'Both'
+            }
+          },
+          q3: {
+            num: 'Q3',
+            question: 'First word noticed in word puzzle',
+            custom: true
+          },
+          q4: {
+            num: 'Q4',
+            question: 'What do you expect from your career?',
+            options: {
+              A: 'Risk + Reward',
+              B: 'Stability and Security'
+            }
+          },
+          q5: {
+            num: 'Q5',
+            question: 'How often do you read newspapers and books?',
+            options: {
+              A: 'Every day',
+              B: 'Once or twice a week',
+              C: 'Once or twice a month',
+              D: 'The night before exams'
+            }
+          },
+          q6: {
+            num: 'Q6',
+            question: 'Comfort with technology and digital tools',
+            options: {
+              A: 'I can troubleshoot even complex problems',
+              B: 'I can troubleshoot basic problems',
+              C: 'What is troubleshooting?'
+            }
+          }
+        };
+
+        const list = [];
+        ['q1', 'q2', 'q3', 'q4', 'q5', 'q6'].forEach(key => {
+          if (answers[key] !== undefined && answers[key] !== null && String(answers[key]).trim() !== '') {
+            const meta = qLookup[key];
+            const val = String(answers[key]).trim();
+            let displayVal = val;
+            if (meta.options && meta.options[val]) {
+              displayVal = `Option ${val}: ${meta.options[val]}`;
+            } else if (meta.custom) {
+              displayVal = val.length === 1 ? `Letter "${val}"` : `Word "${val}"`;
+            }
+            list.push({
+              key,
+              num: meta.num,
+              question: meta.question,
+              answer: val,
+              label: displayVal
+            });
+          }
+        });
+        return list;
+      }
+
+      function openLeadQuizResultModal(lead) {
+        if (!lead) return;
+
+        const existing = document.getElementById('adminQuizResultOverlay');
+        if (existing) existing.remove();
+
+        let profile = null;
+        if (lead.quizAnswers && Object.keys(lead.quizAnswers).length > 0) {
+          const key = calculateCareerPath(lead.quizAnswers);
+          profile = CAREER_PROFILES[key];
+        }
+        if (!profile && lead.quizResult) {
+          profile = Object.values(CAREER_PROFILES).find(p => p.title.toLowerCase() === lead.quizResult.toLowerCase());
+        }
+        if (!profile) {
+          profile = {
+            title: lead.quizResult || 'Career Diagnosis',
+            family: 'Public Speaking, Journalism & PR',
+            icon: '<i class="fa-solid fa-compass"></i>',
+            desc: 'Personalized career path recommendation based on diagnostic responses.'
+          };
+        }
+
+        const answersDetail = lead.quizAnswersDetail || (lead.quizAnswers ? getQuizAnswersDetail(lead.quizAnswers) : null);
+        const applicantName = (!lead.name || lead.name === 'Not Available' || lead.name === 'Applicant') ? 'Applicant' : lead.name;
+        const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
+        const phoneObj = formatInternationalPhone(lead.phone);
+        const waNumber = lead.phoneWa || phoneObj.wa || (cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone);
+        const waText = encodeURIComponent(`Hi ${applicantName}, this is Prof. Dr. Minal Pareek's team regarding your Pathfinder Career Diagnosis (${profile.title}) for JournalismLab Batch 1!`);
+
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay active';
+        overlay.id = 'adminQuizResultOverlay';
+        overlay.style.zIndex = '10020';
+
+        overlay.innerHTML = `
+          <div class="modal-box modal-box--quiz-result" role="dialog" aria-labelledby="adminResultCardTitle">
+            <button type="button" class="modal-close" id="adminQuizResultCloseBtn" aria-label="Close career diagnosis modal">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="admin-result-header">
+              <div class="admin-result-header__badge">
+                <i class="fa-solid fa-compass"></i> Pathfinder Career Diagnosis
+              </div>
+              <h3 class="admin-result-header__title" id="adminResultCardTitle">
+                ${escapeHTML(applicantName)}'s Career Match
+              </h3>
+              <p class="admin-result-header__sub">
+                Evaluated using CMMD Diagnostic Decision Tree &bull; Batch 1 Applicant
+              </p>
+            </div>
+
+            <div class="admin-result-card">
+              <div class="quiz-result__family" style="display:inline-block; margin-bottom:0.75rem;">
+                ${escapeHTML(profile.family)}
+              </div>
+
+              <div class="admin-result-main">
+                <div class="admin-result-icon">
+                  ${profile.icon}
+                </div>
+                <div style="flex:1;">
+                  <h2 class="admin-result-archetype">${escapeHTML(profile.title)}</h2>
+                  <p class="admin-result-desc">${escapeHTML(profile.desc)}</p>
+                </div>
+              </div>
+
+              ${answersDetail && answersDetail.length > 0 ? `
+                <div class="admin-result-responses">
+                  <div class="admin-result-responses__title">
+                    <i class="fa-solid fa-list-check"></i>
+                    Diagnostic Responses Summary (${answersDetail.length} Questions)
+                  </div>
+                  <div class="admin-result-responses__grid">
+                    ${answersDetail.map(d => `
+                      <div class="admin-result-response-pill" title="${escapeHTML(d.label)}">
+                        <strong>${escapeHTML(d.num)}:</strong> ${escapeHTML(d.label)}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+
+              <div class="admin-result-meta-bar">
+                <div>
+                  <span class="admin-result-meta-label">Applicant:</span>
+                  <strong>${escapeHTML(applicantName)}</strong>
+                  ${lead.institution && lead.institution !== '—' && lead.institution !== 'Not Available' ? ` (${escapeHTML(lead.institution)})` : ''}
+                </div>
+                <div>
+                  <span class="admin-result-meta-label">Status:</span>
+                  <span style="text-transform:capitalize;">${escapeHTML(lead.status || 'new')}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-result-actions">
+              ${waNumber ? `
+                <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="btn btn--sm" style="background:#25d366; color:#ffffff; border-color:#25d366;">
+                  <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+                </a>
+              ` : ''}
+              <button type="button" class="btn btn--sm btn--primary" id="adminQuizResultDoneBtn">
+                Back to Profile
+              </button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        const closeResult = () => overlay.remove();
+        overlay.querySelector('#adminQuizResultCloseBtn').addEventListener('click', closeResult);
+        overlay.querySelector('#adminQuizResultDoneBtn').addEventListener('click', closeResult);
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) overlay.remove();
+        });
+      }
+
       // ─── Student Profile Card Modal (View & Edit Modes) ───────────
       function openLeadProfileModal(id) {
         const lead = allLeads.find(l => l.id === id);
@@ -1085,6 +1474,10 @@
           
           const roleLower = (lead.role || '').toLowerCase();
           const isRoleNA = !lead.role || lead.role === 'Not Available' || lead.role === 'Quiz Lead' || (isQuizLead && roleLower === 'student');
+
+          const answersDetail = lead.quizAnswersDetail || (lead.quizAnswers ? getQuizAnswersDetail(lead.quizAnswers) : null);
+          const hasQuiz = Boolean(lead.quizAnswers && Object.keys(lead.quizAnswers).length > 0) &&
+                          !(lead.quizResult && lead.quizResult.includes('Quiz not taken'));
 
           let roleBadge = '';
           if (isRoleNA) {
@@ -1122,9 +1515,16 @@
                     <div style="flex:1;">
                       <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
                         <h3 class="profile-card-name" id="profileCardTitle">${displayName}</h3>
-                        <button type="button" class="btn btn--xs btn--ghost" id="adminProfileHeaderEditBtn" title="Edit student details while connected on call">
-                          <i class="fa-solid fa-pen-to-square"></i> Edit Details
-                        </button>
+                        <div style="display:flex; align-items:center; gap:0.4rem;">
+                          ${hasQuiz ? `
+                            <button type="button" class="btn btn--xs btn--secondary admin-profile-show-result-btn" title="View Career Diagnosis Card">
+                              <i class="fa-solid fa-compass"></i> Show Result
+                            </button>
+                          ` : ''}
+                          <button type="button" class="btn btn--xs btn--ghost" id="adminProfileHeaderEditBtn" title="Edit student details while connected on call">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit Details
+                          </button>
+                        </div>
                       </div>
                       <div class="profile-card-badges">
                         ${roleBadge}
@@ -1136,6 +1536,15 @@
                         <span class="role-badge status-${lead.status || 'new'}">
                           <i class="fa-solid fa-circle-dot"></i> <span style="text-transform:capitalize;">${escapeHTML(lead.status || 'new')}</span>
                         </span>
+                        ${hasQuiz ? `
+                          <span class="role-badge" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;">
+                            <i class="fa-solid fa-compass"></i> <span>${escapeHTML(lead.quizResult || 'Quiz Completed')}</span>
+                          </span>
+                        ` : `
+                          <span class="role-badge" style="background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;">
+                            <i class="fa-solid fa-file-pen"></i> <span>Direct Registration</span>
+                          </span>
+                        `}
                         <span class="role-badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;">
                           <i class="fa-solid fa-route"></i> <span>${escapeHTML(lead.source || 'Website')}</span>
                         </span>
@@ -1213,10 +1622,19 @@
                   </div>
 
                   <div class="profile-field-item">
-                    <div class="profile-field-label">Diagnosed Career Archetype</div>
-                    <div class="profile-field-value" style="font-weight:700; color:var(--text-primary);">
-                      <i class="fa-solid fa-compass" style="color:var(--crimson); margin-right:0.3rem;"></i>
-                      ${escapeHTML(lead.quizResult || 'Not taken')}
+                    <div class="profile-field-label">Diagnosed Career Archetype / Mode</div>
+                    <div class="profile-field-value" style="font-weight:700; color:var(--text-primary); display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
+                      <span>
+                        ${hasQuiz
+                          ? `<i class="fa-solid fa-compass" style="color:var(--crimson); margin-right:0.3rem;"></i> ${escapeHTML(lead.quizResult || 'Quiz Completed')}`
+                          : `<span style="color:var(--text-muted); font-size:0.85rem; font-weight:600;"><i class="fa-solid fa-file-pen" style="margin-right:0.3rem;"></i> Direct Registration (Quiz not taken)</span>`
+                        }
+                      </span>
+                      ${hasQuiz ? `
+                        <button type="button" class="btn btn--xs btn--ghost admin-profile-show-result-btn" title="View Career Diagnosis Card">
+                          <i class="fa-solid fa-arrow-up-right-from-square"></i> Show Result
+                        </button>
+                      ` : ''}
                     </div>
                   </div>
 
@@ -1234,6 +1652,47 @@
                     </div>
                   </div>
                 </div>
+
+                ${hasQuiz && answersDetail && answersDetail.length > 0 ? `
+                  <div class="profile-quiz-answers-box">
+                    <div class="profile-quiz-answers-header">
+                      <h4>
+                        <i class="fa-solid fa-list-check" style="color:var(--crimson);"></i>
+                        Career Diagnostic Responses (${answersDetail.length} Questions Answered)
+                      </h4>
+                      <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                        <button type="button" class="btn btn--xs btn--secondary admin-profile-show-result-btn" title="View Career Diagnosis Card">
+                          <i class="fa-solid fa-compass"></i> Show Result
+                        </button>
+                        <span class="role-badge" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; font-size:0.72rem;">
+                          <i class="fa-solid fa-check"></i> Diagnostic Completed
+                        </span>
+                      </div>
+                    </div>
+                    <div class="profile-quiz-answers-grid">
+                      ${answersDetail.map(item => `
+                        <div class="profile-quiz-q-item">
+                          <div class="profile-quiz-q-num">
+                            <span>${escapeHTML(item.num)}</span>
+                            <span style="font-size:0.65rem; color:var(--text-muted); font-weight:500;">Answered</span>
+                          </div>
+                          <div class="profile-quiz-q-text">${escapeHTML(item.question)}</div>
+                          <div class="profile-quiz-q-ans">${escapeHTML(item.label)}</div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : `
+                  <div class="profile-quiz-answers-box" style="background:var(--bg-subtle); border:1px dashed var(--border-medium); display:flex; align-items:center; gap:0.85rem; padding:1rem 1.15rem;">
+                    <div style="width:38px; height:38px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; color:#64748b; font-size:1rem; flex-shrink:0;">
+                      <i class="fa-solid fa-file-pen"></i>
+                    </div>
+                    <div style="font-size:0.83rem; color:var(--text-secondary); line-height:1.45;">
+                      <strong style="color:var(--text-primary); font-size:0.88rem;">Direct Registration (Quiz not taken)</strong><br />
+                      This applicant registered directly via the registration form without attending the career diagnostic quiz.
+                    </div>
+                  </div>
+                `}
 
                 <div class="profile-message-box">
                   <div class="profile-field-label" style="margin-bottom:0.35rem;">
@@ -1255,7 +1714,12 @@
                     </select>
                   </div>
 
-                  <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+                    ${hasQuiz ? `
+                      <button type="button" class="btn btn--sm btn--secondary admin-profile-show-result-btn" title="View Career Diagnosis Card">
+                        <i class="fa-solid fa-compass"></i> Show Result
+                      </button>
+                    ` : ''}
                     ${cleanPhone ? `
                       <a href="https://wa.me/${waNumber}?text=${waText}" target="_blank" rel="noopener noreferrer" class="btn btn--sm" style="background:#25d366; color:#ffffff; border-color:#25d366;">
                         <i class="fa-brands fa-whatsapp"></i> WhatsApp
@@ -1276,6 +1740,10 @@
             const closeProfile = () => overlay.remove();
             overlay.querySelector('#adminProfileCloseBtn').addEventListener('click', closeProfile);
             overlay.querySelector('#adminProfileDoneBtn').addEventListener('click', closeProfile);
+
+            overlay.querySelectorAll('.admin-profile-show-result-btn').forEach(btn => {
+              btn.addEventListener('click', () => openLeadQuizResultModal(lead));
+            });
 
             const hEdit = overlay.querySelector('#adminProfileHeaderEditBtn');
             if (hEdit) hEdit.addEventListener('click', () => renderModal(true));
@@ -1514,6 +1982,28 @@
             ? `<span class="role-badge" style="background:#f8fafc; color:#334155; border:1px solid #cbd5e1;"><i class="fa-solid fa-venus-mars"></i> <span>${escapeHTML(genderVal)}</span></span>`
             : `<span style="color:var(--text-muted); font-size:0.82rem; font-style:italic;">Not Available</span>`;
 
+          const hasQuiz = Boolean(lead.quizAnswers && Object.keys(lead.quizAnswers).length > 0) &&
+                          !(lead.quizResult && lead.quizResult.includes('Quiz not taken'));
+          let quizResultCell = '';
+          if (hasQuiz) {
+            quizResultCell = `
+              <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                <span class="role-badge" style="background:#f0fdf4; color:#166534; border:1px solid #bbf7d0;" title="Diagnosed archetype from quiz responses">
+                  <i class="fa-solid fa-compass"></i> <span>${escapeHTML(lead.quizResult || 'Quiz Completed')}</span>
+                </span>
+                <button type="button" class="btn btn--xs btn--ghost admin-row-show-result-btn" data-id="${escapeHTML(lead.id)}" style="padding:0.2rem 0.5rem; font-size:0.72rem;" title="View Career Diagnosis Card">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i> Show Result
+                </button>
+              </div>
+            `;
+          } else {
+            quizResultCell = `
+              <span class="role-badge" style="background:#f8fafc; color:#64748b; border:1px solid #cbd5e1; font-size:0.75rem; text-align:left;" title="Direct application without taking career quiz">
+                <i class="fa-solid fa-file-pen"></i> <span>Direct Registration<br><small style="font-size:0.68rem; font-weight:500; opacity:0.85;">(Quiz not taken)</small></span>
+              </span>
+            `;
+          }
+
           const currentStatus = lead.status || 'new';
 
           return `
@@ -1546,8 +2036,8 @@
               <td class="wrap-cell" style="font-size:0.82rem; color:var(--text-secondary);">
                 ${(lead.institution && lead.institution !== '—' && lead.institution !== 'Not Available') ? escapeHTML(lead.institution) : '<span style="color:var(--text-muted); font-style:italic;">Not Available</span>'}
               </td>
-              <td style="font-size:0.82rem; font-weight:600; color:var(--text-primary);">
-                ${escapeHTML(lead.quizResult || 'Not taken')}
+              <td>
+                ${quizResultCell}
               </td>
               <td>
                 <select class="admin-status-select status-${currentStatus}" data-id="${escapeHTML(lead.id)}">
@@ -1587,6 +2077,16 @@
           btn.addEventListener('click', () => {
             const id = btn.dataset.id;
             openLeadProfileModal(id);
+          });
+        });
+
+        // Attach Show Result button listeners
+        dashTableBody.querySelectorAll('.admin-row-show-result-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.id;
+            const lead = allLeads.find(l => l.id === id);
+            if (lead) openLeadQuizResultModal(lead);
           });
         });
 
