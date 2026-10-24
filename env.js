@@ -20,7 +20,7 @@ FIREBASE_STORAGE_BUCKET: "journalism-lab.firebasestorage.app",
 FIREBASE_MESSAGING_SENDER_ID: "1005919163714",
 FIREBASE_APP_ID: "1:1005919163714:web:f6a2f151d33b534e3e64db",
 
-  ADMIN_EMAILS: "soumalya9862@gmail.com,minalpareek18@gmail.com,admin@journalismlab.in",
+  ADMIN_EMAILS: "soumalya9862@gmail.com,minalpareek18@gmail.com,thearcart@gmail.com,admin@journalismlab.in",
   CAPTCHA_API_KEY: "",
   CAPTCHA_SITE_KEY: ""
 };
