@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 
-Sitemap: https://journalismlab.org/sitemap.xml
+Sitemap: https://course.minal.media/sitemap.xml
