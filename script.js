@@ -2381,21 +2381,20 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentAdminFilter = 'all';
   let adminSearchQuery = '';
 
-  const rawAdminEmails = (env.ADMIN_EMAILS && !env.ADMIN_EMAILS.startsWith('${')) ? env.ADMIN_EMAILS :
-                         (env.ADMIN_EMAIL && !env.ADMIN_EMAIL.startsWith('${')) ? env.ADMIN_EMAIL :
-                         'admin@journalismlab.in,soumalya9862@gmail.com,minalpareek18@gmail.com';
+  const cleanEnvStr = val => (typeof val === 'string' && !val.startsWith('${')) ? val.trim() : '';
+  const rawAdminEmails = cleanEnvStr(env.ADMIN_EMAILS) || cleanEnvStr(env.ADMIN_EMAIL);
 
   const authorizedAdminEmails = rawAdminEmails
-    .split(',')
-    .map(e => e.trim().toLowerCase())
-    .filter(Boolean);
+    ? rawAdminEmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e && !e.startsWith('${'))
+    : [];
 
   const adminPassword = (env.ADMIN_PASSWORD && !env.ADMIN_PASSWORD.startsWith('${')) ? env.ADMIN_PASSWORD : 'JLab@2026!';
 
   function openAdminLogin() {
     if (document.getElementById('adminLoginOverlay')) return;
 
-    const defaultEmailPlaceholder = authorizedAdminEmails[0] || 'admin@journalismlab.in';
+    const hasConfiguredAdmins = authorizedAdminEmails.length > 0;
+    const defaultEmailPlaceholder = hasConfiguredAdmins ? authorizedAdminEmails[0] : 'admin@journalismlab.in';
 
     const modalHTML = `
       <div class="modal-overlay active" id="adminLoginOverlay" style="z-index:10006;">
@@ -2412,8 +2411,8 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <form id="adminLoginForm">
             <div class="form-group">
-              <label for="adminEmailInput" style="color:var(--text-secondary)">Admin Email</label>
-              <input type="email" id="adminEmailInput" placeholder="${defaultEmailPlaceholder}" required />
+              <label for="adminEmailInput" style="color:var(--text-secondary)">Admin Email ${hasConfiguredAdmins ? '' : '<span style="font-size:0.75rem; color:var(--text-muted); font-weight:normal;">(Optional)</span>'}</label>
+              <input type="email" id="adminEmailInput" placeholder="${defaultEmailPlaceholder}" ${hasConfiguredAdmins ? 'required' : ''} />
             </div>
             <div class="form-group" style="margin-top:0.75rem;">
               <label for="adminPassInput" style="color:var(--text-secondary)">Password</label>
@@ -2441,7 +2440,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setTimeout(() => {
       const emailInput = document.getElementById('adminEmailInput');
-      if (emailInput && !emailInput.value) {
+      if (emailInput && !emailInput.value && hasConfiguredAdmins) {
         emailInput.focus();
       } else if (passInput) {
         passInput.focus();
@@ -2455,9 +2454,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const enteredEmail = document.getElementById('adminEmailInput').value.trim().toLowerCase();
+      const rawEmail = document.getElementById('adminEmailInput').value.trim().toLowerCase();
+      const enteredEmail = rawEmail || 'admin@journalismlab.in';
       const enteredPass  = passInput.value;
 
+      // If no admin emails are configured in environment, permit any email with valid password
       const isEmailAuthorized = (authorizedAdminEmails.length === 0 || authorizedAdminEmails.includes(enteredEmail));
       const isPassValid = (enteredPass === adminPassword);
 
@@ -2466,10 +2467,10 @@ document.addEventListener('DOMContentLoaded', () => {
         openAdminPanel();
       } else {
         if (errMsg) {
-          if (!isEmailAuthorized) {
-            errMsg.textContent = 'Access Denied: This email is not authorized for administrator access.';
-          } else {
+          if (!isPassValid) {
             errMsg.textContent = 'Incorrect password. Please verify your administrator credentials.';
+          } else if (!isEmailAuthorized) {
+            errMsg.textContent = 'Access Denied: This email is not authorized for administrator access.';
           }
         }
         errBox.style.display = 'flex';

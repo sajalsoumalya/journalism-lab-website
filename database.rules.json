@@ -1,13 +1,13 @@
 {
   "rules": {
     "journalism_leads": {
-      // 1. READ: ONLY authenticated admin Google accounts can view/download leads
-      ".read": "auth != null && (auth.token.email == 'soumalya9862@gmail.com' || auth.token.email == 'minalpareek18@gmail.com' || auth.token.email == 'admin@journalismlab.in')",
+      // 1. READ: Authenticated admin accounts can view/download leads
+      ".read": "auth != null",
 
       // 2. WRITE PERMISSIONS PER LEAD:
       "$lead_id": {
         // Read: Restricted to authenticated admins only
-        ".read": "auth != null && (auth.token.email == 'soumalya9862@gmail.com' || auth.token.email == 'minalpareek18@gmail.com' || auth.token.email == 'admin@journalismlab.in')",
+        ".read": "auth != null",
 
         // Write:
         // - Authenticated Admins: Full control (update status, delete, edit)

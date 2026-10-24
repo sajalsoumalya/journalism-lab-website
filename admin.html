@@ -581,16 +581,16 @@
       // ─── Environment & Admin Authorization Setup ─────────────────
       const env = window.__ENV__ || {};
 
-      // Parse comma-separated ADMIN_EMAILS environment variable
-      const rawAdminEmails = env.ADMIN_EMAILS || "";
+      // Parse comma-separated ADMIN_EMAILS environment variable (sanitize unresolved Docker templates)
+      const cleanEnvVal = val => (typeof val === 'string' && !val.startsWith('${')) ? val.trim() : '';
+      const rawAdminEmails = cleanEnvVal(env.ADMIN_EMAILS);
       const adminEmailList = rawAdminEmails
-        .split(',')
-        .map(e => e.trim().toLowerCase())
-        .filter(Boolean);
+        ? rawAdminEmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e && !e.startsWith('${'))
+        : [];
 
       // Legacy fallback email if ADMIN_EMAILS is unset
-      const legacyAdminEmail = (env.ADMIN_EMAIL || '').trim().toLowerCase();
-      if (legacyAdminEmail && !legacyAdminEmail.startsWith('${') && !adminEmailList.includes(legacyAdminEmail)) {
+      const legacyAdminEmail = cleanEnvVal(env.ADMIN_EMAIL).toLowerCase();
+      if (legacyAdminEmail && !adminEmailList.includes(legacyAdminEmail)) {
         adminEmailList.push(legacyAdminEmail);
       }
 
