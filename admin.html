@@ -415,7 +415,7 @@
         <span class="admin-denied-email" id="deniedUserEmail">user@example.com</span>
       </div>
       <p class="admin-auth-card__desc" style="font-size:0.82rem;">
-        If you are an administrator, make sure your email is listed in the <code>ADMIN_EMAILS</code> environment configuration.
+        Administrator access is controlled exclusively via <strong>Firebase Database Rules</strong>. To grant access to this Google account, add this email address to the <code>.read</code> rule in your Firebase Console.
       </p>
 
       <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 1.5rem;">
@@ -578,22 +578,8 @@
     (function() {
       'use strict';
 
-      // ─── Environment & Admin Authorization Setup ─────────────────
+      // ─── Environment & Database Setup ─────────────────────────────
       const env = window.__ENV__ || {};
-
-      // Parse comma-separated ADMIN_EMAILS environment variable (sanitize unresolved Docker templates)
-      const cleanEnvVal = val => (typeof val === 'string' && !val.startsWith('${')) ? val.trim() : '';
-      const rawAdminEmails = cleanEnvVal(env.ADMIN_EMAILS);
-      const adminEmailList = rawAdminEmails
-        ? rawAdminEmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e && !e.startsWith('${'))
-        : [];
-
-      // Legacy fallback email if ADMIN_EMAILS is unset
-      const legacyAdminEmail = cleanEnvVal(env.ADMIN_EMAIL).toLowerCase();
-      if (legacyAdminEmail && !adminEmailList.includes(legacyAdminEmail)) {
-        adminEmailList.push(legacyAdminEmail);
-      }
-
       const LEADS_KEY = 'journalism_leads';
       const LOCAL_STORAGE_KEY = 'journalism_lab_leads';
 
@@ -823,21 +809,6 @@
         dashboardState.style.display = (target === 'dashboard') ? 'block' : 'none';
       }
 
-      // ─── Authorization Check ──────────────────────────────────────
-      function isAuthorized(email) {
-        if (!email) return false;
-        const normalized = email.trim().toLowerCase();
-
-        // If admin emails configured in env
-        if (adminEmailList.length > 0) {
-          return adminEmailList.includes(normalized);
-        }
-
-        // If no admin emails are configured at all in development, permit signed-in user
-        console.warn('ADMIN_EMAILS not configured in environment; permitting authenticated Google user:', normalized);
-        return true;
-      }
-
       // ─── Resolve Firebase Configuration ──────────────────────────
       function resolveFirebaseConfig() {
         const cfg = window.firebaseConfig || window.FIREBASE_CONFIG || window.__ENV__ || {};
@@ -915,23 +886,16 @@
       function handleAuthStateChange(user) {
         if (!user) {
           currentUser = null;
+          if (leadsRef) leadsRef.off();
           showState('login');
           return;
         }
 
         currentUser = user;
-        const userEmail = (user.email || '').toLowerCase();
+        showState('loading');
 
-        if (isAuthorized(userEmail)) {
-          // Authorized! Render Dashboard
-          setupDashboardUser(user);
-          showState('dashboard');
-          bindRealtimeLeads();
-        } else {
-          // Unauthorized email
-          deniedUserEmail.textContent = user.email || 'No email associated';
-          showState('denied');
-        }
+        // Authorize solely via Firebase Realtime Database rules
+        bindRealtimeLeads(user);
       }
 
       // ─── Google Sign-In ───────────────────────────────────────────
@@ -970,6 +934,7 @@
 
       // ─── Sign Out ─────────────────────────────────────────────────
       async function signOutAdmin() {
+        if (leadsRef) leadsRef.off();
         if (auth) {
           try {
             await auth.signOut();
@@ -993,14 +958,22 @@
         }
       }
 
-      // ─── Bind Realtime Database ───────────────────────────────────
-      function bindRealtimeLeads() {
+      // ─── Bind Realtime Database (Authorized via Database Rules) ───
+      function bindRealtimeLeads(user) {
         if (!leadsRef) {
+          if (user) setupDashboardUser(user);
+          showState('dashboard');
           loadOfflineLeads();
           return;
         }
 
+        leadsRef.off();
         leadsRef.on('value', (snapshot) => {
+          // Read permitted by Firebase Database rules! User is authorized.
+          const activeUser = user || currentUser;
+          if (activeUser) setupDashboardUser(activeUser);
+          showState('dashboard');
+
           const val = snapshot.val();
           if (val) {
             allLeads = normalizeLeads(Object.keys(val).map(key => ({
@@ -1014,8 +987,26 @@
           updateStats();
           renderTable();
         }, (err) => {
-          console.warn('Realtime Database listener failed, falling back to local storage:', err);
-          loadOfflineLeads();
+          console.warn('Firebase Database rules authorization notice:', err);
+          const isPermissionDenied = Boolean(
+            err && (
+              err.code === 'PERMISSION_DENIED' ||
+              (err.message && err.message.toLowerCase().includes('permission_denied'))
+            )
+          );
+
+          if (isPermissionDenied) {
+            // Blocked by Firebase Database Rules (.read check failed)
+            const activeUser = user || currentUser;
+            deniedUserEmail.textContent = (activeUser && activeUser.email) ? activeUser.email : 'No email associated';
+            showState('denied');
+          } else {
+            // Other network error or offline
+            const activeUser = user || currentUser;
+            if (activeUser) setupDashboardUser(activeUser);
+            showState('dashboard');
+            loadOfflineLeads();
+          }
         });
       }
 
